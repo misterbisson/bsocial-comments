@@ -20,7 +20,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 
 	public function admin_enqueue_scripts()
 	{
-		
+		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments.js', __FILE__ ), array( 'jquery' ), NULL, TRUE );
 	} // END admin_enqueue_scripts
 
 	public function quicktags_settings( $settings )
@@ -55,11 +55,10 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		// Get feature/unfeature link for the comment
 		$actions['feature-comment hide-if-no-js'] = $this->get_feature_comment_link( $comment->comment_ID, 'feature-comment-needs-refresh' );
 
-		// enqueue some JS once
-		if ( ! $this->enqueued_admin_js )
+		// Enqueue some JS if it hasn't already been enqued
+		if ( ! wp_script_is( $this->id_base, 'enqueued' ) )
 		{
-			add_action( 'admin_print_footer_scripts', array( $this, 'footer_js' ) );
-			$this->enqueued_admin_js = TRUE;
+			wp_enqueue_script( $this->id_base );
 		}
 
 		return $actions;
