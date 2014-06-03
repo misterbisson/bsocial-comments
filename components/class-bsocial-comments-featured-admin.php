@@ -60,35 +60,4 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		// add metaboxes
 		add_meta_box( $id_base, 'Featured Comment', array( $this, 'metabox' ), $this->post_type_name, 'normal', 'high' );
 	} // END register_metaboxes
-
-	public function ajax_feature_comment()
-	{
-		$comment_id = absint( $_GET['comment_id'] );
-
-		if ( ! current_user_can( 'moderate_comments' ) )
-		{
-			return FALSE;
-		}
-
-		if ( ! check_ajax_referer( 'bsocial-featuredcomment-save', 'bsocial-nonce' ) )
-		{
-			return FALSE;
-		} // END if
-
-		if ( get_comment( $comment_id ) )
-		{
-			if ( 'feature' == $_GET['direction'] )
-			{
-				$sucess = $this->feature_comment( $comment_id );
-			}
-			else
-			{
-				$sucess = $this->unfeature_comment( $comment_id );
-			}
-
-			echo $this->get_feature_comment_link( $comment_id );
-		} // END if
-
-		die;
-	} // END ajax_feature_comment
 } // END bSocial_Comments_Featured class

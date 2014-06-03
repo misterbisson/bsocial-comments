@@ -7,13 +7,13 @@ class bSocial_Comments_Featured
 	var $meta_key = 'bsuite-fcomment';
 	var $tag_regex = '/\[\/?featured_?comment\]/i'; // just match the single tag to make it easy to remove
 	var $wrapper_regex = '/\[featured_?comment\](.*?)\[\/?featured_?comment\]/i'; // match the content inside the tags
-	var $enqueued_admin_js = FALSE;
 
 	public function __construct()
 	{
 		add_action( 'init', array( $this, 'init' ), 11 );
 		add_action( 'edit_comment', array( $this, 'edit_comment' ), 5 );
 		add_action( 'delete_comment', array( $this, 'unfeature_comment' ) );
+		add_action( 'wp_ajax_bsocial_feature_comment', array( $this, 'ajax_feature_comment' ) );
 
 		add_filter( 'pre_get_posts', array( $this, 'pre_get_posts' ) );
 		add_filter( 'post_class', array( $this, 'filter_post_class' ) );
@@ -50,8 +50,12 @@ class bSocial_Comments_Featured
 		return $this->admin;
 	} // END admin
 
+	/**
+	 * Register the featured comment post_type
+	 */
 	public function register_post_type()
 	{
+		// Only allow taxonomies that are associated with posts that can have comments
 		$taxonomies = array();
 		$post_types = get_post_types( array( 'public' => TRUE ), 'objects' );
 
@@ -89,6 +93,9 @@ class bSocial_Comments_Featured
 		);
 	} // END register_post_type
 
+	/**
+	 * Include featured comments in the post_types if the config is set to do so
+	 */
 	public function pre_get_posts( $query )
 	{
 
@@ -106,6 +113,9 @@ class bSocial_Comments_Featured
 		return $query;
 	} // END pre_get_posts
 
+	/**
+	 * Return the link to the comment for featured commment posts
+	 */
 	public function post_type_link( $permalink, $post )
 	{
 		if ( $post->post_type == $this->post_type_name && ( $comment_id = get_post_meta( $post->ID, $this->meta_key .'-comment_id', TRUE ) ) )
@@ -116,6 +126,9 @@ class bSocial_Comments_Featured
 		return $permalink;
 	} // END post_type_link
 
+	/**
+	 * Filter out the shortcode unless in the admin panel
+	 */
 	public function filter_get_comment_text( $content )
 	{
 		if ( is_admin() )
@@ -128,6 +141,9 @@ class bSocial_Comments_Featured
 		}
 	} // END filter_get_comment_text
 
+	/**
+	 * Add a class of post to featured comment posts
+	 */
 	public function filter_post_class( $classes )
 	{
 		if ( get_post( get_the_ID() )->post_type == $this->post_type_name )
@@ -138,6 +154,9 @@ class bSocial_Comments_Featured
 		return $classes;
 	} // END filter_post_class
 
+	/**
+	 * Show featured comment posts with the author of the comment instead of the originating post
+	 */
 	public function filter_the_author( $author_name )
 	{
 		if ( get_the_ID() && get_post( get_the_ID() )->post_type == $this->post_type_name )
@@ -150,6 +169,9 @@ class bSocial_Comments_Featured
 		}
 	} // END filter_the_author
 
+	/**
+	 * Prevent featured comments from having an author posts link
+	 */
 	public function filter_the_author_posts_link( $url )
 	{
 		if ( get_the_ID() && get_post( get_the_ID() )->post_type == $this->post_type_name )
@@ -162,6 +184,9 @@ class bSocial_Comments_Featured
 		}
 	} // END filter_the_author_posts_link
 
+	/**
+	 * Returns any text between the [featured_comment]text here[/featured_comment] shortcodes
+	 */
 	public function get_featured_comment_text( $comment_id = FALSE )
 	{
 		remove_filter( 'get_comment_text', array( $this, 'filter_get_comment_text' ) );
@@ -171,6 +196,9 @@ class bSocial_Comments_Featured
 		return $text[1];
 	} // END get_featured_comment_text
 
+	/**
+	 * Checks content for the [featured_comment][/featured_comment] shortcode
+	 */
 	public function _get_featured_comment_text( $input )
 	{
 		preg_match( $this->wrapper_regex, $input, $text );
@@ -178,21 +206,26 @@ class bSocial_Comments_Featured
 		return empty( $text[1] ) ? $input : $text[1];
 	} // END _get_featured_comment_text
 
+	/**
+	 * Watches for comment edits and features the comment if either the comment_meta or content indicates it should be featured.
+	 */
 	public function edit_comment( $comment_id )
 	{
 		$comment = get_comment( $comment_id );
 
 		// check if the featured tags exist in the comment content, permissions will be checked in the next function
 		if (
-			$featured = $this->_get_featured_comment_text( $comment->comment_content ) ||
-			$this->get_comment_meta( $comment->comment_ID )
+			   $featured = $this->_get_featured_comment_text( $comment->comment_content )
+			|| $this->get_comment_meta( $comment->comment_ID )
 		)
 		{
 			$this->feature_comment( $comment_id );
-		}
-
+		} // END if
 	} // END edit_comment
 
+	/**
+	 * Unfeatures a comment
+	 */
 	public function unfeature_comment( $comment_id )
 	{
 		$comment = get_comment( $comment_id );
@@ -210,6 +243,9 @@ class bSocial_Comments_Featured
 		}
 	} // END unfeature_comment
 
+	/**
+	 * Features a comment
+	 */
 	public function feature_comment( $comment_id )
 	{
 		$comment = get_comment( $comment_id );
@@ -229,9 +265,11 @@ class bSocial_Comments_Featured
 		} // END if
 	} // END feature_comment
 
+	/**
+	 * Creates the post for a featured comment when given a valid comment_id
+	 */
 	public function create_post( $comment_id )
 	{
-
 		$comment = get_comment( $comment_id );
 		$parent = get_post( $comment->comment_post_ID );
 		$featured = $this->_get_featured_comment_text( $comment->comment_content );
@@ -285,6 +323,43 @@ class bSocial_Comments_Featured
 		return get_comment_meta( $comment_id, $this->meta_key . '-post-id', TRUE );
 	} // END get_comment_meta
 
+	/**
+	 * Feature/unfeature a comment via an admin-ajax.php endpoint
+	 */
+	public function ajax_feature_comment()
+	{
+		$comment_id = absint( $_GET['comment_id'] );
+
+		if ( ! current_user_can( 'moderate_comments' ) )
+		{
+			return FALSE;
+		}
+
+		if ( ! check_ajax_referer( 'bsocial-featuredcomment-save', 'bsocial-nonce' ) )
+		{
+			return FALSE;
+		} // END if
+
+		if ( get_comment( $comment_id ) )
+		{
+			if ( 'feature' == $_GET['direction'] )
+			{
+				$sucess = $this->feature_comment( $comment_id );
+			}
+			else
+			{
+				$sucess = $this->unfeature_comment( $comment_id );
+			}
+
+			echo $this->get_feature_comment_link( $comment_id );
+		} // END if
+
+		die;
+	} // END ajax_feature_comment
+
+	/**
+	 * Return a nonced URL to feature/unfeature a comment
+	 */
 	public function get_feature_comment_url( $comment_id )
 	{
 		$arguments = array(
