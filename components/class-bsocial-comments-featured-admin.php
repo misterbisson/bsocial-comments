@@ -4,9 +4,8 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	public function __construct()
 	{
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-		add_action( 'wp_ajax_bsocial_feature_comment', array( $this, 'ajax' ) );
-		
-		add_filter( 'quicktags_settings', array( $this, 'quicktags_settings' ) );
+		add_action( 'wp_ajax_bsocial_feature_comment', array( $this, 'ajax_feature_comment' ) );
+
 		add_filter( 'comment_row_actions', array( $this, 'comment_row_actions' ), 10, 2 );
 
 		/*
@@ -18,31 +17,25 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		*/
 	} // END __construct
 
+	/**
+	 * Enqueu admin JS
+	 */
 	public function admin_enqueue_scripts()
 	{
-		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments.js', __FILE__ ), array( 'jquery' ), NULL, TRUE );
-	} // END admin_enqueue_scripts
+		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-featured.js', __FILE__ ), array( 'jquery' ), NULL, TRUE );
 
-	public function quicktags_settings( $settings )
-	{
-		switch( $settings['id'] )
+		$valid_bases = array(
+			'comment',
+			'edit-comments',
+		);
+
+		if ( ! in_array( get_current_screen()->base, $valid_bases ) )
 		{
-			case 'content':
-				if ( get_current_screen()->id !== 'comment' )
-				{
-					return $settings;
-				}
-				// no break, so it continues to the case below
-			case 'replycontent':
-				$settings['buttons'] .= ',featuredcomment';
-				// enqueue some JS to handle these buttons, yes?
-				// similar to AddQuicktagsAndFunctions() in http://plugins.trac.wordpress.org/browser/vipers-video-quicktags/trunk/vipers-video-quicktags.php#L556
-				// and now that I've read further, I don't think messing with the button list does anything.
-				break;
-		} // END switch
+			return;
+		} // END if
 
-		return $settings;
-	} // END quicktags_settings
+		wp_enqueue_script( $this->id_base );
+	} // END admin_enqueue_scripts
 
 	public function comment_row_actions( $actions, $comment )
 	{
@@ -53,71 +46,10 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		}
 
 		// Get feature/unfeature link for the comment
-		$actions['feature-comment hide-if-no-js'] = $this->get_feature_comment_link( $comment->comment_ID, 'feature-comment-needs-refresh' );
-
-		// Enqueue some JS if it hasn't already been enqued
-		if ( ! wp_script_is( $this->id_base, 'enqueued' ) )
-		{
-			wp_enqueue_script( $this->id_base );
-		}
+		$actions['feature-comment hide-if-no-js'] = $this->get_feature_comment_link( $comment->comment_ID );
 
 		return $actions;
 	} // END comment_row_actions
-
-	public function footer_js()
-	{
-		// this JS code originated by Mark Jaquith, http://coveredwebservices.com/ , for Gigaom, http://gigaom.com/
-
-		?>
-		<script type="text/javascript">
-			var bsocial_featuredcomment_nonce = '<?php echo wp_create_nonce( 'bsocial-featuredcomment-save' ); ?>';
-			function cwsFeatComLoad() {
-				jQuery('#replyrow a.save').click(function() { cwsFeatComLoadLoop( jQuery('#comment_ID').val() ); });
-				jQuery('a.feature-comment').removeClass('feature-comment-needs-refresh');
-				jQuery('a.feature-comment').click( function(){
-					var cmt = jQuery(this);
-					var comment_id = cmt.attr('id').replace( /feature-comment-/, '' );
-					var ajaxURL = '<?php echo js_escape( admin_url( 'admin-ajax.php' ) ); ?>';
-					if ( cmt.hasClass('featured-comment') ) {
-						cmt.fadeOut();
-						jQuery.post(ajaxURL, {
-							action:"bsocial_feature_comment",
-							direction:"unfeature",
-							comment_id: comment_id,
-							cookie: encodeURIComponent(document.cookie),
-							_bsocial_featuredcomment_nonce: bsocial_featuredcomment_nonce
-						}, function(str){
-							cmt.text("Feature").addClass('unfeatured-comment').removeClass('featured-comment').fadeIn();
-						});
-					} else {
-						cmt.fadeOut();
-						jQuery.post(ajaxURL, {
-							action:"bsocial_feature_comment",
-							direction:"feature",
-							comment_id: comment_id,
-							cookie: encodeURIComponent(document.cookie),
-							_bsocial_featuredcomment_nonce: bsocial_featuredcomment_nonce
-						}, function(str){
-							cmt.text("Unfeature").addClass('featured-comment').removeClass('unfeatured-comment').fadeIn();
-						});
-					}
-					return false;
-				});
-			}
-			function cwsFeatComLoadLoop(comment_id) {
-				if ( jQuery( '#comment-' + comment_id + ' a.feature-comment-needs-refresh').text() ) {
-					cwsFeatComLoad();
-				} else {
-					setTimeout("cwsFeatComLoadLoop(" + comment_id + ")", 100);
-				}
-			}
-
-		jQuery( document ).ready( function(){
-			cwsFeatComLoad();
-		});
-		</script>
-		<?php
-	} // END footer_js
 
 	public function metabox( $post )
 	{
@@ -129,32 +61,34 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		add_meta_box( $id_base, 'Featured Comment', array( $this, 'metabox' ), $this->post_type_name, 'normal', 'high' );
 	} // END register_metaboxes
 
-	public function ajax()
+	public function ajax_feature_comment()
 	{
-		$comment_id = intval( $_REQUEST['comment_id'] );
+		$comment_id = absint( $_GET['comment_id'] );
 
 		if ( ! current_user_can( 'moderate_comments' ) )
 		{
 			return FALSE;
 		}
 
-		if ( ! check_ajax_referer( 'bsocial-featuredcomment-save', '_bsocial_featuredcomment_nonce' ) )
+		if ( ! check_ajax_referer( 'bsocial-featuredcomment-save', 'bsocial-nonce' ) )
 		{
-			return;
+			return FALSE;
 		} // END if
 
 		if ( get_comment( $comment_id ) )
 		{
-			if ( 'feature' == $_POST['direction'] )
+			if ( 'feature' == $_GET['direction'] )
 			{
-				$this->feature_comment( $comment_id );
+				$sucess = $this->feature_comment( $comment_id );
 			}
 			else
 			{
-				$this->unfeature_comment( $comment_id );
+				$sucess = $this->unfeature_comment( $comment_id );
 			}
+
+			echo $this->get_feature_comment_link( $comment_id );
 		} // END if
 
 		die;
-	} // END ajax
+	} // END ajax_feature_comment
 } // END bSocial_Comments_Featured class

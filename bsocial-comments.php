@@ -8,6 +8,5 @@ Author: Casey Bisson
 Author URI: http://maisonbisson.com/blog/
 */
 
-
 require_once __DIR__ . '/components/class-bsocial-comments.php';
 bsocial_comments();

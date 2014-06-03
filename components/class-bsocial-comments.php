@@ -73,7 +73,7 @@ class bSocial_Comments
 	/**
 	 * this method uses a custom SQL query because it's way more performant
 	 * than the SQL from WP's core WP_Comment_Query class.
-	 * 
+	 *
 	 * The main problem: joins on tables with BLOB or TEXT columns _always_
 	 * go to temp tables on disk. See http://dev.mysql.com/doc/refman/5.5/en/internal-temporary-tables.html
 	 */

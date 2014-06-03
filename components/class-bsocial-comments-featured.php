@@ -54,10 +54,10 @@ class bSocial_Comments_Featured
 	{
 		$taxonomies = array();
 		$post_types = get_post_types( array( 'public' => TRUE ), 'objects' );
-		
+
 		foreach ( $post_types as $post_type => $object )
 		{
-			if ( 
+			if (
 				 ! empty( $object->taxonomies )
 				&& post_type_supports( $post_type, 'comments' )
 			)
@@ -204,7 +204,8 @@ class bSocial_Comments_Featured
 			if ( $post_id = $this->get_comment_meta( $comment->comment_ID ) )
 			{
 				wp_delete_post( $post_id );
-				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id' );
+				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post-id' );
+				return TRUE;
 			}
 		}
 	} // END unfeature_comment
@@ -219,11 +220,11 @@ class bSocial_Comments_Featured
 		{
 			if ( $post_id = $this->get_comment_meta( $comment->comment_ID ) )
 			{
-				wp_update_post( (object) array( 'ID' => $post_id, 'post_content' => $featured ) ); // we have a post for this comment
+				return wp_update_post( (object) array( 'ID' => $post_id, 'post_content' => $featured ) ); // we have a post for this comment
 			}
 			else
 			{
-				$this->create_post( $comment_id ); // create a new post for this comment
+				return $this->create_post( $comment_id ); // create a new post for this comment
 			}
 		} // END if
 	} // END feature_comment
@@ -248,6 +249,7 @@ class bSocial_Comments_Featured
 			'post_password' => $parent->post_password,
 			'post_type' => $this->post_type_name,
 		);
+
 		$post_id = wp_insert_post( $post );
 
 		// simple sanity check
@@ -258,7 +260,7 @@ class bSocial_Comments_Featured
 
 		// save the meta
 		update_post_meta( $post_id, $this->meta_key .'-comment_id', $comment->comment_ID );
-		update_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id', $post_id );
+		update_comment_meta( $comment->comment_ID, $this->meta_key .'-post-id', $post_id );
 
 		// get all the terms on the parent post
 		foreach ( (array) wp_get_object_terms( $parent->ID, get_object_taxonomies( $parent->post_type ) ) as $term )
@@ -280,7 +282,7 @@ class bSocial_Comments_Featured
 	 */
 	public function get_comment_meta( $comment_id )
 	{
-		return get_comment_meta( $comment_id, $this->meta_key . '-post_id', TRUE );
+		return get_comment_meta( $comment_id, $this->meta_key . '-post-id', TRUE );
 	} // END get_comment_meta
 
 	public function get_feature_comment_url( $comment_id )
@@ -320,7 +322,7 @@ class bSocial_Comments_Featured
 			$text  = 'Feature';
 			$class = 'unfeatured-comment';
 		} // END else
-		
+
 		$classes = 'feature-comment ' . $class;
 		$classes .= '' != $additional_classes ? ' ' . esc_attr( $additional_classes ) : '';
 
