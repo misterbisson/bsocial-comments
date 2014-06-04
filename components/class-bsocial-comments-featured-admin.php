@@ -1,10 +1,12 @@
 <?php
 class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 {
+	public $post_id;
+
 	public function __construct()
 	{
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-		add_action( 'wp_ajax_bsocial_feature_comment', array( $this, 'ajax_feature_comment' ) );
+		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 10, 2 );
 
 		add_filter( 'comment_row_actions', array( $this, 'comment_row_actions' ), 10, 2 );
 
@@ -51,13 +53,56 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		return $actions;
 	} // END comment_row_actions
 
-	public function metabox( $post )
+	/**
+	 * Add metaboxes
+	 */
+	public function add_meta_boxes( $post_type, $post )
 	{
-	} // END metabox
+		if ( 
+			   'comment' == $post_type
+			&& $this->post_id = $this->get_comment_meta( $post->comment_ID )
+		)
+		{
+			// Kind of sucky given the limited nature of this metabox but comment metaboxes only work when the context is normal (i.e. 'side' doesn't work)
+			add_meta_box( $id_base, 'Featured Comment Post', array( $this, 'featured_comment_post_metabox' ), 'comment', 'normal', 'high' );
+		} // END if
+		
+		add_meta_box( $id_base, 'Featured Comment', array( $this, 'featured_comment_metabox' ), $this->post_type_name, 'normal', 'high' );
 
-	public function register_metaboxes()
+		if ( 
+			   $post_type != $this->post_type_name 
+			&& post_type_supports( $post_type, 'comments' )
+			&& $this->featured_comments = $this->get_featured_comments( $post->ID )
+		)
+		{
+			add_meta_box( $id_base, 'Featured Comments', array( $this, 'featured_comments_metabox' ), 'comment', 'normal', 'high' );
+		} // END if
+	} // END add_meta_boxes
+
+	/**
+	 * Display the post associated with a Featured Comment
+	 */
+	public function featured_comment_post_metabox( $post )
 	{
-		// add metaboxes
-		add_meta_box( $id_base, 'Featured Comment', array( $this, 'metabox' ), $this->post_type_name, 'normal', 'high' );
-	} // END register_metaboxes
+		$post = get_post( $this->post_id );
+
+		require __DIR__ . '/templates/featured-comment-post.php';
+	} // END featured_comment_post_metabox
+	
+	/**
+	 * Display the comment related to a Featured Comment post
+	 */
+	public function featured_comment_metabox( $post )
+	{
+		$comment = get_comment( $this->get_post_meta( $post->ID ) );
+
+		require __DIR__ . '/templates/featured-comment.php';
+	} // END featured_comment_metabox
+
+	/**
+	 * Display featured comments for a post
+	 */
+	public function featured_comments_metabox( $post )
+	{
+	} // END featured_comments_metabox
 } // END bSocial_Comments_Featured class

@@ -2,11 +2,12 @@
 class bSocial_Comments_Featured
 {
 	// don't mess with these
-	var $id_base = 'bsuite-fcomment';
-	var $post_type_name = 'bsuite-fcomment';
-	var $meta_key = 'bsuite-fcomment';
-	var $tag_regex = '/\[\/?featured_?comment\]/i'; // just match the single tag to make it easy to remove
-	var $wrapper_regex = '/\[featured_?comment\](.*?)\[\/?featured_?comment\]/i'; // match the content inside the tags
+	public $id_base = 'bsuite-fcomment';
+	public $post_type_name = 'bsuite-fcomment';
+	public $meta_key = 'bsuite-fcomment';
+	public $tag_regex = '/\[\/?featured_?comment\]/i'; // just match the single tag to make it easy to remove
+	public $wrapper_regex = '/\[featured_?comment\](.*?)\[\/?featured_?comment\]/i'; // match the content inside the tags
+	public $featured_comments = array();
 
 	public function __construct()
 	{
@@ -98,7 +99,6 @@ class bSocial_Comments_Featured
 	 */
 	public function pre_get_posts( $query )
 	{
-
 		if ( bsocial_comments()->options()->featuredcomments->add_to_waterfall && ! is_admin() && $query->is_main_query() )
 		{
 			$post_types = array_merge(
@@ -108,7 +108,7 @@ class bSocial_Comments_Featured
 			);
 
 			$query->set( 'post_type', $post_types );
-		}
+		} // END if
 
 		return $query;
 	} // END pre_get_posts
@@ -118,7 +118,7 @@ class bSocial_Comments_Featured
 	 */
 	public function post_type_link( $permalink, $post )
 	{
-		if ( $post->post_type == $this->post_type_name && ( $comment_id = get_post_meta( $post->ID, $this->meta_key .'-comment_id', TRUE ) ) )
+		if ( $post->post_type == $this->post_type_name && ( $comment_id = $this->get_post_meta( $post->ID ) ) )
 		{
 			return get_comment_link( $comment_id );
 		}
@@ -161,7 +161,7 @@ class bSocial_Comments_Featured
 	{
 		if ( get_the_ID() && get_post( get_the_ID() )->post_type == $this->post_type_name )
 		{
-			return get_comment_author( get_post_meta( get_the_ID(), $this->meta_key .'-comment_id', TRUE ) );
+			return get_comment_author( $this->get_post_meta( $post->ID ) );
 		}
 		else
 		{
@@ -237,7 +237,7 @@ class bSocial_Comments_Featured
 			if ( $post_id = $this->get_comment_meta( $comment->comment_ID ) )
 			{
 				wp_delete_post( $post_id );
-				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post-id' );
+				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id' );
 				return TRUE;
 			}
 		}
@@ -298,7 +298,7 @@ class bSocial_Comments_Featured
 
 		// save the meta
 		update_post_meta( $post_id, $this->meta_key .'-comment_id', $comment->comment_ID );
-		update_comment_meta( $comment->comment_ID, $this->meta_key .'-post-id', $post_id );
+		update_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id', $post_id );
 
 		// get all the terms on the parent post
 		foreach ( (array) wp_get_object_terms( $parent->ID, get_object_taxonomies( $parent->post_type ) ) as $term )
@@ -320,8 +320,16 @@ class bSocial_Comments_Featured
 	 */
 	public function get_comment_meta( $comment_id )
 	{
-		return get_comment_meta( $comment_id, $this->meta_key . '-post-id', TRUE );
+		return get_comment_meta( $comment_id, $this->meta_key . '-post_id', TRUE );
 	} // END get_comment_meta
+
+	/**
+	 * Returns the matching comment_id of the post if it exists
+	 */
+	public function get_post_meta( $post_id )
+	{
+		return get_post_meta( $post_id, $this->meta_key .'-comment_id', TRUE );
+	} // END function_name
 
 	/**
 	 * Feature/unfeature a comment via an admin-ajax.php endpoint
@@ -405,4 +413,20 @@ class bSocial_Comments_Featured
 
 		return '<a href="' . $url . '" title="' . $text . '" class="' . $classes . '">' . $text . '</a>';
 	} // END get_feature_comment_link
+	
+	/**
+	 * Return all featured comments for a post
+	 */
+	public function get_featured_comments( $post_id, $include_comment = FALSE, $count = 50 )
+	{
+		$post_id = absint( $post_id );
+		
+		$args = array(
+			'post_parent' => $post_id,
+			'post_type'   => $this->post_type_name,
+			'numberposts' => absint( $count ),
+		);
+	
+		return get_posts( $args );
+	} // END get_featured_comments
 } // END bSocial_Comments_Featured class

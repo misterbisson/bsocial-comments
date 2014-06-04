@@ -1,0 +1,1 @@
+<a href="<?php echo get_edit_comment_link( $comment->comment_ID ); ?>" title="<?php echo esc_attr( $comment->comment_content ); ?>"><?php echo esc_html( $comment->comment_content ); ?></a>
