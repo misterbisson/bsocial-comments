@@ -1,4 +1,5 @@
 <?php
+
 class bSocial_Comments_Featured
 {
 	// don't mess with these
@@ -38,7 +39,7 @@ class bSocial_Comments_Featured
 	} // END init
 
 	/**
-	 * Admin singleton
+	 * Admin object accessor
 	 */
 	public function admin()
 	{
@@ -133,7 +134,7 @@ class bSocial_Comments_Featured
 	{
 		if ( is_admin() )
 		{
-			return $content;
+			return preg_replace( $this->tag_regex, '<span class="bsocial-featured-comment">$0</span>', $content );
 		}
 		else
 		{
@@ -413,20 +414,31 @@ class bSocial_Comments_Featured
 
 		return '<a href="' . $url . '" title="' . $text . '" class="' . $classes . '">' . $text . '</a>';
 	} // END get_feature_comment_link
-	
+
 	/**
 	 * Return all featured comments for a post
 	 */
-	public function get_featured_comments( $post_id, $include_comment = FALSE, $count = 50 )
+	public function get_featured_comments( $post_id, $include_comments = FALSE, $count = 50 )
 	{
 		$post_id = absint( $post_id );
-		
+
 		$args = array(
 			'post_parent' => $post_id,
 			'post_type'   => $this->post_type_name,
 			'numberposts' => absint( $count ),
 		);
-	
-		return get_posts( $args );
+
+		$comment_posts = get_posts( $args );
+
+		// @TODO perhaps add some caching here since this is kind of sucky?
+		if ( $include_comments )
+		{
+			foreach ( $comment_posts as $key => $comment_post )
+			{
+				$comment_posts[ $key ]->comment = get_comment( $this->get_post_meta( $comment_post->ID ) );
+			} // END foreach
+		} // END if
+
+		return $comment_posts;
 	} // END get_featured_comments
 } // END bSocial_Comments_Featured class

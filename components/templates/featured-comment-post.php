@@ -1,1 +1,2 @@
-<a href="<?php echo get_edit_post_link( $post->ID ); ?>" title="<?php echo esc_attr( $post->post_title ); ?>"><?php echo esc_html( $post->post_title ); ?></a>
+<?php echo get_the_title( $post->ID ); ?>
+ - <a href="<?php echo get_edit_post_link( $post->ID ); ?>" title="Edit">Edit</a>

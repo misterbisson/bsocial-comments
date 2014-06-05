@@ -1,4 +1,5 @@
 <?php
+
 class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 {
 	public $post_id;
@@ -25,6 +26,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	public function admin_enqueue_scripts()
 	{
 		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-featured.js', __FILE__ ), array( 'jquery' ), NULL, TRUE );
+		wp_enqueue_style( $this->id_base, plugins_url( '/js/bsocial-comments-featured.css', __FILE__ ) );
 
 		$valid_bases = array(
 			'comment',
@@ -58,24 +60,24 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	 */
 	public function add_meta_boxes( $post_type, $post )
 	{
-		if ( 
+		if (
 			   'comment' == $post_type
 			&& $this->post_id = $this->get_comment_meta( $post->comment_ID )
 		)
 		{
 			// Kind of sucky given the limited nature of this metabox but comment metaboxes only work when the context is normal (i.e. 'side' doesn't work)
-			add_meta_box( $id_base, 'Featured Comment Post', array( $this, 'featured_comment_post_metabox' ), 'comment', 'normal', 'high' );
+			add_meta_box( $this->id_base, 'Featured Comment Post', array( $this, 'featured_comment_post_metabox' ), 'comment', 'normal', 'high' );
 		} // END if
-		
-		add_meta_box( $id_base, 'Featured Comment', array( $this, 'featured_comment_metabox' ), $this->post_type_name, 'normal', 'high' );
 
-		if ( 
-			   $post_type != $this->post_type_name 
+		add_meta_box( $this->id_base, 'Featured Comment', array( $this, 'featured_comment_metabox' ), $this->post_type_name, 'normal', 'high' );
+
+		if (
+			   $post_type != $this->post_type_name
 			&& post_type_supports( $post_type, 'comments' )
-			&& $this->featured_comments = $this->get_featured_comments( $post->ID )
+			&& $this->featured_comments = $this->get_featured_comments( $post->ID, TRUE )
 		)
 		{
-			add_meta_box( $id_base, 'Featured Comments', array( $this, 'featured_comments_metabox' ), 'comment', 'normal', 'high' );
+			add_meta_box( $this->id_base, 'Featured Comments', array( $this, 'featured_comments_metabox' ), $post_type, 'normal', 'high' );
 		} // END if
 	} // END add_meta_boxes
 
@@ -88,7 +90,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 
 		require __DIR__ . '/templates/featured-comment-post.php';
 	} // END featured_comment_post_metabox
-	
+
 	/**
 	 * Display the comment related to a Featured Comment post
 	 */
@@ -104,5 +106,6 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	 */
 	public function featured_comments_metabox( $post )
 	{
+		require __DIR__ . '/templates/featured-comments.php';
 	} // END featured_comments_metabox
 } // END bSocial_Comments_Featured class

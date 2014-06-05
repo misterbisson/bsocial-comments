@@ -20,24 +20,23 @@ class bSocial_Comments
 	{
 		if ( $this->options()->featuredcomments->enable )
 		{
-			require_once __DIR__ . '/class-bsocial-comments-featured.php';
-			$this->featuredcomments = new bSocial_Comments_Featured();
+			$this->featured_comments();
 		} // END if
 	} // END init
 
 	/**
-	 * object accessors
+	 * featured comments object accessor
 	 */
-	public function admin()
+	public function featured_comments()
 	{
-		if ( ! isset( $this->admin ) )
+		if ( ! $this->featuredcomments )
 		{
-			require_once __DIR__ . '/class-bsocial-admin.php';
-			$this->admin = new bSocial_Admin;
-		}
+			require_once __DIR__ . '/class-bsocial-comments-featured.php';
+			$this->featuredcomments = new bSocial_Comments_Featured();
+		} // END if
 
-		return $this->admin;
-	} // END admin
+		return $this->featuredcomments;
+	} // END function_name
 
 	/**
 	 * plugin options getter

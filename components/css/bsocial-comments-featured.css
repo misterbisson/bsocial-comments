@@ -1,0 +1,13 @@
+/* @override 
+	http://go.local.gostage.it/wp-content/themes/vip/gigaom4-plugins/bsocial-comments/components//js/bsocial-comments-featured.css?ver=4.0-alpha */
+
+span.bsocial-featured-comment {
+	color: #837777;
+	font-weight: bold;
+}
+
+div#bsuite-fcomment.postbox .featured-comment:not(:last-child) {
+	border-bottom: 1px solid #eeeeee;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+}
