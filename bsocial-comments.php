@@ -4,7 +4,7 @@ Plugin Name: bSocial Blogging Comment Tools
 Plugin URI: https://github.com/misterbisson/bsocial-comments
 Description: Tools to extend WordPress comment functionality.
 Version: 1.0
-Author: Casey Bisson
+Author: Casey Bisson, Jamie Poitra
 Author URI: http://maisonbisson.com/blog/
 */
 
