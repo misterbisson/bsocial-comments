@@ -14,38 +14,78 @@ var bsocial_comments_featured = {};
 		$( document ).on( 'click', 'a.feature-comment', function( event ){
 			event.preventDefault();
 
-			var feature_link = $(this);
-			var comment_id   = feature_link.closest( 'tr' ).find( '.check-column input' ).attr( 'value' );
-			var comment_tr   = $( '#comment-' + comment_id );
+			if ( 0 != $( 'div#bsuite-fcomment.postbox ' ).length ) {
+				bsocial_comments_featured.meta_box_link( $(this) );
+			} else {
+				bsocial_comments_featured.comments_panel_link( $(this) );
+			}
+		});
+	};
 
-			// Fade out the the comment to show something's happening
-			comment_tr.fadeOut( 'slow' );
+	// Handle clicks to a meta box feature/unfeature link
+	bsocial_comments_featured.meta_box_link = function( feature_link ) {
+		var comment_div = feature_link.closest( 'div.featured-comment' );
+		var comment_id  = comment_div.data( 'comment-id' );
 
-			// Call the AJAX endpoint and try to feature/unfeature the comment
-			var request = $.ajax({
-				url:      feature_link.attr( 'href' ),
-				cache:    false,
-				dataType: 'html',
-			});
+		// Show we're doing something
+		feature_link.text( 'Unfeaturing...' );
 
-			// On error we just show the comment again
-			request.error( function() {
+		// Call the AJAX endpoint and try to feature/unfeature the comment
+		var request = $.ajax({
+			url:      feature_link.attr( 'href' ),
+			cache:    false,
+			dataType: 'html',
+		});
+
+		// On error we set things back
+		request.error( function() {
+			feature_link.text( 'Unfeature' );
+		});
+
+		// On success we do some stuff
+		request.success( function( new_link ) {
+			if ( ! new_link ) {
+				feature_link.text( 'Unfeature' );
+				return;
+			}
+
+			// Fade the comment back in and show success
+			comment_div.fadeOut( 'slow' );
+		});
+	};
+
+	// Handle clicks to a comments panel feature/unfeature link
+	bsocial_comments_featured.comments_panel_link = function( feature_link ) {
+		var comment_id   = feature_link.closest( 'tr' ).find( '.check-column input' ).attr( 'value' );
+		var comment_tr   = $( '#comment-' + comment_id );
+
+		// Fade out the the comment to show something's happening
+		comment_tr.fadeOut( 'slow' );
+
+		// Call the AJAX endpoint and try to feature/unfeature the comment
+		var request = $.ajax({
+			url:      feature_link.attr( 'href' ),
+			cache:    false,
+			dataType: 'html',
+		});
+
+		// On error we just show the comment again
+		request.error( function() {
+			bsocial_comments_featured.error( comment_tr );
+		});
+
+		// On success we do some stuff
+		request.success( function( new_link ) {
+			if ( ! new_link ) {
 				bsocial_comments_featured.error( comment_tr );
-			});
+				return;
+			}
 
-			// On success we do some stuff
-			request.success( function( new_link ) {
-				if ( ! new_link ) {
-					bsocial_comments_featured.error( comment_tr );
-					return;
-				}
+			// Update link
+			feature_link.replaceWith( new_link );
 
-				// Update link
-				feature_link.replaceWith( new_link );
-
-				// Fade the comment back in and show success
-				bsocial_comments_featured.success( comment_tr );
-			});
+			// Fade the comment back in and show success
+			bsocial_comments_featured.success( comment_tr );
 		});
 	};
 

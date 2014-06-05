@@ -10,14 +10,6 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 10, 2 );
 
 		add_filter( 'comment_row_actions', array( $this, 'comment_row_actions' ), 10, 2 );
-
-		/*
-		@TODO:
-		+ add metaboxes to the custom post type that show the comment text and connect to both the post and comment
-		+ delete the comment meta when the post is deleted
-		+ add a metabox to the comment that connects to the featured comment post
-		+ add a metabox to the regular post that shows featured comments on the post
-		*/
 	} // END __construct
 
 	/**
@@ -33,7 +25,10 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 			'edit-comments',
 		);
 
-		if ( ! in_array( get_current_screen()->base, $valid_bases ) )
+		if (
+			   ! in_array( get_current_screen()->base, $valid_bases )
+			&& ( ! isset( get_current_screen()->post_type ) && ! post_type_supports( get_current_screen()->post_type, 'comments' ) )
+		)
 		{
 			return;
 		} // END if

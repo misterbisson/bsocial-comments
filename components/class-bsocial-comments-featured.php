@@ -239,6 +239,14 @@ class bSocial_Comments_Featured
 			{
 				wp_delete_post( $post_id );
 				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id' );
+
+				// The comment might have a shortcode in it so we'll remove that since it could refeature the comment accidentally
+				$comment = array(
+					'comment_ID'      => $comment->comment_ID,
+					'comment_content' => preg_replace( $this->tag_regex, '', $comment->comment_content ),
+				);
+				wp_update_comment( $comment );
+
 				return TRUE;
 			}
 		}
