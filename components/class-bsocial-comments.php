@@ -9,10 +9,9 @@ class bSocial_Comments
 
 	public function __construct()
 	{
-		// activate components
 		add_action( 'init', array( $this, 'init' ), 1 );
+		add_action( 'wp_ajax_bsocial_approve_comment', array( $this, 'ajax_approve_comment' ) );
 
-		// hooks for methods in this class
 		add_action( 'delete_comment', array( $this, 'comment_id_by_meta_delete_cache' ) );
 	} // END __construct
 
@@ -120,6 +119,109 @@ class bSocial_Comments
 			}
 		}
 	} // END comment_id_by_meta_delete_cache
+
+	/**
+	 * Return a nonced URL to approve/unapprove a comment
+	 */
+	public function get_approve_url( $comment_id )
+	{
+		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return;
+		} // END if
+
+		$arguments = array(
+			'action'        => 'bsocial_approve_comment',
+			'comment_id'    => absint( $comment->comment_ID ),
+			'bsocial-nonce' => wp_create_nonce( 'bsocial-approve-comment' ),
+		);
+
+		// If the comment is already featured then this URL should unfeature the comment
+		if ( 1 == $comment->comment_approved )
+		{
+			$arguments['direction'] = 'unapprove';
+		} // END if
+		else
+		{
+			$arguments['direction'] = 'approve';
+		} // END else
+
+		// Checking is_admin lets us avoid cross domain JS issues because on VIP the admin panel and the site itself have different domains
+		return add_query_arg( $arguments, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
+	} // END get_approve_url
+
+	/**
+	 * Returns a approve/unapprove link for a comment
+	 */
+	public function get_approve_link( $comment_id )
+	{
+		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return;
+		} // END if
+
+		// If the comment is already featured then this URL should unfeature the comment
+		if ( 1 == $comment->comment_approved )
+		{
+			$text  = 'Unapprove';
+			$class = 'approved-comment';
+		} // END if
+		else
+		{
+			$text  = 'Approve';
+			$class = 'unapproved-comment';
+		} // END else
+
+		$classes = 'approve-comment ' . $class;
+
+		$url = $this->get_approve_url( $comment->comment_ID );
+
+		return '<a href="' . $url . '" title="' . $text . '" class="' . $classes . '">' . $text . '</a>';
+	} // END get_approve_link
+
+	/**
+	 * approve/unapprove a comment via an admin-ajax.php endpoint
+	 */
+	public function ajax_approve_comment()
+	{
+		$comment_id = absint( $_GET['comment_id'] );
+
+		if ( ! current_user_can( 'moderate_comments' ) )
+		{
+			return FALSE;
+		}
+
+		if ( ! check_ajax_referer( 'bsocial-approve-comment', 'bsocial-nonce' ) )
+		{
+			return FALSE;
+		} // END if
+
+		if ( $comment = get_comment( $comment_id ) )
+		{
+			if ( 'approve' == $_GET['direction'] )
+			{
+				$comment = array(
+					'comment_ID'       => $comment->comment_ID,
+					'comment_approved' => 0,
+				);
+
+				wp_update_comment( $comment );
+			}
+			else
+			{
+				$comment = array(
+					'comment_ID'       => $comment->comment_ID,
+					'comment_approved' => 1,
+				);
+
+				wp_update_comment( $comment );
+			}
+
+			echo $this->get_approve_link( $comment->comment_ID );
+		} // END if
+
+		die;
+	} // END ajax_approve_comment
 } // END bSocial_Comments
 
 function bsocial_comments()

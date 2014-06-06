@@ -368,7 +368,7 @@ class bSocial_Comments_Featured
 				$sucess = $this->unfeature_comment( $comment_id );
 			}
 
-			echo $this->get_feature_comment_link( $comment_id );
+			echo $this->get_feature_link( $comment_id );
 		} // END if
 
 		die;
@@ -377,7 +377,7 @@ class bSocial_Comments_Featured
 	/**
 	 * Return a nonced URL to feature/unfeature a comment
 	 */
-	public function get_feature_comment_url( $comment_id )
+	public function get_feature_url( $comment_id )
 	{
 		$arguments = array(
 			'action'        => 'bsocial_feature_comment',
@@ -395,13 +395,14 @@ class bSocial_Comments_Featured
 			$arguments['direction'] = 'feature';
 		} // END else
 
-		return add_query_arg( $arguments, admin_url( 'admin-ajax.php' ) );
-	} // END get_feature_comment_url
+		// Checking is_admin lets us avoid cross domain JS issues because on VIP the admin panel and the site itself have different domains
+		return add_query_arg( $arguments, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
+	} // END get_feature_url
 
 	/**
 	 * Returns a feature/unfeature link for a comment
 	 */
-	public function get_feature_comment_link( $comment_id, $additional_classes = '' )
+	public function get_feature_link( $comment_id, $additional_classes = '' )
 	{
 		// If the comment is already featured then this URL should unfeature the comment
 		if ( $this->get_comment_meta( $comment_id ) )
@@ -418,10 +419,10 @@ class bSocial_Comments_Featured
 		$classes = 'feature-comment ' . $class;
 		$classes .= '' != $additional_classes ? ' ' . esc_attr( $additional_classes ) : '';
 
-		$url = $this->get_feature_comment_url( $comment_id );
+		$url = $this->get_feature_url( $comment_id );
 
 		return '<a href="' . $url . '" title="' . $text . '" class="' . $classes . '">' . $text . '</a>';
-	} // END get_feature_comment_link
+	} // END get_feature_link
 
 	/**
 	 * Return all featured comments for a post

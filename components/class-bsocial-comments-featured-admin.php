@@ -45,7 +45,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		}
 
 		// Get feature/unfeature link for the comment
-		$actions['feature-comment hide-if-no-js'] = $this->get_feature_comment_link( $comment->comment_ID );
+		$actions['feature-comment hide-if-no-js'] = $this->get_feature_link( $comment->comment_ID );
 
 		return $actions;
 	} // END comment_row_actions
