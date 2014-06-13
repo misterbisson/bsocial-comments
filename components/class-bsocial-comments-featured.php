@@ -265,11 +265,14 @@ class bSocial_Comments_Featured
 		{
 			if ( $post_id = $this->get_comment_meta( $comment->comment_ID ) )
 			{
-				return wp_update_post( (object) array( 'ID' => $post_id, 'post_content' => $featured ) ); // we have a post for this comment
+				// Post already exists so we just make sure that we account for any shortcode use
+				$featured = $this->_get_featured_comment_text( $comment->comment_content );
+				return wp_update_post( (object) array( 'ID' => $post_id, 'post_title' => $featured, 'post_content' => $featured ) );
 			}
 			else
 			{
-				return $this->create_post( $comment_id ); // create a new post for this comment
+				// Post doesn't exist yet so we create one
+				return $this->create_post( $comment_id );
 			}
 		} // END if
 	} // END feature_comment
