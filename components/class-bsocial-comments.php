@@ -64,6 +64,7 @@ class bSocial_Comments
 				'enable'           => 1,
 				'use_commentdate'  => 1,
 				'add_to_waterfall' => 1,
+				'word_limit'       => 50,
 			),
 		);
 	} // END default_options

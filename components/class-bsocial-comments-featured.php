@@ -204,7 +204,9 @@ class bSocial_Comments_Featured
 	{
 		preg_match( $this->wrapper_regex, $input, $text );
 
-		return empty( $text[1] ) ? $input : $text[1];
+		$text = empty( $text[1] ) ? $input : $text[1];
+
+		return wp_trim_words( $text, bsocial_comments()->options()->featuredcomments->word_limit, '&hellip;' );
 	} // END _get_featured_comment_text
 
 	/**
