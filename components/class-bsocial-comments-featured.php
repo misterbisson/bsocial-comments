@@ -338,6 +338,19 @@ class bSocial_Comments_Featured
 	} // END get_comment_meta
 
 	/**
+	 * Return featured comment post or FALSE
+	 */
+	public function is_featured( $comment_id )
+	{
+		if ( ! $post_id = $this->get_comment_meta( $comment_id ) )
+		{
+			return FALSE;
+		} // END if
+		
+		return get_post( $post_id );
+	} // END is_featured
+
+	/**
 	 * Returns the matching comment_id of the post if it exists
 	 */
 	public function get_post_meta( $post_id )
