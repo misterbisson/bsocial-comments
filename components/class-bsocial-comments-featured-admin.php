@@ -18,7 +18,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	public function admin_enqueue_scripts()
 	{
 		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-featured.js', __FILE__ ), array( 'jquery' ), NULL, TRUE );
-		wp_enqueue_style( $this->id_base, plugins_url( '/js/bsocial-comments-featured.css', __FILE__ ) );
+		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-featured.css', __FILE__ ) );
 
 		$valid_bases = array(
 			'comment',
@@ -33,7 +33,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 			return;
 		} // END if
 
-		wp_enqueue_script( $this->id_base );
+		wp_enqueue_script( $this->id_base . '-js' );
 	} // END admin_enqueue_scripts
 
 	public function comment_row_actions( $actions, $comment )
@@ -69,7 +69,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		if (
 			   $post_type != $this->post_type_name
 			&& post_type_supports( $post_type, 'comments' )
-			&& $this->featured_comments = $this->get_featured_comments( $post->ID, TRUE )
+			&& $this->featured_comments = $this->get_featured_comment_posts( $post->ID )
 		)
 		{
 			add_meta_box( $this->id_base, 'Featured Comments', array( $this, 'featured_comments_metabox' ), $post_type, 'normal', 'high' );

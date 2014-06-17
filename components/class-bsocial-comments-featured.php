@@ -134,7 +134,7 @@ class bSocial_Comments_Featured
 	{
 		if ( is_admin() )
 		{
-			return preg_replace( $this->tag_regex, '<span class="bsocial-featured-comment">$0</span>', $content );
+			return preg_replace( $this->wrapper_regex, '<span class="bsocial-featured-comment">$0</span>', $content );
 		}
 		else
 		{
@@ -194,7 +194,7 @@ class bSocial_Comments_Featured
 		$text = $this->_get_featured_comment_text( get_comment_text( $comment_id ) );
 		add_filter( 'get_comment_text', array( $this, 'filter_get_comment_text' ) );
 
-		return $text[1];
+		return $text;
 	} // END get_featured_comment_text
 
 	/**
@@ -346,7 +346,7 @@ class bSocial_Comments_Featured
 		{
 			return FALSE;
 		} // END if
-		
+
 		return get_post( $post_id );
 	} // END is_featured
 
@@ -443,29 +443,50 @@ class bSocial_Comments_Featured
 	} // END get_feature_link
 
 	/**
-	 * Return all featured comments for a post
+	 * Return all featured comment post and comment objects for a post
+	 *
+	 * @param $post_id int The post_id of the post you want featured comments for
+	 * @param $args array get_post args you want to use
 	 */
-	public function get_featured_comments( $post_id, $include_comments = FALSE, $count = 50 )
+	public function get_featured_comment_posts( $post_id, $args )
 	{
-		$post_id = absint( $post_id );
-
-		$args = array(
-			'post_parent' => $post_id,
-			'post_type'   => $this->post_type_name,
-			'numberposts' => absint( $count ),
+		// Parse args once with defaults
+		$args = wp_parse_args(
+			$args,
+			array( 
+				'numberposts' => 50,
+				// Just like comments we should default to 
+				'orderby'     => ASC,
+			)
 		);
 
-		$comment_posts = get_posts( $args );
+		// Parse args again with the previously parsed args as the defaults
+		// This way we will always have the post_parent and post_type values that we need
+		$args = wp_parse_args(
+			array(
+				'post_parent' => absint( $post_id ),
+				'post_type'   => $this->post_type_name,
+			),
+			$args
+		);
 
-		// @TODO perhaps add some caching here since this is kind of sucky?
-		if ( $include_comments )
+		$args_hash = md5( serialize( $args ) );
+
+		// Check the cache to see if we've already done this recently
+		if ( ! $comment_posts = wp_cache_get( $args_hash, $this->id_base )  )
 		{
+			$comment_posts = get_posts( $args );
+
+			// Get the comment objects for each comment post
 			foreach ( $comment_posts as $key => $comment_post )
 			{
 				$comment_posts[ $key ]->comment = get_comment( $this->get_post_meta( $comment_post->ID ) );
 			} // END foreach
+			
+			// Store everything for 24 hours
+			wp_cache_set( $args_hash, $comment_posts, $this->id_base, 86400 );
 		} // END if
 
 		return $comment_posts;
-	} // END get_featured_comments
+	} // END get_featured_comment_posts
 } // END bSocial_Comments_Featured class
