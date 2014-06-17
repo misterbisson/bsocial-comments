@@ -453,9 +453,9 @@ class bSocial_Comments_Featured
 		// Parse args once with defaults
 		$args = wp_parse_args(
 			$args,
-			array( 
+			array(
 				'numberposts' => 50,
-				// Just like comments we should default to 
+				// Just like comments we should default to
 				'orderby'     => ASC,
 			)
 		);
@@ -482,7 +482,7 @@ class bSocial_Comments_Featured
 			{
 				$comment_posts[ $key ]->comment = get_comment( $this->get_post_meta( $comment_post->ID ) );
 			} // END foreach
-			
+
 			// Store everything for 24 hours
 			wp_cache_set( $args_hash, $comment_posts, $this->id_base, 86400 );
 		} // END if
