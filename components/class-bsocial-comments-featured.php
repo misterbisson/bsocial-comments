@@ -104,7 +104,11 @@ class bSocial_Comments_Featured
 	 */
 	public function pre_get_posts( $query )
 	{
-		if ( bsocial_comments()->options()->featuredcomments->add_to_waterfall && ! is_admin() && $query->is_main_query() )
+		if (
+			   bsocial_comments()->options()->featuredcomments->add_to_waterfall
+			&& ! is_admin()
+			&& $query->is_main_query()
+		)
 		{
 			$post_types = array_merge(
 				(array) $query->query_vars['post_type'],
