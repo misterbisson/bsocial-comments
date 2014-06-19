@@ -36,6 +36,9 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		wp_enqueue_script( $this->id_base );
 	} // END admin_enqueue_scripts
 
+	/**
+	 * Filters comment_row_actions hook and returns a feature/unfeature link for each comment
+	 */
 	public function comment_row_actions( $actions, $comment )
 	{
 		// check permissions against the parent post
