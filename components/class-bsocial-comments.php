@@ -90,7 +90,7 @@ class bSocial_Comments
 	} // END comment_id_by_meta
 
 	/**
-	 * Updates the cached used by comment_id_by_meta
+	 * Updates the cache used by comment_id_by_meta
 	 */
 	public function comment_id_by_meta_update_cache( $comment_id, $metavalue, $metakey )
 	{
@@ -99,7 +99,7 @@ class bSocial_Comments
 			return;
 		}
 
-		if ( ( ! $metavalue ) || ( ! $metakey ) )
+		if ( ! $metavalue || ! $metakey )
 		{
 			return;
 		}
@@ -114,7 +114,7 @@ class bSocial_Comments
 	{
 		foreach ( (array) get_metadata( 'comment', $comment_id ) as $metakey => $metavalues )
 		{
-			foreach( $metavalues as $metavalue )
+			foreach ( $metavalues as $metavalue )
 			{
 				wp_cache_delete( (string) $metakey .':'. (string) $metavalue, 'comment_id_by_meta' );
 			}
@@ -161,7 +161,7 @@ class bSocial_Comments
 			return;
 		} // END if
 
-		// If the comment is already featured then this URL should unfeature the comment
+		// If the comment is already approved then this URL should unapprove the comment
 		if ( 1 == $comment->comment_approved )
 		{
 			$text  = 'Unapprove';

@@ -1,6 +1,8 @@
 var bsocial_comments_featured = {};
 
 (function($) {
+	'use strict';
+
 	// Start things up...
 	bsocial_comments_featured.init = function() {
 		// Add a featured comment button to quicktags
@@ -24,8 +26,8 @@ var bsocial_comments_featured = {};
 
 	// Handle clicks to a meta box feature/unfeature link
 	bsocial_comments_featured.meta_box_link = function( feature_link ) {
-		var comment_div = feature_link.closest( 'div.featured-comment' );
-		var comment_id  = comment_div.data( 'comment-id' );
+		var $comment_div = feature_link.closest( 'div.featured-comment' );
+		var $comment_id  = $comment_div.data( 'comment-id' );
 
 		// Show we're doing something
 		feature_link.text( 'Unfeaturing...' );
@@ -34,7 +36,7 @@ var bsocial_comments_featured = {};
 		var request = $.ajax({
 			url:      feature_link.attr( 'href' ),
 			cache:    false,
-			dataType: 'html',
+			dataType: 'html'
 		});
 
 		// On error we set things back
@@ -50,34 +52,34 @@ var bsocial_comments_featured = {};
 			}
 
 			// Fade the comment back in and show success
-			comment_div.fadeOut( 'slow' );
+			$comment_div.fadeOut( 'slow' );
 		});
 	};
 
 	// Handle clicks to a comments panel feature/unfeature link
 	bsocial_comments_featured.comments_panel_link = function( feature_link ) {
-		var comment_id   = feature_link.closest( 'tr' ).find( '.check-column input' ).attr( 'value' );
-		var comment_tr   = $( '#comment-' + comment_id );
+		var $comment_id   = feature_link.closest( 'tr' ).find( '.check-column input' ).attr( 'value' );
+		var $comment_tr   = $( '#comment-' + $comment_id );
 
 		// Fade out the the comment to show something's happening
-		comment_tr.fadeOut( 'slow' );
+		$comment_tr.fadeOut( 'slow' );
 
 		// Call the AJAX endpoint and try to feature/unfeature the comment
 		var request = $.ajax({
 			url:      feature_link.attr( 'href' ),
 			cache:    false,
-			dataType: 'json',
+			dataType: 'json'
 		});
 
 		// On error we just show the comment again
 		request.error( function() {
-			bsocial_comments_featured.error( comment_tr );
+			bsocial_comments_featured.error( $comment_tr );
 		});
 
 		// On success we do some stuff
 		request.success( function( data ) {
 			if ( ! 'link' in data ) {
-				bsocial_comments_featured.error( comment_tr );
+				bsocial_comments_featured.error( $comment_tr );
 				return;
 			}
 
@@ -87,14 +89,14 @@ var bsocial_comments_featured = {};
 			// Check for comment text
 			if ( 'text' in data ) {
 				// Remove the existing content
-				$( comment_tr ).find( '.column-comment p' ).remove();
+				$( $comment_tr ).find( '.column-comment p' ).remove();
 				// Put the new comment text in
-				$( comment_tr ).find( '.column-comment textarea' ).val( data.text );
-				$( comment_tr ).find( '.column-comment .submitted-on' ).after( data.text_with_pees );
+				$( $comment_tr ).find( '.column-comment textarea' ).val( data.text );
+				$( $comment_tr ).find( '.column-comment .submitted-on' ).after( data.text_with_pees );
 			}
 
 			// Fade the comment back in and show success
-			bsocial_comments_featured.success( comment_tr );
+			bsocial_comments_featured.success( $comment_tr );
 		});
 	};
 
