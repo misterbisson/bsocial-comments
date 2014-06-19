@@ -13,6 +13,7 @@ class bSocial_Comments_Featured
 	public function __construct()
 	{
 		add_action( 'init', array( $this, 'init' ), 11 );
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'edit_comment', array( $this, 'edit_comment' ), 5 );
 		add_action( 'delete_comment', array( $this, 'unfeature_comment' ) );
 		add_action( 'wp_ajax_bsocial_feature_comment', array( $this, 'ajax_feature_comment' ) );
@@ -31,12 +32,15 @@ class bSocial_Comments_Featured
 	public function init()
 	{
 		$this->register_post_type();
-
-		if ( is_admin() )
-		{
-			$this->admin();
-		} // END if
 	} // END init
+
+	/**
+	 * Activate admin functionality
+	 */
+	public function admin_init()
+	{
+		$this->admin();
+	} // END admin_init
 
 	/**
 	 * Admin object accessor
