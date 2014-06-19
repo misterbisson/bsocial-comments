@@ -66,7 +66,7 @@ var bsocial_comments_featured = {};
 		var request = $.ajax({
 			url:      feature_link.attr( 'href' ),
 			cache:    false,
-			dataType: 'html',
+			dataType: 'json',
 		});
 
 		// On error we just show the comment again
@@ -75,14 +75,23 @@ var bsocial_comments_featured = {};
 		});
 
 		// On success we do some stuff
-		request.success( function( new_link ) {
-			if ( ! new_link ) {
+		request.success( function( data ) {
+			if ( ! 'link' in data ) {
 				bsocial_comments_featured.error( comment_tr );
 				return;
 			}
 
 			// Update link
-			feature_link.replaceWith( new_link );
+			feature_link.replaceWith( data.link );
+
+			// Check for comment text
+			if ( 'text' in data ) {
+				// Remove the existing content
+				$( comment_tr ).find( '.column-comment p' ).remove();
+				// Put the new comment text in
+				$( comment_tr ).find( '.column-comment textarea' ).val( data.text );
+				$( comment_tr ).find( '.column-comment .submitted-on' ).after( data.text_with_pees );
+			}
 
 			// Fade the comment back in and show success
 			bsocial_comments_featured.success( comment_tr );

@@ -33,7 +33,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 			return;
 		} // END if
 
-		wp_enqueue_script( $this->id_base . '-js' );
+		wp_enqueue_script( $this->id_base );
 	} // END admin_enqueue_scripts
 
 	public function comment_row_actions( $actions, $comment )

@@ -7,7 +7,7 @@ class bSocial_Comments_Featured
 	public $post_type_name = 'bsuite-fcomment';
 	public $meta_key = 'bsuite-fcomment';
 	public $tag_regex = '/\[\/?featured_?comment\]/i'; // just match the single tag to make it easy to remove
-	public $wrapper_regex = '/\[featured_?comment\](.*?)\[\/?featured_?comment\]/i'; // match the content inside the tags
+	public $wrapper_regex = '/\[featured_?comment\](.*?)\[\/?featured_?comment\]/is'; // match the content inside the tags
 	public $featured_comments = array();
 
 	public function __construct()
@@ -134,7 +134,18 @@ class bSocial_Comments_Featured
 	{
 		if ( is_admin() )
 		{
-			return preg_replace( $this->wrapper_regex, '<span class="bsocial-featured-comment">$0</span>', $content );
+			// Check if there's any shortcodes if so we'll wrap each enclosed paragraph so the featured portions are more visible
+			if ( preg_match( $this->wrapper_regex, $content, $matches) )
+			{
+				$chunks = explode( "\n\n", $matches[0] );
+
+				foreach ( $chunks as $chunk )
+				{
+					$content = str_replace( $chunk, '<span class="bsocial-featured-comment">' . $chunk . '</span>', $content );
+				} // END foreach
+			} // END if
+
+			return $content;
 		}
 		else
 		{
@@ -239,15 +250,16 @@ class bSocial_Comments_Featured
 		{
 			if ( $post_id = $this->get_comment_meta( $comment->comment_ID ) )
 			{
-				wp_delete_post( $post_id );
-				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id' );
-
 				// The comment might have a shortcode in it so we'll remove that since it could refeature the comment accidentally
-				$comment = array(
+				$cleaned_comment = array(
 					'comment_ID'      => $comment->comment_ID,
 					'comment_content' => preg_replace( $this->tag_regex, '', $comment->comment_content ),
 				);
-				wp_update_comment( $comment );
+
+				wp_update_comment( $cleaned_comment );
+
+				wp_delete_post( $post_id );
+				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id' );
 
 				return TRUE;
 			}
@@ -386,7 +398,17 @@ class bSocial_Comments_Featured
 				$sucess = $this->unfeature_comment( $comment_id );
 			}
 
-			echo $this->get_feature_link( $comment_id );
+			$data = array( 'link' => $this->get_feature_link( $comment_id ) );
+
+			// We only need to return text if the comment was unfeatured
+			if ( 'unfeature' == $_GET['direction'] )
+			{
+				$data['text'] = get_comment_text( $comment_id );
+				// We apply the 'comment_text' filters here so the text comes back in the appropriate state for use in the comments panel
+				$data['text_with_pees'] = apply_filters( 'comment_text', get_comment_text( $comment_id ), get_comment( $comment_id ), array() );
+			} // END if
+
+			echo json_encode( $data );
 		} // END if
 
 		die;
