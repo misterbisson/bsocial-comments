@@ -17,8 +17,10 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	 */
 	public function admin_enqueue_scripts()
 	{
-		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-featured.js', __FILE__ ), array( 'jquery' ), NULL, TRUE );
-		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-featured.css', __FILE__ ) );
+		$version_config = apply_filters( 'go_config', array( 'version' => bsocial_comments()->version ), 'go-script-version' );
+
+		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-featured.js', __FILE__ ), array( 'jquery' ), $version_config['version'], TRUE );
+		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-featured.css', __FILE__ ), array(), $version_config['version'] );
 
 		$valid_bases = array(
 			'comment',

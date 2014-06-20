@@ -4,13 +4,14 @@ class bSocial_Comments
 {
 	public $id_base = 'bsocial-comments';
 	public $featuredcomments = NULL;
+	public $version = '1.0';
 
 	private $options = NULL;
 
 	public function __construct()
 	{
 		add_action( 'init', array( $this, 'init' ), 1 );
-		add_action( 'wp_ajax_bsocial_approve_comment', array( $this, 'ajax_approve_comment' ) );
+		add_action( 'wp_ajax_bsocial_comment_status', array( $this, 'ajax_comment_status' ) );
 
 		add_action( 'delete_comment', array( $this, 'comment_id_by_meta_delete_cache' ) );
 	} // END __construct
@@ -122,107 +123,192 @@ class bSocial_Comments
 	} // END comment_id_by_meta_delete_cache
 
 	/**
-	 * Return a nonced URL to approve/unapprove a comment
+	 * Return a nonced URL to approve/unapprove/spam/unspam/trash/untrash a comment
+	 *
+	 * @param $comment_id int The comment_id of the comment you want the URL to affect
+	 * @param $type string The type of action you want the URL to apply to the comment: approve/spam/trash
 	 */
-	public function get_approve_url( $comment_id )
+	public function get_status_url( $comment_id, $type )
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
 		{
-			return;
+			return FALSE;
+		} // END if
+
+		if ( ! in_array( $type, array( 'approve', 'spam', 'trash' ) ) )
+		{
+			return FALSE;
 		} // END if
 
 		$arguments = array(
-			'action'        => 'bsocial_approve_comment',
+			'action'        => 'bsocial_comment_status',
 			'comment_id'    => absint( $comment->comment_ID ),
-			'bsocial-nonce' => wp_create_nonce( 'bsocial-approve-comment' ),
+			'bsocial-nonce' => wp_create_nonce( 'bsocial-comment-status' ),
 		);
 
-		// If the comment is already featured then this URL should unfeature the comment
-		if ( 1 == $comment->comment_approved )
-		{
-			$arguments['direction'] = 'unapprove';
-		} // END if
-		else
-		{
-			$arguments['direction'] = 'approve';
-		} // END else
+		switch ( wp_get_comment_status( $comment->comment_ID ) ) {
+			case 'approved':
+				$arguments['direction'] = 'unapprove';
+				break;
+			case 'unapproved':
+				$arguments['direction'] = 'approve';
+				break;
+			case 'spam':
+				$arguments['direction'] = 'unspam';
+				break;
+			case 'trash':
+				$arguments['direction'] = 'untrash';
+				break;
+			default:
+				// There's no 'unspammed' or 'untrashed' so we'll deal with those only when asked
+				if ( 'spam' == $type )
+				{
+					$arguments['direction'] = 'spam';
+				} // END if
+				elseif ( 'trash' == $type )
+				{
+					$arguments['direction'] = 'trash';
+				} // END else
+				break;
+		} // END switch
 
 		// Checking is_admin lets us avoid cross domain JS issues because on VIP the admin panel and the site itself have different domains
 		return add_query_arg( $arguments, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
-	} // END get_approve_url
+	} // END get_status_url
 
 	/**
-	 * Returns a approve/unapprove link for a comment
+	 * Returns a approve/unapprove/spam/unspam/trash/untrash link for a comment
+	 *
+	 * @param $comment_id int The comment_id of the comment you want the URL to affect
+	 * @param $type string The type of action you want the link to apply to the comment: approve/spam/trash
 	 */
-	public function get_approve_link( $comment_id )
+	public function get_status_link( $comment_id, $type )
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
 		{
-			return;
+			return FALSE;
 		} // END if
 
-		// If the comment is already approved then this URL should unapprove the comment
-		if ( 1 == $comment->comment_approved )
+		if ( ! in_array( $type, array( 'approve', 'spam', 'trash' ) ) )
 		{
-			$text  = 'Unapprove';
-			$class = 'approved-comment';
+			return FALSE;
 		} // END if
-		else
-		{
-			$text  = 'Approve';
-			$class = 'unapproved-comment';
-		} // END else
 
-		$classes = 'approve-comment ' . $class;
+		switch ( wp_get_comment_status( $comment->comment_ID ) ) {
+			case 'approved':
+				$text  = 'Unapprove';
+				$class = 'approved-comment';
+				break;
+			case 'unapproved':
+				$text  = 'Approve';
+				$class = 'unapproved-comment';
+				break;
+			case 'spam':
+				$text  = 'Unspam';
+				$class = 'spammed-comment';
+				break;
+			case 'trash':
+				$text  = 'Untrash';
+				$class = 'trashed-comment';
+				break;
+			default:
+				// There's no 'unspammed' or 'untrashed' so we'll deal with those only when asked
+				if ( 'spam' == $type )
+				{
+					$text  = 'Spam';
+					$class = 'unspamed-comment';
+				} // END if
+				elseif ( 'trash' == $type )
+				{
+					$text  = 'Trash';
+					$class = 'untrashed-comment';
+				} // END else
+				break;
+		} // END switch
 
-		$url = $this->get_approve_url( $comment->comment_ID );
+		$url = $this->get_status_url( $comment->comment_ID, $type );
 
 		return '<a href="' . $url . '" title="' . $text . '" class="' . $classes . '">' . $text . '</a>';
-	} // END get_approve_link
+	} // END get_status_link
 
 	/**
-	 * approve/unapprove a comment via an admin-ajax.php endpoint
+	 * approve/unapprove/spam/unspam a comment via an admin-ajax.php endpoint
 	 */
-	public function ajax_approve_comment()
+	public function ajax_comment_status()
 	{
 		$comment_id = absint( $_GET['comment_id'] );
+		$direction  = $_GET['direction'];
 
 		if ( ! current_user_can( 'moderate_comments' ) )
 		{
 			return FALSE;
-		}
+		} // END if
 
-		if ( ! check_ajax_referer( 'bsocial-approve-comment', 'bsocial-nonce' ) )
+		if ( ! check_ajax_referer( 'bsocial-comment-status', 'bsocial-nonce' ) )
+		{
+			return FALSE;
+		} // END if
+
+		$allowed_directions = array(
+			'approve',
+			'unapprove',
+			'spam',
+			'unspam',
+			'trash',
+            'untrash',
+		);
+
+		if ( ! in_array( $direct, $allowed_directions ) )
 		{
 			return FALSE;
 		} // END if
 
 		if ( $comment = get_comment( $comment_id ) )
 		{
-			if ( 'approve' == $_GET['direction'] )
-			{
-				$comment = array(
-					'comment_ID'       => $comment->comment_ID,
-					'comment_approved' => 0,
-				);
+			$data = array();
 
-				wp_update_comment( $comment );
-			}
-			else
-			{
-				$comment = array(
-					'comment_ID'       => $comment->comment_ID,
-					'comment_approved' => 1,
-				);
+			switch ( $direction ) {
+				case 'approve' :
+					$data = array(
+						'success' => wp_set_comment_status( $comment->comment_ID, 'approve' ),
+						'link'    => $this->get_status_link( $comment->comment_ID, 'approve' ),
+					);
+					break;
+				case 'unapprove' :
+					$data = array(
+						'success' => wp_set_comment_status( $comment->comment_ID, 'hold' ),
+						'link'    => $this->get_status_link( $comment->comment_ID, 'approve' ),
+					);
+					break;
+				case 'spam' :
+					$data = array(
+						'success' => wp_spam_comment( $comment->comment_ID ),
+						'link'    => $this->get_status_link( $comment->comment_ID, 'spam' ),
+					);
+					break;
+				case 'unspam' :
+					$data = array(
+						'success' => wp_unspam_comment( $comment->comment_ID ),
+						'link'    => $this->get_status_link( $comment->comment_ID, 'spam' ),
+					);
+				case 'trash' :
+					$data = array(
+						'success' => wp_trash_comment( $comment->comment_ID ),
+						'link'    => $this->get_status_link( $comment->comment_ID, 'trash' ),
+					);
+				case 'untrash' :
+					$data = array(
+						'success' => wp_untrash_comment( $comment->comment_ID ),
+						'link'    => $this->get_status_link( $comment->comment_ID, 'trash' ),
+					);
+					break;
+			} // END switch
 
-				wp_update_comment( $comment );
-			}
-
-			echo $this->get_approve_link( $comment->comment_ID );
+			echo json_encode( $data );
 		} // END if
 
 		die;
-	} // END ajax_approve_comment
+	} // END ajax_comment_status
 } // END bSocial_Comments
 
 function bsocial_comments()
