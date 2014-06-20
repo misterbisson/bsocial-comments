@@ -416,7 +416,7 @@ class bSocial_Comments_Featured
 				$data['text_with_pees'] = apply_filters( 'comment_text', get_comment_text( $comment_id ), get_comment( $comment_id ), array() );
 			} // END if
 
-			echo json_encode( $data );
+			wp_send_json( $data );
 		} // END if
 
 		die;

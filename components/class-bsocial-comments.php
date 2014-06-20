@@ -255,7 +255,7 @@ class bSocial_Comments
 			'spam',
 			'unspam',
 			'trash',
-            'untrash',
+			'untrash',
 		);
 
 		if ( ! in_array( $direct, $allowed_directions ) )
@@ -304,7 +304,7 @@ class bSocial_Comments
 					break;
 			} // END switch
 
-			echo json_encode( $data );
+			wp_send_json( $data );
 		} // END if
 
 		die;
