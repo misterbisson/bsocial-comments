@@ -62,9 +62,11 @@ class bSocial_Comments
 	{
 		return array(
 			'featuredcomments' => (object) array(
-				'enable'           => 1,
-				'use_commentdate'  => 1,
-				'add_to_waterfall' => 1,
+				'enable'           => TRUE,
+				'use_commentdate'  => TRUE,
+				'add_to_waterfall' => TRUE,
+				'has_archive'      => FALSE,
+				'rewrite_slug'     => 'talkbox',
 				'word_limit'       => 50,
 			),
 		);

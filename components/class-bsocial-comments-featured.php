@@ -76,27 +76,27 @@ class bSocial_Comments_Featured
 			} // END if
 		} // END foreach
 
-		register_post_type( $this->post_type_name,
-			array(
-				'labels' => array(
-					'name' => 'Featured Comments',
-					'singular_name' => 'Featured Comment',
-				),
-				'supports' => array(
-					'title',
-					'author',
-				),
-				'register_meta_box_cb' => array( $this, 'register_metaboxes' ),
-				'public' => TRUE,
-				'show_in_menu' => 'edit-comments.php',
-				'has_archive' => 'talkbox',
-				'rewrite' => array(
-					'slug' => 'talkbox',
-					'with_front' => FALSE,
-				),
-				'taxonomies' => $taxonomies,
-			)
+		$post_type_config = array(
+			'labels' => array(
+				'name' => 'Featured Comments',
+				'singular_name' => 'Featured Comment',
+			),
+			'supports' => array(
+				'title',
+				'author',
+			),
+			'register_meta_box_cb' => array( $this, 'register_metaboxes' ),
+			'public' => TRUE,
+			'show_in_menu' => 'edit-comments.php',
+			'has_archive' => bsocial_comments()->options()->featuredcomments->has_archive,
+			'rewrite' => array(
+				'slug' => bsocial_comments()->options()->featuredcomments->rewrite_slug,
+				'with_front' => FALSE,
+			),
+			'taxonomies' => $taxonomies,
 		);
+
+		register_post_type( $this->post_type_name, $post_type_config );
 	} // END register_post_type
 
 	/**

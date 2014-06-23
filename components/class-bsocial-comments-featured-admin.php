@@ -40,9 +40,9 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 
 	/**
 	 * Filters comment_row_actions hook and returns a feature/unfeature link for each comment
-	 * 
+	 *
 	 * @param $actions (array) Array of action links for the given comment
-	 * @param $comment (object) WordPress comment object 
+	 * @param $comment (object) WordPress comment object
 	 */
 	public function comment_row_actions( $actions, $comment )
 	{
