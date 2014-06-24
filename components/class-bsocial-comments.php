@@ -11,6 +11,7 @@ class bSocial_Comments
 	public function __construct()
 	{
 		add_action( 'init', array( $this, 'init' ), 1 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
 		add_action( 'wp_ajax_bsocial_comment_status', array( $this, 'ajax_comment_status' ) );
 
 		add_action( 'delete_comment', array( $this, 'comment_id_by_meta_delete_cache' ) );
@@ -23,6 +24,24 @@ class bSocial_Comments
 			$this->featured_comments();
 		} // END if
 	} // END init
+
+	/**
+	 * hooked to the wp_enqueue_scripts action
+	 */
+	public function wp_enqueue_scripts()
+	{
+		$script_config = apply_filters( 'go_config', array( 'version' => 1 ), 'go-script-version' );
+
+		wp_register_script(
+			'bsocial-comments-moderation',
+			plugins_url( 'js/bsocial-comments-moderation.js', __FILE__ ),
+			array( 'jquery' ),
+			$script_config['version'],
+			TRUE
+		);
+
+		wp_enqueue_script( 'bsocial-comments-moderation' );
+	}//end wp_enqueue_scripts
 
 	/**
 	 * featured comments object accessor
@@ -264,7 +283,7 @@ class bSocial_Comments
 
 		$url = $this->get_status_url( $comment->comment_ID, $type );
 
-		return '<a href="' . $url . '" title="' . $text . '" class="' . $classes . '">' . $text . '</a>';
+		return '<a href="' . $url . '" title="' . $text . '" class="' . $class . '">' . $text . '</a>';
 	} // END get_status_link
 
 	/**
@@ -277,12 +296,12 @@ class bSocial_Comments
 
 		if ( ! current_user_can( 'moderate_comments' ) )
 		{
-			return FALSE;
+			return wp_send_json_error();
 		} // END if
 
 		if ( ! check_ajax_referer( 'bsocial-comment-status', 'bsocial-nonce' ) )
 		{
-			return FALSE;
+			return wp_send_json_error();
 		} // END if
 
 		$allowed_directions = array(
@@ -294,55 +313,65 @@ class bSocial_Comments
 			'untrash',
 		);
 
-		if ( ! in_array( $direct, $allowed_directions ) )
+		if ( ! in_array( $direction, $allowed_directions ) )
 		{
-			return FALSE;
+			return wp_send_json_error();
 		} // END if
 
-		if ( $comment = get_comment( $comment_id ) )
+		if ( ! ( $comment = get_comment( $comment_id ) ) )
 		{
-			$data = array();
+			return wp_send_json_error();
+		}//end if
 
-			switch ( $direction )
-			{
-				case 'approve' :
-					$data = array(
-						'success' => wp_set_comment_status( $comment->comment_ID, 'approve' ),
-						'link'    => $this->get_status_link( $comment->comment_ID, 'approve' ),
-					);
-					break;
-				case 'unapprove' :
-					$data = array(
-						'success' => wp_set_comment_status( $comment->comment_ID, 'hold' ),
-						'link'    => $this->get_status_link( $comment->comment_ID, 'approve' ),
-					);
-					break;
-				case 'spam' :
-					$data = array(
-						'success' => wp_spam_comment( $comment->comment_ID ),
-						'link'    => $this->get_status_link( $comment->comment_ID, 'spam' ),
-					);
-					break;
-				case 'unspam' :
-					$data = array(
-						'success' => wp_unspam_comment( $comment->comment_ID ),
-						'link'    => $this->get_status_link( $comment->comment_ID, 'spam' ),
-					);
-				case 'trash' :
-					$data = array(
-						'success' => wp_trash_comment( $comment->comment_ID ),
-						'link'    => $this->get_status_link( $comment->comment_ID, 'trash' ),
-					);
-				case 'untrash' :
-					$data = array(
-						'success' => wp_untrash_comment( $comment->comment_ID ),
-						'link'    => $this->get_status_link( $comment->comment_ID, 'trash' ),
-					);
-					break;
-			} // END switch
+		$data = array();
 
-			wp_send_json( $data );
-		} // END if
+		switch ( $direction )
+		{
+			case 'approve' :
+				$data = array(
+					'success' => wp_set_comment_status( $comment->comment_ID, 'approve' ),
+					'link'    => $this->get_status_link( $comment->comment_ID, 'approve' ),
+					'state'   => 'approved',
+				);
+				break;
+			case 'unapprove' :
+				$data = array(
+					'success' => wp_set_comment_status( $comment->comment_ID, 'hold' ),
+					'link'    => $this->get_status_link( $comment->comment_ID, 'approve' ),
+					'state'   => 'unapproved',
+				);
+				break;
+			case 'spam' :
+				$data = array(
+					'success' => wp_spam_comment( $comment->comment_ID ),
+					'link'    => $this->get_status_link( $comment->comment_ID, 'spam' ),
+					'state'   => 'spammed',
+				);
+				break;
+			case 'unspam' :
+				$data = array(
+					'success' => wp_unspam_comment( $comment->comment_ID ),
+					'link'    => $this->get_status_link( $comment->comment_ID, 'spam' ),
+					'state'   => 'unspammed',
+				);
+				break;
+			case 'trash' :
+				$data = array(
+					'success' => wp_trash_comment( $comment->comment_ID ),
+					'link'    => $this->get_status_link( $comment->comment_ID, 'trash' ),
+					'state'   => 'trashed',
+				);
+				break;
+			case 'untrash' :
+				$data = array(
+					'success' => wp_untrash_comment( $comment->comment_ID ),
+					'link'    => $this->get_status_link( $comment->comment_ID, 'trash' ),
+					'state'   => 'untrashed',
+				);
+				break;
+		} // END switch
+
+		wp_send_json( $data );
 
 		die;
 	} // END ajax_comment_status
