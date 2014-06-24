@@ -1,15 +1,21 @@
-var bsocial_comments_mod = {
+var bsocial_comments_moderation = {
 	event: {}
 };
 
 (function($) {
 	'use strict';
 
-	bsocial_comments_mod.init = function() {
+	/**
+	 * initialize moderation JS
+	 */
+	bsocial_comments_moderation.init = function() {
 		$( document ).on( 'click', '.comment-manage .approve-link a, .comment-manage .spam-link a, .comment-manage .trash-link a', this.event.click_manage );
 	};
 
-	bsocial_comments_mod.manage_ajax = function( $el ) {
+	/**
+	 * ajax update comment status
+	 */
+	bsocial_comments_moderation.manage_ajax = function( $el ) {
 		var $comment = $el.closest( '.div-comment' );
 		var url = $el.attr( 'href' );
 		var action = $el.html();
@@ -20,6 +26,7 @@ var bsocial_comments_mod = {
 			return;
 		}
 
+		// block the comment until the state has changed
 		$comment.block( {
 			message: '<span class="go-alerts-block">Saving...</span>',
 			css: {
@@ -35,6 +42,7 @@ var bsocial_comments_mod = {
 
 		var jqxhr = $.getJSON( url );
 
+		// when we've received data back from our status update, replace links and update data attributes
 		jqxhr.done( function( data ) {
 			$comment.unblock();
 
@@ -47,12 +55,18 @@ var bsocial_comments_mod = {
 		} );
 	};
 
-	bsocial_comments_mod.event.click_manage = function( e ) {
+	/**
+	 * handle click events on status manipulation links on comments
+	 */
+	bsocial_comments_moderation.event.click_manage = function( e ) {
 		e.preventDefault();
-		bsocial_comments_mod.manage_ajax( $( this ) );
+		bsocial_comments_moderation.manage_ajax( $( this ) );
 	};
 
+	/**
+	 * run this file
+	 */
 	$(function() {
-		bsocial_comments_mod.init();
+		bsocial_comments_moderation.init();
 	});
 })( jQuery );
