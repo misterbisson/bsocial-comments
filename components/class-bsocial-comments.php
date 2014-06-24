@@ -36,7 +36,7 @@ class bSocial_Comments
 		} // END if
 
 		return $this->featuredcomments;
-	} // END function_name
+	} // END featured_comments
 
 	/**
 	 * plugin options getter
@@ -146,33 +146,49 @@ class bSocial_Comments
 			'action'        => 'bsocial_comment_status',
 			'comment_id'    => absint( $comment->comment_ID ),
 			'bsocial-nonce' => wp_create_nonce( 'bsocial-comment-status' ),
+			'direction'     => NULL,
 		);
 
-		switch ( wp_get_comment_status( $comment->comment_ID ) ) {
-			case 'approved':
+		$status = wp_get_comment_status( $comment->comment_ID );
+
+		if ( 'approve' == $type )
+		{
+			if ( 'approved' == $status )
+			{
 				$arguments['direction'] = 'unapprove';
-				break;
-			case 'unapproved':
+			}//end if
+			else
+			{
 				$arguments['direction'] = 'approve';
-				break;
-			case 'spam':
+			}//end else
+		}//end if
+		elseif ( 'spam' == $type )
+		{
+			if ( 'spam' == $status )
+			{
 				$arguments['direction'] = 'unspam';
-				break;
-			case 'trash':
+			}//end if
+			else
+			{
+				$arguments['direction'] = 'spam';
+			}//end else
+		}//end elseif
+		elseif ( 'trash' == $type )
+		{
+			if ( 'trash' == $status )
+			{
 				$arguments['direction'] = 'untrash';
-				break;
-			default:
-				// There's no 'unspammed' or 'untrashed' so we'll deal with those only when asked
-				if ( 'spam' == $type )
-				{
-					$arguments['direction'] = 'spam';
-				} // END if
-				elseif ( 'trash' == $type )
-				{
-					$arguments['direction'] = 'trash';
-				} // END else
-				break;
-		} // END switch
+			}//end if
+			else
+			{
+				$arguments['direction'] = 'trash';
+			}//end else
+		}//end elseif
+
+		if ( ! $arguments['direction'] )
+		{
+			return;
+		}//end if
 
 		// Checking is_admin lets us avoid cross domain JS issues because on VIP the admin panel and the site itself have different domains
 		return add_query_arg( $arguments, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
@@ -196,37 +212,55 @@ class bSocial_Comments
 			return FALSE;
 		} // END if
 
-		switch ( wp_get_comment_status( $comment->comment_ID ) ) {
-			case 'approved':
+		$text = NULL;
+		$class = NULL;
+
+		$status = wp_get_comment_status( $comment->comment_ID );
+
+		if ( 'approve' == $type )
+		{
+			if ( 'approved' == $status )
+			{
 				$text  = 'Unapprove';
 				$class = 'approved-comment';
-				break;
-			case 'unapproved':
+			}//end if
+			else
+			{
 				$text  = 'Approve';
 				$class = 'unapproved-comment';
-				break;
-			case 'spam':
+			}//end else
+		}//end if
+		elseif ( 'spam' == $type )
+		{
+			if ( 'spam' == $status )
+			{
 				$text  = 'Unspam';
 				$class = 'spammed-comment';
-				break;
-			case 'trash':
+			}//end if
+			else
+			{
+				$text  = 'Spam';
+				$class = 'unspamed-comment';
+			}//end else
+		}//end elseif
+		elseif ( 'trash' == $type )
+		{
+			if ( 'trash' == $status )
+			{
 				$text  = 'Untrash';
 				$class = 'trashed-comment';
-				break;
-			default:
-				// There's no 'unspammed' or 'untrashed' so we'll deal with those only when asked
-				if ( 'spam' == $type )
-				{
-					$text  = 'Spam';
-					$class = 'unspamed-comment';
-				} // END if
-				elseif ( 'trash' == $type )
-				{
-					$text  = 'Trash';
-					$class = 'untrashed-comment';
-				} // END else
-				break;
-		} // END switch
+			}//end if
+			else
+			{
+				$text  = 'Trash';
+				$class = 'untrashed-comment';
+			}//end else
+		}//end elseif
+
+		if ( ! $text )
+		{
+			return;
+		}//end if
 
 		$url = $this->get_status_url( $comment->comment_ID, $type );
 
@@ -269,7 +303,8 @@ class bSocial_Comments
 		{
 			$data = array();
 
-			switch ( $direction ) {
+			switch ( $direction )
+			{
 				case 'approve' :
 					$data = array(
 						'success' => wp_set_comment_status( $comment->comment_ID, 'approve' ),
@@ -311,16 +346,16 @@ class bSocial_Comments
 
 		die;
 	} // END ajax_comment_status
-} // END bSocial_Comments
+}// END bSocial_Comments
 
 function bsocial_comments()
 {
 	global $bsocial_comments;
 
-	if( ! $bsocial_comments )
+	if ( ! $bsocial_comments )
 	{
 		$bsocial_comments = new bSocial_Comments();
-	}
+	}//end if
 
 	return $bsocial_comments;
 } // END bsocial_comments
