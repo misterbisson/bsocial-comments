@@ -4,6 +4,7 @@ class bSocial_Comments
 {
 	public $id_base = 'bsocial-comments';
 	public $featuredcomments = NULL;
+	public $register = NULL;
 	public $version = '1.0';
 
 	private $options = NULL;
@@ -28,6 +29,11 @@ class bSocial_Comments
 		if ( $this->options()->featuredcomments->enable )
 		{
 			$this->featured_comments();
+		} // END if
+
+		if ( $this->options()->register->enable )
+		{
+			$this->register();
 		} // END if
 	} // END init
 
@@ -79,6 +85,20 @@ class bSocial_Comments
 	} // END featured_comments
 
 	/**
+	 * featured comments object accessor
+	 */
+	public function register()
+	{
+		if ( ! $this->register )
+		{
+			require_once __DIR__ . '/class-bsocial-comments-register.php';
+			$this->register = new bSocial_Comments_Register();
+		} // END if
+
+		return $this->register;
+	} // END featured_comments
+
+	/**
 	 * plugin options getter
 	 */
 	public function options()
@@ -108,6 +128,10 @@ class bSocial_Comments
 				'has_archive'      => FALSE,
 				'rewrite_slug'     => 'talkbox',
 				'word_limit'       => 50,
+			),
+			'register' => (object) array(
+				'enable'      => TRUE,
+				'filter_text' => FALSE,
 			),
 		);
 	} // END default_options

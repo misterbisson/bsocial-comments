@@ -47,13 +47,16 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	public function comment_row_actions( $actions, $comment )
 	{
 		// check permissions against the parent post
-		if ( ! current_user_can( 'edit_post', $comment->comment_post_ID ) )
+		if ( 
+			   ! current_user_can( 'edit_post', $comment->comment_post_ID )
+			|| 'comment' != $comment->comment_type
+		)
 		{
 			return $actions;
 		}
 
 		// Get feature/unfeature link for the comment
-		$actions['feature-comment hide-if-no-js'] = $this->get_feature_link( $comment->comment_ID );
+		$actions['feature-comment'] = $this->get_feature_link( $comment->comment_ID );
 
 		return $actions;
 	} // END comment_row_actions
