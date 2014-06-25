@@ -18,6 +18,9 @@ class bSocial_Comments
 		add_action( 'wp_ajax_bsocial_comment_states_for_user', array( $this, 'ajax_states_for_user' ) );
 
 		add_action( 'delete_comment', array( $this, 'comment_id_by_meta_delete_cache' ) );
+
+		add_action( 'bsocial_comments_manage_links', array( $this, 'bsocial_comments_manage_links' ) );
+		add_action( 'bsocial_comments_feedback_links', array( $this, 'bsocial_comments_feedback_links' ) );
 	} // END __construct
 
 	public function init()
@@ -540,6 +543,30 @@ class bSocial_Comments
 
 		die;
 	} // END ajax_comment_status
+
+	/**
+	 * hooked to bsocial_comments_manage_links outputs manage UI for a comment
+	 */
+	public function manage_links( $comment )
+	{
+		?>
+		<li class="trash-link"><?php echo $this->get_status_link( $comment->comment_ID, 'trash' ); ?></li>
+		<li class="spam-link"><?php echo $this->get_status_link( $comment->comment_ID, 'spam' ); ?></li>
+		<li class="approve-link"><?php echo $this->get_status_link( $comment->comment_ID, 'approve' ); ?></li>
+		<?php
+	}//end manage_links
+
+	/**
+	 * hooked to bsocial_comments_feedback_links outputs feedback UI for a comment
+	 */
+	public function feedback_links( $comment )
+	{
+		$favorited_count = $this->comment_favorited_count( $comment->comment_ID );
+		?>
+		<span class="comment-like"><a href="<?php echo esc_url( $this->favorite_comment_link( $comment->comment_ID ) ); ?>" class="goicon icon-star"></a><span class="like-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span></span>
+		<span class="comment-flag"><a href="<?php echo esc_url( $this->flag_comment_link( $comment->comment_ID ) ); ?>" class="goicon icon-x"></a></span>
+		<?php
+	}//end feedback_links
 }// END bSocial_Comments
 
 function bsocial_comments()
