@@ -13,6 +13,9 @@ class bSocial_Comments
 		add_action( 'init', array( $this, 'init' ), 1 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
 		add_action( 'wp_ajax_bsocial_comment_status', array( $this, 'ajax_comment_status' ) );
+		add_action( 'wp_ajax_bsocial_comment_favorite_comment', array( $this, 'ajax_favorite_comment' ) );
+		add_action( 'wp_ajax_bsocial_comment_flag_comment', array( $this, 'ajax_flag_comment' ) );
+		add_action( 'wp_ajax_bsocial_comment_states_for_user', array( $this, 'ajax_states_for_user' ) );
 
 		add_action( 'delete_comment', array( $this, 'comment_id_by_meta_delete_cache' ) );
 	} // END __construct
@@ -33,6 +36,14 @@ class bSocial_Comments
 		$script_config = apply_filters( 'go_config', array( 'version' => 1 ), 'go-script-version' );
 
 		wp_register_script(
+			'bsocial-comments',
+			plugins_url( 'js/bsocial-comments.js', __FILE__ ),
+			array( 'jquery' ),
+			$script_config['version'],
+			TRUE
+		);
+
+		wp_register_script(
 			'bsocial-comments-moderation',
 			plugins_url( 'js/bsocial-comments-moderation.js', __FILE__ ),
 			array( 'jquery' ),
@@ -40,6 +51,13 @@ class bSocial_Comments
 			TRUE
 		);
 
+		$data = array(
+			'nonce' => wp_create_nonce( 'bsocial-nonce' ),
+			'endpoint' => admin_url( 'admin-ajax.php' ),
+		);
+
+		wp_localize_script( 'bsocial-comments', 'bsocial_comments', $data );
+		wp_enqueue_script( 'bsocial-comments' );
 		wp_enqueue_script( 'bsocial-comments-moderation' );
 	}//end wp_enqueue_scripts
 
@@ -142,6 +160,153 @@ class bSocial_Comments
 			}
 		}
 	} // END comment_id_by_meta_delete_cache
+
+	/**
+	 * gives a count for the number of times a comment has been favorited
+	 */
+	public function comment_favorited_count( $comment_id )
+	{
+		// @TODO: logic to count the comments that have been favorited for the provided comment id
+		return 0;
+	}//end comment_favorited_count
+
+	/**
+	 * gives a count for the number of times a comment has been flagged
+	 */
+	public function comment_flagged_count( $comment_id )
+	{
+		// @TODO: logic to count the comments that have been flagged for the provided comment id
+		return 0;
+	}//end comment_flagged_count
+
+	/**
+	 * returns a link for favoriting a comment
+	 */
+	public function favorite_comment_link( $comment_id )
+	{
+		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return FALSE;
+		} // END if
+
+		$args = array(
+			'action' => 'bsocial_comments_favorite_comment',
+			'comment_id' => $comment_id,
+			'bsocial-nonce' => wp_create_nonce( 'bsocial-comment-favorite' ),
+		);
+
+		return add_query_arg( $args, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
+	}//end favorite_comment_link
+
+	/**
+	 * returns a link for flag a comment
+	 */
+	public function flag_comment_link( $comment_id )
+	{
+		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return FALSE;
+		} // END if
+
+		$args = array(
+			'action' => 'bsocial_comments_flag_comment',
+			'comment_id' => $comment_id,
+			'bsocial-nonce' => wp_create_nonce( 'bsocial-comment-flag' ),
+		);
+
+		return add_query_arg( $args, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
+	}//end flag_comment_link
+
+	/**
+	 * handles ajax requests to favorite/unfavorite a comment
+	 */
+	public function ajax_favorite_comment()
+	{
+		$comment_id = absint( $_GET['comment_id'] );
+
+		if ( ! check_ajax_referer( 'bsocial-comment-flag', 'bsocial-nonce' ) )
+		{
+			return wp_send_json_error();
+		} // END if
+
+		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return wp_send_json_error();
+		} // END if
+
+		// @TODO: insert logic to favorite/unfavorite a comment for an oauth'd user
+
+		$data = array(
+			// if the comment has been favorited, this should be set to 'favorited'.  Otherwise: 'unfavorited'
+			'state' => 'favorited',
+		);
+
+		wp_send_json_success( $data );
+		die;
+	}//end ajax_favorite_comment
+
+	/**
+	 * handles ajax requests to flag/unflag a comment
+	 */
+	public function ajax_flag_comment()
+	{
+		$comment_id = absint( $_GET['comment_id'] );
+
+		if ( ! check_ajax_referer( 'bsocial-comment-flag', 'bsocial-nonce' ) )
+		{
+			return wp_send_json_error();
+		} // END if
+
+		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return wp_send_json_error();
+		} // END if
+
+		// @TODO: insert logic to flag/unflag a comment for an oauth'd user
+
+		$data = array(
+			// if the comment has been flagged, this should be set to 'flagged'.  Otherwise: 'unflagged'
+			'state' => 'flagged',
+		);
+
+		wp_send_json_success( $data );
+		die;
+	}//end ajax_flag_comment
+
+	/**
+	 * handles ajax requests to get the states of all comments on post for the oauth'd user
+	 */
+	public function ajax_states_for_user()
+	{
+		$post_id = absint( $_GET['post_id'] );
+		$user = absint( $_GET['user'] );
+
+		if ( ! check_ajax_referer( 'bsocial-nonce', 'nonce' ) )
+		{
+			return wp_send_json_error();
+		} // END if
+
+		if ( ! $post = get_post( $post_id ) )
+		{
+			return wp_send_json_error();
+		} // END if
+
+		// @TODO find the comment (flag and favorite) states for comments.
+		/*
+		$args = array(
+			'post_id' => $post_id,
+			'author_email' => '?????',
+			'status' => '?????',
+		);
+		get_comments( $args );
+		// massage into an array somehow
+		 */
+
+		$data = array();
+
+		wp_send_json_success( $data );
+		die;
+	}//end ajax_states_for_user
 
 	/**
 	 * Return a nonced URL to approve/unapprove/spam/unspam/trash/untrash a comment
