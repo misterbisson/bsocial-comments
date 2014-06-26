@@ -1,7 +1,9 @@
 bsocial-comments
 ================
 
-## Registering comment types and statuses with WordPress
+## Usage
+
+### Registering comment types and statuses with WordPress
 
 ```php
 $args = array(
