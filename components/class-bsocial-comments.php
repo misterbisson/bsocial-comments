@@ -35,6 +35,11 @@ class bSocial_Comments
 		{
 			$this->register();
 		} // END if
+
+		if ( $this->options()->feedback->enable )
+		{
+			$this->feedback();
+		} // END if
 	} // END init
 
 	/**
@@ -132,6 +137,9 @@ class bSocial_Comments
 			'register' => (object) array(
 				'enable'      => TRUE,
 				'filter_text' => FALSE,
+			),
+			'feedback' => (object) array(
+				'enable' => TRUE,
 			),
 		);
 	} // END default_options
