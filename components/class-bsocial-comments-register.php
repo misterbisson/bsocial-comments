@@ -389,8 +389,9 @@ class bSocial_Comments_Register
 
 		foreach ( $status_counts as $count )
 		{
+			do_action( 'debug_robot', print_r( $count, TRUE ) );
 			$status = $count->comment_approved;
-			$stats->$status = $count->num_comments;
+			$stats->status = $count->num_comments;
 		} // END foreach
 
 		// Set cache for this set of stats
