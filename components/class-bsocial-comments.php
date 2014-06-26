@@ -12,15 +12,15 @@ class bSocial_Comments
 	{
 		add_action( 'init', array( $this, 'init' ), 1 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
-		add_action( 'wp_ajax_bsocial_comment_status', array( $this, 'ajax_comment_status' ) );
-		add_action( 'wp_ajax_bsocial_comment_favorite_comment', array( $this, 'ajax_favorite_comment' ) );
-		add_action( 'wp_ajax_bsocial_comment_flag_comment', array( $this, 'ajax_flag_comment' ) );
-		add_action( 'wp_ajax_bsocial_comment_states_for_user', array( $this, 'ajax_states_for_user' ) );
+		add_action( 'wp_ajax_bsocial_comments_status', array( $this, 'ajax_comment_status' ) );
+		add_action( 'wp_ajax_bsocial_comments_fave_comment', array( $this, 'ajax_fave_comment' ) );
+		add_action( 'wp_ajax_bsocial_comments_flag_comment', array( $this, 'ajax_flag_comment' ) );
+		add_action( 'wp_ajax_bsocial_comments_states_for_user', array( $this, 'ajax_states_for_user' ) );
 
 		add_action( 'delete_comment', array( $this, 'comment_id_by_meta_delete_cache' ) );
 
-		add_action( 'bsocial_comments_manage_links', array( $this, 'bsocial_comments_manage_links' ) );
-		add_action( 'bsocial_comments_feedback_links', array( $this, 'bsocial_comments_feedback_links' ) );
+		add_action( 'bsocial_comments_manage_links', array( $this, 'manage_links' ) );
+		add_action( 'bsocial_comments_feedback_links', array( $this, 'feedback_links' ) );
 	} // END __construct
 
 	public function init()
@@ -223,7 +223,7 @@ class bSocial_Comments
 	/**
 	 * handles ajax requests to favorite/unfavorite a comment
 	 */
-	public function ajax_favorite_comment()
+	public function ajax_fave_comment()
 	{
 		$comment_id = absint( $_GET['comment_id'] );
 
@@ -241,12 +241,12 @@ class bSocial_Comments
 
 		$data = array(
 			// if the comment has been favorited, this should be set to 'favorited'.  Otherwise: 'unfavorited'
-			'state' => 'favorited',
+			'state' => 'faved',
 		);
 
 		wp_send_json_success( $data );
 		die;
-	}//end ajax_favorite_comment
+	}//end ajax_fave_comment
 
 	/**
 	 * handles ajax requests to flag/unflag a comment
