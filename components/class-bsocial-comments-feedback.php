@@ -213,7 +213,9 @@ class bSocial_Comments_Feedback
 			return FALSE;
 		}//end if
 
-		if ( 0 == strncmp( 'un', $direction, 2 ) )
+		$sucess = FALSE;
+
+		if ( 0 != strncmp( 'un', $direction, 2 ) )
 		{
 			$comment = array(
 					'comment_post_ID'      => $post_id,
@@ -223,7 +225,7 @@ class bSocial_Comments_Feedback
 					'comment_type'         => $type,
 					'comment_parent'       => $comment_id,
 					'user_id'              => $user_id ?: 0,
-					'comment_date'         => current_time('mysql'),
+					'comment_date'         => current_time( 'mysql' ),
 					'comment_approved'     => 'feedback',
 			);
 
@@ -231,8 +233,10 @@ class bSocial_Comments_Feedback
 		} // END if
 		else
 		{
-			// @TODO find and delete comment
-			$feedback_id = '';
+			if ( $feedback_id = $this->get_feedback_id( $comment_id, $type, $comment_author_email ) )
+			{
+				$sucess = wp_delete_comment( $feedback->ID, TRUE );
+			} // END if
 		} // END else
 
 		return $sucess;
@@ -274,6 +278,38 @@ class bSocial_Comments_Feedback
 	}//end ajax_states_for_user
 
 	/**
+	 * Returns the id of a users feedback for a specified comment and type
+	 */
+	public function get_feedback_id( $comment_id, $type, $user )
+	{
+		if ( 'fave' != $type && 'flag' != $type )
+		{
+			return FALSE;
+		} // END if
+
+		$sql = 'SELECT comment_ID AS ID
+				FROM ' . $wpdb->comments . '
+				WHERE comment_parent = %d
+				AND comment_type = %s
+				AND comment_status = %s';
+
+		// See what kind of user value we are dealing with
+		if ( is_numeric( $user ) )
+		{
+			$sql .= ' AND user_id = %d';
+		} // END if
+		else
+		{
+			// If we weren't given a user_id then we assume it's an author email
+			$sql .= ' AND comment_author_email = %s';
+		} // END else
+
+		$feedback = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, $type, 'feedback', $user ) );
+
+		return $feedback->ID ?: FALSE;
+	} // END get_feedback_id
+
+	/**
 	 * Returns the comment state for a given user and state type
 	 */
 	public function get_comment_state( $comment_id, $type, $user )
@@ -302,14 +338,14 @@ class bSocial_Comments_Feedback
 			$sql .= ' AND comment_author_email = %s';
 		} // END else
 
+		$count = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, $type, 'feedback', $user ) );
+
 		if ( 'fave' == $type )
 		{
-			$count = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, 'fave', 'feedback', $user ) );
 			$state = isset( $count->count ) ? 'faved' : 'unfaved';
 		} // END if
 		else
 		{
-			$count = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, 'flag', 'feedback', $user ) );
 			$state = isset( $count->count ) ? 'flagged' : 'unflagged';
 		} // END else
 
