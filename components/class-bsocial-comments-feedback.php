@@ -102,7 +102,7 @@ class bSocial_Comments_Feedback
 		$user       = $_GET['user'];
 		$direction  = $_GET['direction'];
 
-		if ( ! check_ajax_referer( 'bsocial-comment-feedback', 'bsocial-nonce' ) )
+		if ( ! check_ajax_referer( 'bsocial-comment-feedback', 'bsocial-nonce', FALSE ) )
 		{
 			return wp_send_json_error();
 		} // END if
@@ -121,9 +121,9 @@ class bSocial_Comments_Feedback
 		);
 
 		$inverse_directions = array(
-			'fave' => 'unfave',
+			'fave'   => 'unfave',
 			'unfave' => 'fave',
-			'flag' => 'unflag',
+			'flag'   => 'unflag',
 			'unflag' => 'flag',
 		);
 
@@ -250,9 +250,9 @@ class bSocial_Comments_Feedback
 		$post_id = absint( $_GET['post_id'] );
 		$user    = $_GET['user'];
 
-		if ( ! check_ajax_referer( 'bsocial-nonce', 'nonce' ) )
+		if ( ! check_ajax_referer( 'bsocial-comment-feedback', 'bsocial-nonce', FALSE ) )
 		{
-			return wp_send_json_error();
+			//return wp_send_json_error();
 		} // END if
 
 		if ( ! $post = get_post( $post_id ) )
@@ -260,22 +260,58 @@ class bSocial_Comments_Feedback
 			return wp_send_json_error();
 		} // END if
 
-		// @TODO find the comment (flag and favorite) states for comments.
-		/*
-		$args = array(
-			'post_id' => $post_id,
-			'author_email' => '?????',
-			'status' => '?????',
-		);
-		get_comments( $args );
-		// massage into an array somehow
-		 */
+		$data = $this->get_post_comment_states( $post_id, $user );
 
-		$data = array();
+		if ( empty( $data ) )
+		{
+			wp_send_json_error();
+		} // END if
 
 		wp_send_json_success( $data );
 		die;
 	}//end ajax_states_for_user
+
+	/**
+	 * Returns an array of a posts comment states for the given user
+	 */
+	public function get_post_comment_states( $post_id, $user )
+	{
+		global $wpdb;
+
+		$sql = 'SELECT comment_parent AS comment_id,
+				comment_type AS type
+				FROM ' . $wpdb->comments . '
+				WHERE comment_post_ID = %d
+				AND comment_approved = %s';
+
+		// See what kind of user value we are dealing with
+		if ( is_numeric( $user ) )
+		{
+			$sql .= ' AND user_id = %d';
+		} // END if
+		else
+		{
+			// If we weren't given a user_id then we assume it's an author email
+			$sql .= ' AND comment_author_email = %s';
+		} // END else
+
+		$feedback = $wpdb->get_results( $wpdb->prepare( $sql, $post_id, 'feedback', $user ) );
+
+		$types_to_states = array(
+			'fave' => 'faved',
+			'flag' => 'flagged',
+		);
+
+		$comment_states = array();
+
+		foreach ( $feedback as $row )
+		{
+			$state = $types_to_states[ $row->type ];
+			$comment_states[ $row->comment_id ][ $state ] = $state;
+		} // END foreach
+
+		return $comment_states;
+	} // END get_post_comment_states
 
 	/**
 	 * Returns the id of a users feedback for a specified comment and type
@@ -291,7 +327,7 @@ class bSocial_Comments_Feedback
 				FROM ' . $wpdb->comments . '
 				WHERE comment_parent = %d
 				AND comment_type = %s
-				AND comment_status = %s';
+				AND comment_approved = %s';
 
 		// See what kind of user value we are dealing with
 		if ( is_numeric( $user ) )
@@ -325,7 +361,7 @@ class bSocial_Comments_Feedback
 				FROM ' . $wpdb->comments . '
 				WHERE comment_parent = %d
 				AND comment_type = %s
-				AND comment_status = %s';
+				AND comment_approved = %s';
 
 		// See what kind of user value we are dealing with
 		if ( is_numeric( $user ) )
@@ -363,7 +399,7 @@ class bSocial_Comments_Feedback
 				FROM ' . $wpdb->comments . '
 				WHERE comment_parent = %d
 				AND comment_type = %s
-				AND comment_status = %s';
+				AND comment_approved = %s';
 
 		$count = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, 'fave', 'feedback' ) );
 
@@ -386,7 +422,7 @@ class bSocial_Comments_Feedback
 				FROM ' . $wpdb->comments . '
 				WHERE comment_parent = %d
 				AND comment_type = %s
-				AND comment_status = %s';
+				AND comment_approved = %s';
 
 		$count = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, 'flag', 'feedback' ) );
 

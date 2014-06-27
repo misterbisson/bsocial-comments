@@ -391,7 +391,7 @@ class bSocial_Comments_Featured
 			return FALSE;
 		}//END if
 
-		if ( ! check_ajax_referer( 'bsocial-featuredcomment-save', 'bsocial-nonce' ) )
+		if ( ! check_ajax_referer( 'bsocial-featuredcomment-save', 'bsocial-nonce', FALSE ) )
 		{
 			return FALSE;
 		}// END if
