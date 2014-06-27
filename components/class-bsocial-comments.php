@@ -3,7 +3,7 @@
 class bSocial_Comments
 {
 	public $id_base = 'bsocial-comments';
-	public $featuredcomments = NULL;
+	public $featured_comments = NULL;
 	public $register = NULL;
 	public $feedback = NULL;
 	public $version = '1.0';
@@ -25,7 +25,7 @@ class bSocial_Comments
 
 	public function init()
 	{
-		if ( $this->options()->featuredcomments->enable )
+		if ( $this->options()->featured_comments->enable )
 		{
 			$this->featured_comments();
 		} // END if
@@ -147,7 +147,7 @@ class bSocial_Comments
 	public function default_options()
 	{
 		return array(
-			'featuredcomments' => (object) array(
+			'featured_comments' => (object) array(
 				'enable'           => TRUE,
 				'use_commentdate'  => TRUE,
 				'add_to_waterfall' => TRUE,
