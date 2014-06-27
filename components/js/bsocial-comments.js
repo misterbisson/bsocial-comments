@@ -41,6 +41,24 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		}//end if
 
 		this.authenticated_request( args );
+
+		// let's give immediate feedback so we don't have to wait for the ajax round-trip
+		var $fave_count = $comment.find( '.fave-count:first' );
+		var count = parseInt( $fave_count.attr( 'data-count' ), 10 );
+
+		if ( 'fave' === $comment.attr( 'data-comment-fave' ) && count > 0 ) {
+			count--;
+		} else {
+			count++;
+		}//end if
+
+		$fave_count.html( count ).attr( 'data-count', count );
+
+		if ( 'fave' === $comment.attr( 'data-comment-fave' ) ) {
+			$comment.attr( 'data-comment-fave', 'unfave' );
+		} else {
+			$comment.attr( 'data-comment-fave', 'fave' );
+		}//end else
 	};
 
 	/**
@@ -71,6 +89,13 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		}//end if
 
 		this.authenticated_request( args );
+
+		// let's give immediate feedback so we don't have to wait for the ajax round-trip
+		if ( 'flag' === $comment.attr( 'data-comment-flag' ) ) {
+			$comment.attr( 'data-comment-flag', 'unflag' );
+		} else {
+			$comment.attr( 'data-comment-flag', 'flag' );
+		}//end else
 	};
 
 	/**
@@ -97,26 +122,6 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 				comment_id: $comment.closest( '.comment' ).data( 'comment-id' ),
 				post_id: this.post_id,
 				direction: has_state ? type_inverse : type
-			},
-			success: function( response ) {
-				if ( ! response.success ) {
-					return;
-				}//end if
-
-				$comment.attr( 'data-comment-' + type, response.data.state );
-
-				if ( 'fave' === type ) {
-					var $fave_count = $comment.find( '.fave-count:first' );
-					var count = parseInt( $fave_count.data( 'count' ), 10 );
-
-					if ( 'fave' === response.data.state ) {
-						count++;
-					} else if ( count > 0 ) {
-						count--;
-					}//end if
-
-					$fave_count.html( count ).data( 'count', count ).attr( 'data-count', count );
-				}//end if
 			}
 		};
 
