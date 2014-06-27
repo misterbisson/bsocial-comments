@@ -379,7 +379,7 @@ class bSocial_Comments_Register
 		// Make sure we're only caring about statuses we don't already have stats for
 		foreach ( $statuses as $status )
 		{
-			if ( isset( $stats->$status ) )
+			if ( isset( $stats->$status ) || is_numeric( $status ) || '' == $status )
 			{
 				$statuses = array_diff( $statuses, array( $status ) );
 			} // END if
@@ -389,11 +389,8 @@ class bSocial_Comments_Register
 
 		foreach ( $status_counts as $count )
 		{
-			if ( isset( $count->comment_approved ) )
-			{
-				$status = $count->comment_approved;
-				$stats->$status = $count->num_comments;
-			} // END if
+			$status = $count->comment_approved;
+			$stats->$status = $count->num_comments;
 		} // END foreach
 
 		// Set cache for this set of stats
