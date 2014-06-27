@@ -99,7 +99,6 @@ class bSocial_Comments_Feedback
 	public function ajax_comment_feedback()
 	{
 		$comment_id = absint( $_GET['comment_id'] );
-		$user       = $_GET['user'];
 		$direction  = $_GET['direction'];
 
 		if ( ! check_ajax_referer( 'bsocial-comment-feedback', 'bsocial-nonce' ) )
@@ -145,7 +144,7 @@ class bSocial_Comments_Feedback
 			die;
 		} // END if
 
-		$success = $this->update_comment_feedback( $post->ID, $comment->comment_ID, $direction, $user, $_GET );
+		$success = $this->update_comment_feedback( $post->ID, $comment->comment_ID, $direction, $_GET );
 
 		$data = array(
 			'direction' => $direction,
@@ -161,7 +160,7 @@ class bSocial_Comments_Feedback
 		die;
 	}//end ajax_comment_feedback
 
-	public function update_comment_feedback( $post_id, $comment_id, $direction, $user, $args = array() )
+	public function update_comment_feedback( $post_id, $comment_id, $direction, $args = array() )
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
 		{
@@ -187,13 +186,10 @@ class bSocial_Comments_Feedback
 
 		$type = $directions_to_types[ $direction ];
 
-		$user_id = null;
+		$user_id = ! empty( $args['user_id'] ) ? absint( $args['user_id'] ) : null;
 
-		if ( is_int( $user ) )
+		if ( $user_id && $user = get_user_by( 'id', $user_id ) )
 		{
-			$user = get_user_by( 'id', absint( $user ) );
-			$user_id = $user->ID;
-
 			$comment_author = $user->display_name;
 			$comment_author_email = $user->user_email;
 		}//end if
