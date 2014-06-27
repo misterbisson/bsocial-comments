@@ -215,8 +215,6 @@ class bSocial_Comments_Feedback
 
 		if ( 0 == strncmp( 'un', $direction, 2 ) )
 		{
-			// @TODO flesh this out... which of these matter?
-			// Can we jsut set the items we care about?
 			$comment = array(
 					'comment_post_ID'      => $post_id,
 					'comment_author'       => $comment_author,
@@ -233,9 +231,8 @@ class bSocial_Comments_Feedback
 		} // END if
 		else
 		{
-			// @TODO get existing feedback comment id somehow
+			// @TODO find and delete comment
 			$feedback_id = '';
-			$sucess = wp_insert_comment( $feedback_id, TRUE );
 		} // END else
 
 		return $sucess;
