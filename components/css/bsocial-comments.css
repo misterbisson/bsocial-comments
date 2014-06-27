@@ -1,0 +1,10 @@
+.comment .feedback-box,
+.comment .feedback-box section {
+	display: none;
+}
+
+.comment .feedback-box[data-type="fave-logged-out"] .fave-logged-out,
+.comment .feedback-box[data-type="flag-logged-out"] .flag-logged-out,
+.comment .feedback-box[data-type="flag-logged-in"] .flag-logged-in {
+	display: block;
+}

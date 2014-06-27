@@ -48,6 +48,13 @@ class bSocial_Comments
 	{
 		$script_config = apply_filters( 'go_config', array( 'version' => 1 ), 'go-script-version' );
 
+		wp_register_style(
+			'bsocial-comments',
+			plugins_url( 'css/bsocial-comments.css', __FILE__ ),
+			array(),
+			$script_config['version']
+		);
+
 		wp_register_script(
 			'bsocial-comments',
 			plugins_url( 'js/bsocial-comments.js', __FILE__ ),
@@ -72,6 +79,7 @@ class bSocial_Comments
 		wp_localize_script( 'bsocial-comments', 'bsocial_comments', $data );
 		wp_enqueue_script( 'bsocial-comments' );
 		wp_enqueue_script( 'bsocial-comments-moderation' );
+		wp_enqueue_style( 'bsocial-comments' );
 	}//end wp_enqueue_scripts
 
 	/**
@@ -461,7 +469,7 @@ class bSocial_Comments
 	{
 		$favorited_count = $this->feedback()->comment_fave_count( $comment->comment_ID );
 		?>
-		<span class="comment-like"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-star"></a><span class="like-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span></span>
+		<span class="comment-fave"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-star"></a><span class="fave-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span></span>
 		<span class="comment-flag"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-x"></a></span>
 		<?php
 	}//end feedback_links
@@ -471,7 +479,7 @@ class bSocial_Comments
 	 */
 	public function feedback_info( $comment )
 	{
-		$message_logged_out = '<p>You must be authenticated to fave or flag a comment.</p>';
+		$message_logged_out = '<p>You must be authenticated to %s a comment.</p>';
 		$message_logged_in = '<p>...</p>';
 
 		$message_fave_logged_out = apply_filters( 'bsocial_feedback_fave_logged_out_message', $message_logged_out, $comment );
@@ -482,19 +490,19 @@ class bSocial_Comments
 			<section class="fave fave-logged-out">
 				<?php
 				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo $message_fave_logged_out;
+				echo sprintf( $message_fave_logged_out, 'fave' );
 				?>
 			</section>
 			<section class="flag flag-logged-out">
 				<?php
 				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo $message_flag_logged_out;
+				echo sprintf( $message_flag_logged_out, 'flag' );
 				?>
 			</section>
 			<section class="flag flag-logged-in">
 				<?php
 				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo $message_flag_logged_in;
+				echo sprintf( $message_flag_logged_in, 'flag' );
 				?>
 			</section>
 		</div>

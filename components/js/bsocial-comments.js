@@ -20,7 +20,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		this.authenticated = $( 'body' ).hasClass( 'logged-in' );
 		this.post_id = $( '#comment_post_ID' ).val();
 
-		$( document ).on( 'click', '.comment-like a', this.event.fave_comment );
+		$( document ).on( 'click', '.comment-fave a', this.event.fave_comment );
 		$( document ).on( 'click', '.comment-flag a', this.event.flag_comment );
 		$( document ).on( 'click', '.comment-flag-confirm', this.event.confirm_flag_comment );
 	};
@@ -35,7 +35,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		if ( ! this.authenticated ) {
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'fave' ] );
-			$comment.find( '.feedback-box:first' ).attr( 'data-type', 'fave' ).slideDown( 'fast' );
+			$comment.find( '.feedback-box:first' ).attr( 'data-type', 'fave-logged-out' ).slideDown( 'fast' );
 			return;
 		}//end if
 
@@ -48,13 +48,14 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	bsocial_comments.flag_comment = function( $link ) {
 		var $comment = $link.closest( '.comment' );
 
-		$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag' ).slideDown( 'fast' );
-
 		if ( ! this.authenticated ) {
 			var args = this.generate_ajax_args( $comment, $link, 'flag' );
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'flag' ] );
+			$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-logged-out' ).slideDown( 'fast' );
 			return;
 		}//end if
+
+		$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-logged-in' ).slideDown( 'fast' );
 	};
 
 	/**
@@ -78,7 +79,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		var url = $link.attr( 'href' );
 
 		var state_check = null;
-		var type_inverese = null;
+		var type_inverse = null;
 
 		if ( 'flag' === type ) {
 			state_check = 'flagged';
