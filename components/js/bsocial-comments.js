@@ -17,13 +17,76 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			return;
 		}//end if
 
+		this.states_requested = false;
 		this.authenticated_request_filters = [];
 		this.authenticated = $( 'body' ).hasClass( 'logged-in' );
 		this.post_id = $( '#comment_post_ID' ).val();
 
+		if ( this.authenticated ) {
+			this.request_comment_states();
+		}
+
 		$( document ).on( 'click', '.comment-fave a', this.event.fave_comment );
 		$( document ).on( 'click', '.comment-flag a', this.event.flag_comment );
 		$( document ).on( 'click', '.comment-flag-confirm', this.event.confirm_flag_comment );
+	};
+
+	/**
+	 * retrieves comment states via Ajax
+	 */
+	bsocial_comments.request_comment_states = function() {
+		// track that states have been requested
+		this.states_requested = true;
+
+		var args = {
+			dataType: 'json',
+			url: this.endpoint,
+			data: {
+				action: 'bsocial_comments_feedback_states_for_user',
+				post_id: this.post_id,
+				user: {
+					user_id: this.logged_in_as
+				},
+				nonce: this.nonce
+			},
+			success: function( response ) {
+				if ( ! response.success ) {
+					return;
+				}//end if
+
+				bsocial_comments.parse_comment_states( data );
+			}
+		};
+
+		this.authenticated_request( args );
+	};
+
+	/**
+	 * parses comment state JSON and assigns classes to comments where appropriate
+	 */
+	bsocial_comments.parse_comment_states = function( states ) {
+		for ( var i in states ) {
+			if ( 'undefined' === typeof states[ i ].comment_id ) {
+				continue;
+			}//end if
+
+			var comment_id = states[ i ].comment_id;
+			var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
+
+			if ( 'undefined' !== typeof states[ i ].flagged && states[ i ].flagged ) {
+				$comment.attr( 'data-comment-flag', 'flag' );
+			}//end if
+
+			if ( 'undefined' !== typeof states[ i ].favorited && states[ i ].favorited ) {
+				$comment.attr( 'data-comment-fave', 'fave' );
+				var $fave_count = $comment.find( '.fave-count:first' );
+
+				var count = parseInt( $fave_count.attr( 'data-count' ), 10 ) + 1;
+
+				$fave_count.attr( 'data-count', count );
+				$fave_count.html( count );
+			}//end if
+		}//end for
 	};
 
 	/**
@@ -121,7 +184,8 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 				action: 'bsocial_comments_comment_feedback',
 				comment_id: $comment.closest( '.comment' ).data( 'comment-id' ),
 				post_id: this.post_id,
-				direction: has_state ? type_inverse : type
+				direction: has_state ? type_inverse : type,
+				user: {}
 			}
 		};
 
@@ -139,7 +203,9 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	bsocial_comments.authenticated_request = function( args ) {
 		// this.logged_in_as comes from wp_localize_script
 		if ( this.logged_in_as ) {
-			args.data.user_id = this.logged_in_as;
+			args.data.user = {
+				user_id: this.logged_in_as
+			};
 		}//end else
 
 		for ( var priority in this.authenticated_request_filters ) {
