@@ -133,12 +133,16 @@ class bSocial_Comments_Feedback
 		$success = $this->update_comment_feedback( $comment->comment_ID, $direction, $user );
 
 		$data = array(
-			'success'   => $success,
 			'direction' => $direction,
 			'state'     => $success ? $direction : $inverse_directions[ $direction ],
 		);
 
-		wp_send_json_success( $data );
+		if ( $success ) {
+			wp_send_json_success( $data );
+			die;
+		}//end if
+
+		wp_send_json_error( $data );
 		die;
 	}//end ajax_comment_feedback
 

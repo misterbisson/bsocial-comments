@@ -99,12 +99,12 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 				comment_id: $comment.closest( '.comment' ).data( 'comment-id' ),
 				direction: has_state ? type_inverse : type
 			},
-			success: function( data ) {
-				if ( ! data.success ) {
+			success: function( response ) {
+				if ( ! response.success ) {
 					return;
 				}//end if
 
-				$comment.closest( '.comment' ).attr( 'data-comment-' + state_check, state_check === data.state ? 'true' : 'false' );
+				$comment.closest( '.comment' ).attr( 'data-comment-' + state_check, state_check === response.data.state ? 'true' : 'false' );
 			}
 		};
 
