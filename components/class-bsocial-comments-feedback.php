@@ -186,17 +186,17 @@ class bSocial_Comments_Feedback
 
 		$type = $directions_to_types[ $direction ];
 
-		$user_id = ! empty( $args['user_id'] ) ? absint( $args['user_id'] ) : null;
+		$user_id = ! empty( $args['user']['user_id'] ) ? absint( $args['user']['user_id'] ) : null;
 
 		if ( $user_id && $user = get_user_by( 'id', $user_id ) )
 		{
 			$comment_author = $user->display_name;
 			$comment_author_email = $user->user_email;
 		}//end if
-		elseif ( ! empty( $args['comment_author'] ) && ! empty( $args['comment_author_email'] ) )
+		elseif ( ! empty( $args['user']['comment_author'] ) && ! empty( $args['user']['comment_author_email'] ) )
 		{
-			$comment_author = $_GET['comment_author'];
-			$comment_author_email = $_GET['comment_author_email'];
+			$comment_author = $_GET['user']['comment_author'];
+			$comment_author_email = $_GET['user']['comment_author_email'];
 		}//end elseif
 		else
 		{
