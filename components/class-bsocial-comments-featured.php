@@ -9,6 +9,7 @@ class bSocial_Comments_Featured
 	public $tag_regex = '/\[\/?featured_?comment\]/i'; // just match the single tag to make it easy to remove
 	public $wrapper_regex = '/\[featured_?comment\](.*?)\[\/?featured_?comment\]/is'; // match the content inside the tags
 	public $featured_comments = array();
+	public $admin = FALSE;
 
 	public function __construct()
 	{
@@ -47,7 +48,7 @@ class bSocial_Comments_Featured
 	 */
 	public function admin()
 	{
-		if ( ! isset( $this->admin ) )
+		if ( ! $this->admin )
 		{
 			require_once __DIR__ . '/class-bsocial-comments-featured-admin.php';
 			$this->admin = new bSocial_Comments_Featured_Admin;

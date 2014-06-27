@@ -5,6 +5,7 @@ class bSocial_Comments
 	public $id_base = 'bsocial-comments';
 	public $featuredcomments = NULL;
 	public $register = NULL;
+	public $feedback = NULL;
 	public $version = '1.0';
 
 	private $options = NULL;
@@ -14,9 +15,6 @@ class bSocial_Comments
 		add_action( 'init', array( $this, 'init' ), 1 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
 		add_action( 'wp_ajax_bsocial_comments_status', array( $this, 'ajax_comment_status' ) );
-		add_action( 'wp_ajax_bsocial_comments_fave_comment', array( $this, 'ajax_fave_comment' ) );
-		add_action( 'wp_ajax_bsocial_comments_flag_comment', array( $this, 'ajax_flag_comment' ) );
-		add_action( 'wp_ajax_bsocial_comments_states_for_user', array( $this, 'ajax_states_for_user' ) );
 
 		add_action( 'delete_comment', array( $this, 'comment_id_by_meta_delete_cache' ) );
 
@@ -90,7 +88,7 @@ class bSocial_Comments
 	} // END featured_comments
 
 	/**
-	 * featured comments object accessor
+	 * Comment type/status registration object accessor
 	 */
 	public function register()
 	{
@@ -101,7 +99,21 @@ class bSocial_Comments
 		} // END if
 
 		return $this->register;
-	} // END featured_comments
+	} // END register
+
+	/**
+	 * Comment feedback object accessor
+	 */
+	public function feedback()
+	{
+		if ( ! $this->feedback )
+		{
+			require_once __DIR__ . '/class-bsocial-comments-feedback.php';
+			$this->feedback = new bSocial_Comments_Feedback();
+		} // END if
+
+		return $this->feedback;
+	} // END feedback
 
 	/**
 	 * plugin options getter
@@ -139,7 +151,7 @@ class bSocial_Comments
 				'filter_text' => FALSE,
 			),
 			'feedback' => (object) array(
-				'enable' => TRUE,
+				'enable'      => TRUE,
 			),
 		);
 	} // END default_options
@@ -195,153 +207,6 @@ class bSocial_Comments
 			}
 		}
 	} // END comment_id_by_meta_delete_cache
-
-	/**
-	 * gives a count for the number of times a comment has been favorited
-	 */
-	public function comment_favorited_count( $comment_id )
-	{
-		// @TODO: logic to count the comments that have been favorited for the provided comment id
-		return 0;
-	}//end comment_favorited_count
-
-	/**
-	 * gives a count for the number of times a comment has been flagged
-	 */
-	public function comment_flagged_count( $comment_id )
-	{
-		// @TODO: logic to count the comments that have been flagged for the provided comment id
-		return 0;
-	}//end comment_flagged_count
-
-	/**
-	 * returns a link for favoriting a comment
-	 */
-	public function favorite_comment_link( $comment_id )
-	{
-		if ( ! $comment = get_comment( $comment_id ) )
-		{
-			return FALSE;
-		} // END if
-
-		$args = array(
-			'action' => 'bsocial_comments_favorite_comment',
-			'comment_id' => $comment_id,
-			'bsocial-nonce' => wp_create_nonce( 'bsocial-comment-favorite' ),
-		);
-
-		return add_query_arg( $args, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
-	}//end favorite_comment_link
-
-	/**
-	 * returns a link for flag a comment
-	 */
-	public function flag_comment_link( $comment_id )
-	{
-		if ( ! $comment = get_comment( $comment_id ) )
-		{
-			return FALSE;
-		} // END if
-
-		$args = array(
-			'action' => 'bsocial_comments_flag_comment',
-			'comment_id' => $comment_id,
-			'bsocial-nonce' => wp_create_nonce( 'bsocial-comment-flag' ),
-		);
-
-		return add_query_arg( $args, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
-	}//end flag_comment_link
-
-	/**
-	 * handles ajax requests to favorite/unfavorite a comment
-	 */
-	public function ajax_fave_comment()
-	{
-		$comment_id = absint( $_GET['comment_id'] );
-
-		if ( ! check_ajax_referer( 'bsocial-comment-flag', 'bsocial-nonce' ) )
-		{
-			return wp_send_json_error();
-		} // END if
-
-		if ( ! $comment = get_comment( $comment_id ) )
-		{
-			return wp_send_json_error();
-		} // END if
-
-		// @TODO: insert logic to favorite/unfavorite a comment for an oauth'd user
-
-		$data = array(
-			// if the comment has been favorited, this should be set to 'favorited'.  Otherwise: 'unfavorited'
-			'state' => 'faved',
-		);
-
-		wp_send_json_success( $data );
-		die;
-	}//end ajax_fave_comment
-
-	/**
-	 * handles ajax requests to flag/unflag a comment
-	 */
-	public function ajax_flag_comment()
-	{
-		$comment_id = absint( $_GET['comment_id'] );
-
-		if ( ! check_ajax_referer( 'bsocial-comment-flag', 'bsocial-nonce' ) )
-		{
-			return wp_send_json_error();
-		} // END if
-
-		if ( ! $comment = get_comment( $comment_id ) )
-		{
-			return wp_send_json_error();
-		} // END if
-
-		// @TODO: insert logic to flag/unflag a comment for an oauth'd user
-
-		$data = array(
-			// if the comment has been flagged, this should be set to 'flagged'.  Otherwise: 'unflagged'
-			'state' => 'flagged',
-		);
-
-		wp_send_json_success( $data );
-		die;
-	}//end ajax_flag_comment
-
-	/**
-	 * handles ajax requests to get the states of all comments on post for the oauth'd user
-	 */
-	public function ajax_states_for_user()
-	{
-		$post_id = absint( $_GET['post_id'] );
-		$user = absint( $_GET['user'] );
-
-		if ( ! check_ajax_referer( 'bsocial-nonce', 'nonce' ) )
-		{
-			return wp_send_json_error();
-		} // END if
-
-		if ( ! $post = get_post( $post_id ) )
-		{
-			return wp_send_json_error();
-		} // END if
-
-		// @TODO find the comment (flag and favorite) states for comments.
-		/*
-		$args = array(
-			'post_id' => $post_id,
-			'author_email' => '?????',
-			'status' => '?????',
-		);
-		get_comments( $args );
-		// massage into an array somehow
-		 */
-
-		$data = array();
-
-		wp_send_json_success( $data );
-		die;
-	}//end ajax_states_for_user
 
 	/**
 	 * Return a nonced URL to approve/unapprove/spam/unspam/trash/untrash a comment
@@ -587,18 +452,6 @@ class bSocial_Comments
 		<li class="approve-link"><?php echo $this->get_status_link( $comment->comment_ID, 'approve' ); ?></li>
 		<?php
 	}//end manage_links
-
-	/**
-	 * hooked to bsocial_comments_feedback_links outputs feedback UI for a comment
-	 */
-	public function feedback_links( $comment )
-	{
-		$favorited_count = $this->comment_favorited_count( $comment->comment_ID );
-		?>
-		<span class="comment-like"><a href="<?php echo esc_url( $this->favorite_comment_link( $comment->comment_ID ) ); ?>" class="goicon icon-star"></a><span class="like-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span></span>
-		<span class="comment-flag"><a href="<?php echo esc_url( $this->flag_comment_link( $comment->comment_ID ) ); ?>" class="goicon icon-x"></a></span>
-		<?php
-	}//end feedback_links
 }// END bSocial_Comments
 
 function bsocial_comments()
