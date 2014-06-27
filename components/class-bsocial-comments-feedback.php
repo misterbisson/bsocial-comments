@@ -10,6 +10,7 @@ class bSocial_Comments_Feedback
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'wp_ajax_bsocial_comments_comment_feedback', array( $this, 'ajax_comment_feedback' ) );
+		add_action( 'wp_ajax_nopriv_bsocial_comments_comment_feedback', array( $this, 'ajax_comment_feedback' ) );
 		add_action( 'wp_ajax_bsocial_comments_feedback_states_for_user', array( $this, 'ajax_states_for_user' ) );
 	} // end __construct
 
@@ -108,7 +109,8 @@ class bSocial_Comments_Feedback
 
 		if ( ! $comment = get_comment( $comment_id ) )
 		{
-			return wp_send_json_error();
+			wp_send_json_error();
+			die;
 		} // END if
 
 		$valid_directions = array(
@@ -127,10 +129,23 @@ class bSocial_Comments_Feedback
 
 		if ( ! in_array( $direction, $valid_directions ) )
 		{
-			return wp_send_json_error();
+			wp_send_json_error();
+			die;
 		} // END if
 
-		$success = $this->update_comment_feedback( $comment->comment_ID, $direction, $user );
+		if ( ! $_GET['post_id'] )
+		{
+			wp_send_json_error();
+			die;
+		} // END if
+
+		if ( ! $post = get_post( absint( $_GET['post_id'] ) ) )
+		{
+			wp_send_json_error();
+			die;
+		} // END if
+
+		$success = $this->update_comment_feedback( $post->ID, $comment->comment_ID, $direction, $user, $_GET );
 
 		$data = array(
 			'direction' => $direction,
@@ -142,13 +157,18 @@ class bSocial_Comments_Feedback
 			die;
 		}//end if
 
-		wp_send_json_error( $data );
+		wp_send_json_error();
 		die;
 	}//end ajax_comment_feedback
 
-	public function update_comment_feedback( $comment_id, $direction, $user )
+	public function update_comment_feedback( $post_id, $comment_id, $direction, $user, $args = array() )
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return FALSE;
+		} // END if
+
+		if ( ! $post = get_post( $post_id ) )
 		{
 			return FALSE;
 		} // END if
@@ -160,38 +180,59 @@ class bSocial_Comments_Feedback
 			'unflag' => 'flag',
 		);
 
-		if ( ! ( $valid_directions[ $direction ] ) )
+		if ( ! isset( $directions_to_types[ $direction ] ) )
 		{
 			return FALSE;
 		} // END if
 
-		$type = $valid_directions[ $direction ];
+		$type = $directions_to_types[ $direction ];
+
+		$user_id = null;
+
+		if ( is_int( $user ) )
+		{
+			$user = get_user_by( 'id', absint( $user ) );
+			$user_id = $user->ID;
+
+			$comment_author = $user->display_name;
+			$comment_author_email = $user->user_email;
+		}//end if
+		elseif ( ! empty( $args['comment_author'] ) && ! empty( $args['comment_author_email'] ) )
+		{
+			$comment_author = $_GET['comment_author'];
+			$comment_author_email = $_GET['comment_author_email'];
+		}//end elseif
+		else
+		{
+			return FALSE;
+		}//end else
+
+		// if a user_id was passed, make sure it is the current user
+		if ( $user_id && $user_id != get_current_user_id() )
+		{
+			return FALSE;
+		}//end if
 
 		if ( 0 == strncmp( 'un', $direction, 2 ) )
 		{
-			// @TODO flesh this out... which of these matter?
-			// Can we jsut set the items we care about?
 			$comment = array(
-			    'comment_author'       => 'admin',
-			    'comment_author_email' => 'admin@admin.com',
-			    'comment_author_url'   => 'http://',
-			    'comment_content'      => $type,
-			    'comment_type'         => $type,
-			    'comment_parent'       => $comment_id,
-			    'user_id'              => 1,
-			    'comment_author_IP'    => '127.0.0.1',
-			    'comment_agent'        => 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)',
-			    'comment_date'         => current_time('mysql'),
-			    'comment_approved'     => 'feedback',
+					'comment_post_ID'      => $post_id,
+					'comment_author'       => $comment_author,
+					'comment_author_email' => $comment_author_email,
+					'comment_content'      => $type,
+					'comment_type'         => $type,
+					'comment_parent'       => $comment_id,
+					'user_id'              => $user_id ?: 0,
+					'comment_date'         => current_time('mysql'),
+					'comment_approved'     => 'feedback',
 			);
 
 			$sucess = wp_new_comment( $comment );
 		} // END if
 		else
 		{
-			// @TODO get existing feedback comment id somehow
+			// @TODO find and delete comment
 			$feedback_id = '';
-			$sucess = wp_insert_comment( $feedback_id, TRUE );
 		} // END else
 
 		return $sucess;
@@ -349,26 +390,26 @@ class bSocial_Comments_Feedback
 		{
 			if ( 'faved' == $state )
 			{
-				$arguments['direction'] = 'unfave';
+				$args['direction'] = 'unfave';
 			}//end if
 			else
 			{
-				$arguments['direction'] = 'fave';
+				$args['direction'] = 'fave';
 			}//end else
 		}//end if
 		elseif ( 'flag' == $type )
 		{
 			if ( 'flagged' == $state )
 			{
-				$arguments['direction'] = 'unflag';
+				$args['direction'] = 'unflag';
 			}//end if
 			else
 			{
-				$arguments['direction'] = 'flag';
+				$args['direction'] = 'flag';
 			}//end else
 		}//end elseif
 
-		if ( ! $arguments['direction'] )
+		if ( ! $args['direction'] )
 		{
 			return;
 		}//end if

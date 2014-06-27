@@ -74,6 +74,7 @@ class bSocial_Comments
 		$data = array(
 			'nonce' => wp_create_nonce( 'bsocial-nonce' ),
 			'endpoint' => admin_url( 'admin-ajax.php' ),
+			'logged_in_as' => get_current_user_id(),
 		);
 
 		wp_localize_script( 'bsocial-comments', 'bsocial_comments', $data );
