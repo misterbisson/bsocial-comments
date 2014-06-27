@@ -20,6 +20,7 @@ class bSocial_Comments
 
 		add_action( 'bsocial_comments_manage_links', array( $this, 'manage_links' ) );
 		add_action( 'bsocial_comments_feedback_links', array( $this, 'feedback_links' ) );
+		add_action( 'bsocial_comments_feedback_info', array( $this, 'feedback_info' ) );
 	} // END __construct
 
 	public function init()
@@ -452,6 +453,53 @@ class bSocial_Comments
 		<li class="approve-link"><?php echo $this->get_status_link( $comment->comment_ID, 'approve' ); ?></li>
 		<?php
 	}//end manage_links
+
+	/**
+	 * hooked to bsocial_comments_feedback_links outputs feedback UI for a comment
+	 */
+	public function feedback_links( $comment )
+	{
+		$favorited_count = $this->feedback()->comment_fave_count( $comment->comment_ID );
+		?>
+		<span class="comment-like"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-star"></a><span class="like-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span></span>
+		<span class="comment-flag"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-x"></a></span>
+		<?php
+	}//end feedback_links
+
+	/**
+	 * hooked to bsocial_comments_feedback_info outputs feedback UI for a comment
+	 */
+	public function feedback_info( $comment )
+	{
+		$message_logged_out = '<p>You must be authenticated to fave or flag a comment.</p>';
+		$message_logged_in = '<p>...</p>';
+
+		$message_fave_logged_out = apply_filters( 'bsocial_feedback_fave_logged_out_message', $message_logged_out, $comment );
+		$message_flag_logged_out = apply_filters( 'bsocial_feedback_flag_logged_out_message', $message_logged_out, $comment );
+		$message_flag_logged_in = apply_filters( 'bsocial_feedback_flag_logged_in_message', $message_logged_in, $comment );
+		?>
+		<div class="feedback-box">
+			<section class="fave fave-logged-out">
+				<?php
+				// this will need to be sanitized up stream as we must be able to support HTML in here
+				echo $message_fave_logged_out;
+				?>
+			</section>
+			<section class="flag flag-logged-out">
+				<?php
+				// this will need to be sanitized up stream as we must be able to support HTML in here
+				echo $message_flag_logged_out;
+				?>
+			</section>
+			<section class="flag flag-logged-in">
+				<?php
+				// this will need to be sanitized up stream as we must be able to support HTML in here
+				echo $message_flag_logged_in;
+				?>
+			</section>
+		</div>
+		<?php
+	}//end feedback_info
 }// END bSocial_Comments
 
 function bsocial_comments()
