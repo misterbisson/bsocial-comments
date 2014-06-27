@@ -118,6 +118,13 @@ class bSocial_Comments_Feedback
 			'unflag',
 		);
 
+		$inverse_directions = array(
+			'fave' => 'unfave',
+			'unfave' => 'fave',
+			'flag' => 'unflag',
+			'unflag' => 'flag',
+		);
+
 		if ( ! in_array( $direction, $valid_directions ) )
 		{
 			return wp_send_json_error();
@@ -126,12 +133,16 @@ class bSocial_Comments_Feedback
 		$success = $this->update_comment_feedback( $comment->comment_ID, $direction, $user );
 
 		$data = array(
-			'success'   => $success,
 			'direction' => $direction,
-			'state'     => $state,
+			'state'     => $success ? $direction : $inverse_directions[ $direction ],
 		);
 
-		wp_send_json_success( $data );
+		if ( $success ) {
+			wp_send_json_success( $data );
+			die;
+		}//end if
+
+		wp_send_json_error( $data );
 		die;
 	}//end ajax_comment_feedback
 
@@ -226,6 +237,8 @@ class bSocial_Comments_Feedback
 	 */
 	public function get_comment_state( $comment_id, $type, $user )
 	{
+		global $wpdb;
+
 		if ( 'fave' != $type && 'flag' != $type )
 		{
 			return FALSE;
