@@ -225,7 +225,7 @@ class bSocial_Comments_Feedback
 					'comment_approved'     => 'feedback',
 			);
 
-			$sucess = wp_new_comment( $comment );
+			$sucess = wp_insert_comment( $comment );
 		} // END if
 		else
 		{
@@ -244,17 +244,31 @@ class bSocial_Comments_Feedback
 	public function ajax_states_for_user()
 	{
 		$post_id = absint( $_GET['post_id'] );
-		$user    = $_GET['user'];
 
-		if ( ! check_ajax_referer( 'bsocial-comment-feedback', 'bsocial-nonce', FALSE ) )
+		if ( ! check_ajax_referer( 'bsocial-comment-feedback', 'nonce', FALSE ) )
 		{
-			//return wp_send_json_error();
+			return wp_send_json_error();
 		} // END if
 
 		if ( ! $post = get_post( $post_id ) )
 		{
 			return wp_send_json_error();
 		} // END if
+
+		$user_id = ! empty( $_GET['user']['user_id'] ) ? absint( $_GET['user']['user_id'] ) : null;
+
+		if ( $user_id && $user = get_user_by( 'id', $user_id ) )
+		{
+			$user = $user_id;
+		}//end if
+		elseif ( ! empty( $_GET['user']['comment_author_email'] ) )
+		{
+			$user = $_GET['user']['comment_author'];
+		}//end elseif
+		else
+		{
+			return wp_send_json_error();
+		}//end else
 
 		$data = $this->get_post_comment_states( $post_id, $user );
 
