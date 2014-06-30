@@ -217,7 +217,7 @@ class bSocial_Comments_Feedback
 					'comment_post_ID'      => $post_id,
 					'comment_author'       => $comment_author,
 					'comment_author_email' => $comment_author_email,
-					'comment_content'      => $type,
+					'comment_content'      => empty( $args['flag_type'] ) ? $type : $args['flag_type'],
 					'comment_type'         => $type,
 					'comment_parent'       => $comment_id,
 					'user_id'              => $user_id ?: 0,
