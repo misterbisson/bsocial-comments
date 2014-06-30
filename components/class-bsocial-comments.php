@@ -480,31 +480,60 @@ class bSocial_Comments
 	 */
 	public function feedback_info( $comment )
 	{
-		$message_logged_out = '<p>You must be authenticated to %s a comment.</p>';
-		$message_logged_in = '<p>...</p>';
+		$message_logged_out = '<p>You must be authenticated to %1$s a comment. Please <a href="%2$s">sign in</a></p>';
+		$message_logged_in = '<p>Flag this comment.</p>';
 
-		$message_fave_logged_out = apply_filters( 'bsocial_feedback_fave_logged_out_message', $message_logged_out, $comment );
-		$message_flag_logged_out = apply_filters( 'bsocial_feedback_flag_logged_out_message', $message_logged_out, $comment );
-		$message_flag_logged_in = apply_filters( 'bsocial_feedback_flag_logged_in_message', $message_logged_in, $comment );
+		$message_fave_logged_out = apply_filters(
+			'bsocial_feedback_fave_logged_out_message',
+			sprintf(
+				$message_logged_out,
+				'fave',
+				wp_login_url( get_permalink() )
+			),
+			$comment
+		);
+
+		$message_flag_logged_out = apply_filters(
+			'bsocial_feedback_flag_logged_out_message',
+			sprintf(
+				$message_logged_out,
+				'flag',
+				wp_login_url( get_permalink() )
+			),
+			$comment
+		);
+
+		$message_flag_logged_in = apply_filters(
+			'bsocial_feedback_flag_logged_in_message',
+			sprintf(
+				$message_logged_in,
+				'flag'
+			),
+			$comment
+		);
 		?>
 		<div class="feedback-box">
 			<section class="fave fave-logged-out">
 				<?php
 				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo sprintf( $message_fave_logged_out, 'fave' );
+				echo $message_fave_logged_out;
 				?>
 			</section>
 			<section class="flag flag-logged-out">
 				<?php
 				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo sprintf( $message_flag_logged_out, 'flag' );
+				echo $message_flag_logged_out;
 				?>
 			</section>
 			<section class="flag flag-logged-in">
 				<?php
 				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo sprintf( $message_flag_logged_in, 'flag' );
+				echo $message_flag_logged_in;
 				?>
+				<p>
+					<a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>" class="button primary comment-flag-confirm">Flag</a>
+					<button class="button link cancel">Cancel</button>
+				</p>
 			</section>
 		</div>
 		<?php

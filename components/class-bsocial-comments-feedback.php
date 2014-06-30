@@ -433,49 +433,54 @@ class bSocial_Comments_Feedback
 	/**
 	 * returns a link for favoriting a comment
 	 */
-	public function get_comment_feedback_url( $comment_id, $type, $user = FALSE )
+	public function get_comment_feedback_url( $comment_id, $type, $user = FALSE, $args = array() )
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
 		{
 			return FALSE;
 		} // END if
 
-		$args = array(
+		$defaults = array(
 			'action'        => 'bsocial_comments_comment_feedback',
 			'comment_id'    => $comment_id,
 			'bsocial-nonce' => wp_create_nonce( 'bsocial-comment-feedback' ),
 		);
 
+		$args = wp_parse_args( $args, $defaults );
+
 		// Filter should allow scripts to get the user id from some other method when one wasn't specified
 		// Like maybe a site where there's an alternate method of authentication for comments? Perhaps?
 		$user  = $user ? $user : apply_filters( 'bsocial_comments_feedback_url_user', get_current_user_id() );
-		$state = $this->get_comment_state( $comment_id, $type, $user );
 
 		// Pass the user to the ajax endpoint as well
 		$args['user'] = urlencode( $user );
 
-		if ( 'fave' == $type )
+		if ( empty( $args['direction'] ) )
 		{
-			if ( 'faved' == $state )
+			$state = $this->get_comment_state( $comment_id, $type, $user );
+			if ( 'fave' == $type )
 			{
-				$args['direction'] = 'unfave';
+				if ( 'faved' == $state )
+				{
+					$args['direction'] = 'unfave';
+				}//end if
+				else
+				{
+					$args['direction'] = 'fave';
+				}//end else
 			}//end if
-			else
+			elseif ( 'flag' == $type )
 			{
-				$args['direction'] = 'fave';
-			}//end else
+				if ( 'flagged' == $state )
+				{
+					$args['direction'] = 'unflag';
+				}//end if
+				else
+				{
+					$args['direction'] = 'flag';
+				}//end else
+			}//end elseif
 		}//end if
-		elseif ( 'flag' == $type )
-		{
-			if ( 'flagged' == $state )
-			{
-				$args['direction'] = 'unflag';
-			}//end if
-			else
-			{
-				$args['direction'] = 'flag';
-			}//end else
-		}//end elseif
 
 		if ( ! $args['direction'] )
 		{

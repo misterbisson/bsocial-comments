@@ -29,6 +29,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		$( document ).on( 'click', '.comment-fave a', this.event.fave_comment );
 		$( document ).on( 'click', '.comment-flag a', this.event.flag_comment );
 		$( document ).on( 'click', '.comment-flag-confirm', this.event.confirm_flag_comment );
+		$( document ).on( 'click', '.flag-logged-in .cancel', this.event.cancel_confirm_flag_comment );
 	};
 
 	/**
@@ -79,12 +80,6 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 			if ( 'undefined' !== typeof states[ i ].favorited && states[ i ].favorited ) {
 				$comment.attr( 'data-comment-fave', 'fave' );
-				var $fave_count = $comment.find( '.fave-count:first' );
-
-				var count = parseInt( $fave_count.attr( 'data-count' ), 10 ) + 1;
-
-				$fave_count.attr( 'data-count', count );
-				$fave_count.html( count );
 			}//end if
 		}//end for
 	};
@@ -106,10 +101,19 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		this.authenticated_request( args );
 
 		// let's give immediate feedback so we don't have to wait for the ajax round-trip
+		this.adjust_fave_count( $comment, 'fave' === $comment.attr( 'data-comment-fave' ) ? 'decrement' : 'increment' );
+	};
+
+	/**
+	 * increment/decrement fave count
+	 */
+	bsocial_comments.adjust_fave_count = function( $comment, which ) {
+		which = 'decrement' === which ? 'decrement' : 'increment';
+
 		var $fave_count = $comment.find( '.fave-count:first' );
 		var count = parseInt( $fave_count.attr( 'data-count' ), 10 );
 
-		if ( 'fave' === $comment.attr( 'data-comment-fave' ) && count > 0 ) {
+		if ( 'decrement' === which && count > 0 ) {
 			count--;
 		} else {
 			count++;
@@ -159,6 +163,8 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		} else {
 			$comment.attr( 'data-comment-flag', 'flag' );
 		}//end else
+
+		$comment.find( '.feedback-box' ).slideUp( 'fast' );
 	};
 
 	/**
@@ -175,7 +181,11 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			type_inverse = 'unfave';
 		}//end else
 
-		var has_state = type === $comment.data( 'comment-' + type );
+		var has_state = false;
+
+		if ( 'undefined' !== typeof $comment.attr( 'comment-' + type ) ) {
+			has_state = type === $comment.attr( 'comment-' + type );
+		}//end else
 
 		var args = {
 			dataType: 'json',
@@ -204,7 +214,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		// this.logged_in_as comes from wp_localize_script
 		if ( this.logged_in_as ) {
 			args.data.user = {
-				user_id: this.logged_in_as
+				user_id: parseInt( this.logged_in_as, 10 )
 			};
 		}//end else
 
@@ -233,6 +243,12 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		e.preventDefault();
 
 		bsocial_comments.confirm_flag_comment( $( this ) );
+	};
+
+	bsocial_comments.event.cancel_confirm_flag_comment = function( e ) {
+		e.preventDefault();
+
+		$( this ).closest( '.feedback-box' ).slideUp( 'fast' );
 	};
 
 	$( function() {
