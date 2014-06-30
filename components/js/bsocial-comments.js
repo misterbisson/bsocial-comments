@@ -55,7 +55,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 					return;
 				}//end if
 
-				bsocial_comments.parse_comment_states( data );
+				bsocial_comments.parse_comment_states( response.data );
 			}
 		};
 
@@ -66,19 +66,14 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	 * parses comment state JSON and assigns classes to comments where appropriate
 	 */
 	bsocial_comments.parse_comment_states = function( states ) {
-		for ( var i in states ) {
-			if ( 'undefined' === typeof states[ i ].comment_id ) {
-				continue;
-			}//end if
-
-			var comment_id = states[ i ].comment_id;
+		for ( var comment_id in states ) {
 			var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
 
-			if ( 'undefined' !== typeof states[ i ].flagged && states[ i ].flagged ) {
+			if ( 'undefined' !== typeof states[ comment_id ].flagged && states[ comment_id ].flagged ) {
 				$comment.attr( 'data-comment-flag', 'flag' );
 			}//end if
 
-			if ( 'undefined' !== typeof states[ i ].favorited && states[ i ].favorited ) {
+			if ( 'undefined' !== typeof states[ comment_id ].faved && states[ comment_id ].faved ) {
 				$comment.attr( 'data-comment-fave', 'fave' );
 			}//end if
 		}//end for
