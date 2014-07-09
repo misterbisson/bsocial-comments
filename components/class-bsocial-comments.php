@@ -4,8 +4,6 @@ class bSocial_Comments
 {
 	public $id_base = 'bsocial-comments';
 	public $featured_comments = NULL;
-	public $register = NULL;
-	public $feedback = NULL;
 	public $version = '1.0';
 
 	private $options = NULL;
@@ -13,14 +11,9 @@ class bSocial_Comments
 	public function __construct()
 	{
 		add_action( 'init', array( $this, 'init' ), 1 );
-		add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
 		add_action( 'wp_ajax_bsocial_comments_status', array( $this, 'ajax_comment_status' ) );
 
 		add_action( 'delete_comment', array( $this, 'comment_id_by_meta_delete_cache' ) );
-
-		add_action( 'bsocial_comments_manage_links', array( $this, 'manage_links' ) );
-		add_action( 'bsocial_comments_feedback_links', array( $this, 'feedback_links' ) );
-		add_action( 'bsocial_comments_feedback_info', array( $this, 'feedback_info' ) );
 	} // END __construct
 
 	public function init()
@@ -29,59 +22,7 @@ class bSocial_Comments
 		{
 			$this->featured_comments();
 		} // END if
-
-		if ( $this->options()->register->enable )
-		{
-			$this->register();
-		} // END if
-
-		if ( $this->options()->feedback->enable )
-		{
-			$this->feedback();
-		} // END if
 	} // END init
-
-	/**
-	 * hooked to the wp_enqueue_scripts action
-	 */
-	public function wp_enqueue_scripts()
-	{
-		$script_config = apply_filters( 'go_config', array( 'version' => 1 ), 'go-script-version' );
-
-		wp_register_style(
-			'bsocial-comments',
-			plugins_url( 'css/bsocial-comments.css', __FILE__ ),
-			array(),
-			$script_config['version']
-		);
-
-		wp_register_script(
-			'bsocial-comments',
-			plugins_url( 'js/bsocial-comments.js', __FILE__ ),
-			array( 'jquery' ),
-			$script_config['version'],
-			TRUE
-		);
-
-		wp_register_script(
-			'bsocial-comments-moderation',
-			plugins_url( 'js/bsocial-comments-moderation.js', __FILE__ ),
-			array( 'jquery' ),
-			$script_config['version'],
-			TRUE
-		);
-
-		$data = array(
-			'nonce' => wp_create_nonce( 'bsocial-comment-feedback' ),
-			'endpoint' => admin_url( 'admin-ajax.php' ),
-			'logged_in_as' => get_current_user_id(),
-		);
-
-		wp_localize_script( 'bsocial-comments', 'bsocial_comments', $data );
-		wp_enqueue_script( 'bsocial-comments' );
-		wp_enqueue_script( 'bsocial-comments-moderation' );
-		wp_enqueue_style( 'bsocial-comments' );
-	}//end wp_enqueue_scripts
 
 	/**
 	 * featured comments object accessor
@@ -96,34 +37,6 @@ class bSocial_Comments
 
 		return $this->featured_comments;
 	} // END featured_comments
-
-	/**
-	 * Comment type/status registration object accessor
-	 */
-	public function register()
-	{
-		if ( ! $this->register )
-		{
-			require_once __DIR__ . '/class-bsocial-comments-register.php';
-			$this->register = new bSocial_Comments_Register();
-		} // END if
-
-		return $this->register;
-	} // END register
-
-	/**
-	 * Comment feedback object accessor
-	 */
-	public function feedback()
-	{
-		if ( ! $this->feedback )
-		{
-			require_once __DIR__ . '/class-bsocial-comments-feedback.php';
-			$this->feedback = new bSocial_Comments_Feedback();
-		} // END if
-
-		return $this->feedback;
-	} // END feedback
 
 	/**
 	 * plugin options getter
@@ -155,13 +68,6 @@ class bSocial_Comments
 				'has_archive'      => FALSE,
 				'rewrite_slug'     => 'talkbox',
 				'word_limit'       => 50,
-			),
-			'register' => (object) array(
-				'enable'      => TRUE,
-				'filter_text' => FALSE,
-			),
-			'feedback' => (object) array(
-				'enable'      => TRUE,
 			),
 		);
 	} // END default_options
@@ -450,94 +356,6 @@ class bSocial_Comments
 
 		die;
 	} // END ajax_comment_status
-
-	/**
-	 * hooked to bsocial_comments_manage_links outputs manage UI for a comment
-	 */
-	public function manage_links( $comment )
-	{
-		?>
-		<li class="trash-link"><?php echo $this->get_status_link( $comment->comment_ID, 'trash' ); ?></li>
-		<li class="spam-link"><?php echo $this->get_status_link( $comment->comment_ID, 'spam' ); ?></li>
-		<li class="approve-link"><?php echo $this->get_status_link( $comment->comment_ID, 'approve' ); ?></li>
-		<?php
-	}//end manage_links
-
-	/**
-	 * hooked to bsocial_comments_feedback_links outputs feedback UI for a comment
-	 */
-	public function feedback_links( $comment )
-	{
-		$favorited_count = $this->feedback()->comment_fave_count( $comment->comment_ID );
-		?>
-		<span class="comment-fave"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-star"></a><span class="fave-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span></span>
-		<span class="comment-flag"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-x"></a></span>
-		<?php
-	}//end feedback_links
-
-	/**
-	 * hooked to bsocial_comments_feedback_info outputs feedback UI for a comment
-	 */
-	public function feedback_info( $comment )
-	{
-		$message_logged_out = '<p>You must be authenticated to %1$s a comment. Please <a href="%2$s">sign in</a></p>';
-		$message_logged_in = '<p>Flag this comment.</p>';
-
-		$message_fave_logged_out = apply_filters(
-			'bsocial_feedback_fave_logged_out_message',
-			sprintf(
-				$message_logged_out,
-				'fave',
-				wp_login_url( get_permalink() )
-			),
-			$comment
-		);
-
-		$message_flag_logged_out = apply_filters(
-			'bsocial_feedback_flag_logged_out_message',
-			sprintf(
-				$message_logged_out,
-				'flag',
-				wp_login_url( get_permalink() )
-			),
-			$comment
-		);
-
-		$message_flag_logged_in = apply_filters(
-			'bsocial_feedback_flag_logged_in_message',
-			sprintf(
-				$message_logged_in,
-				'flag'
-			),
-			$comment
-		);
-		?>
-		<div class="feedback-box">
-			<section class="fave fave-logged-out">
-				<?php
-				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo $message_fave_logged_out;
-				?>
-			</section>
-			<section class="flag flag-logged-out">
-				<?php
-				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo $message_flag_logged_out;
-				?>
-			</section>
-			<section class="flag flag-logged-in">
-				<?php
-				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo $message_flag_logged_in;
-				?>
-				<p>
-					<a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>" class="button primary comment-flag-confirm">Flag</a>
-					<button class="button link cancel">Cancel</button>
-				</p>
-			</section>
-		</div>
-		<?php
-	}//end feedback_info
 }// END bSocial_Comments
 
 function bsocial_comments()
