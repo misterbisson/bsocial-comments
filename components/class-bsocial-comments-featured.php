@@ -89,9 +89,9 @@ class bSocial_Comments_Featured
 			'register_meta_box_cb' => array( $this, 'register_metaboxes' ),
 			'public' => TRUE,
 			'show_in_menu' => 'edit-comments.php',
-			'has_archive' => bsocial_comments()->options()->featuredcomments->has_archive,
+			'has_archive' => bsocial_comments()->options()->featured_comments->has_archive,
 			'rewrite' => array(
-				'slug' => bsocial_comments()->options()->featuredcomments->rewrite_slug,
+				'slug' => bsocial_comments()->options()->featured_comments->rewrite_slug,
 				'with_front' => FALSE,
 			),
 			'taxonomies' => $taxonomies,
@@ -106,7 +106,7 @@ class bSocial_Comments_Featured
 	public function pre_get_posts( $query )
 	{
 		if (
-			   bsocial_comments()->options()->featuredcomments->add_to_waterfall
+			   bsocial_comments()->options()->featured_comments->add_to_waterfall
 			&& ! is_admin()
 			&& $query->is_main_query()
 		)
@@ -226,7 +226,7 @@ class bSocial_Comments_Featured
 
 		$text = empty( $text[1] ) ? $input : $text[1];
 
-		return wp_trim_words( $text, bsocial_comments()->options()->featuredcomments->word_limit, '&hellip;' );
+		return wp_trim_words( $text, bsocial_comments()->options()->featured_comments->word_limit, '&hellip;' );
 	}// END _get_featured_comment_text
 
 	/**
@@ -314,8 +314,8 @@ class bSocial_Comments_Featured
 			'post_title' => $featured,
 			'post_content' => $featured,
 			'post_name' => sanitize_title( $featured ),
-			'post_date' => bsocial_comments()->options()->featuredcomments->use_commentdate ? $comment->comment_date : FALSE, // comment_date vs. the date the comment was featured
-			'post_date_gmt' => bsocial_comments()->options()->featuredcomments->use_commentdate ? $comment->comment_date_gmt : FALSE,
+			'post_date' => bsocial_comments()->options()->featured_comments->use_commentdate ? $comment->comment_date : FALSE, // comment_date vs. the date the comment was featured
+			'post_date_gmt' => bsocial_comments()->options()->featured_comments->use_commentdate ? $comment->comment_date_gmt : FALSE,
 			'post_author' => $parent->post_author, // so permissions map the same as for the parent post
 			'post_parent' => $parent->ID,
 			'post_status' => $parent->post_status,
