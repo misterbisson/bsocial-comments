@@ -264,7 +264,7 @@ class bSocial_Comments
 
 		$url = $this->get_status_url( $comment->comment_ID, $type );
 
-		return '<a href="' . $url . '" title="' . $text . '" class="' . $class . '">' . $text . '</a>';
+		return '<a href="' . /* @INSANE */ esc_url( $url ) . '" title="' . $text . '" class="' . $class . '">' . $text . '</a>';
 	} // END get_status_link
 
 	/**
