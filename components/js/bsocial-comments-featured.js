@@ -16,7 +16,7 @@ var bsocial_comments_featured = {};
 		$( document ).on( 'click', 'a.feature-comment', function( event ){
 			event.preventDefault();
 
-			if ( 0 != $( 'div#bsuite-fcomment.postbox ' ).length ) {
+			if ( 0 != $(this).closest( 'div#bsuite-fcomment.postbox ' ).length ) {
 				bsocial_comments_featured.meta_box_link( $(this) );
 			} else {
 				bsocial_comments_featured.comments_panel_link( $(this) );
