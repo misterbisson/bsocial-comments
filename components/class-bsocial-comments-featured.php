@@ -287,6 +287,13 @@ class bSocial_Comments_Featured
 		// @TODO: map a meta cap for this rather than extend the edit_post here
 		if ( current_user_can( 'edit_post', $comment->comment_post_ID ) )
 		{
+			// Featuring a comment implicity approves it
+			if ( 1 != $comment->comment_approved )
+			{
+				$comment->comment_approved = 1;
+				wp_update_comment( (array) $comment );
+			} // END if
+
 			if ( $post_id = $this->get_comment_meta( $comment->comment_ID ) )
 			{
 				// Post already exists so we just make sure that we account for any shortcode use
