@@ -16,7 +16,10 @@ var bsocial_comments_featured = {};
 		$( document ).on( 'click', 'a.feature-comment', function( event ){
 			event.preventDefault();
 
-			if ( 0 != $( 'div#bsuite-fcomment.postbox ' ).length ) {
+			// If someone is young and impatient like Jesus they might click on the link again causing duplicate featured comment posts
+			$(this).on( 'click', function() { return false; } );
+
+			if ( 0 != $(this).closest( 'div#bsuite-fcomment.postbox' ).length ) {
 				bsocial_comments_featured.meta_box_link( $(this) );
 			} else {
 				bsocial_comments_featured.comments_panel_link( $(this) );
@@ -58,8 +61,7 @@ var bsocial_comments_featured = {};
 
 	// Handle clicks to a comments panel feature/unfeature link
 	bsocial_comments_featured.comments_panel_link = function( feature_link ) {
-		var $comment_id   = feature_link.closest( 'tr' ).find( '.check-column input' ).attr( 'value' );
-		var $comment_tr   = $( '#comment-' + $comment_id );
+		var $comment_tr   = feature_link.closest( 'tr' );
 
 		// Fade out the the comment to show something's happening
 		$comment_tr.fadeOut( 'slow' );
