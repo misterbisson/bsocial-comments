@@ -99,6 +99,12 @@ var bsocial_comments_featured = {};
 
 			// Fade the comment back in and show success
 			bsocial_comments_featured.success( $comment_tr );
+
+			// Mark comment as approved if needed
+			if ( $( $comment_tr ).hasClass( 'unapproved' ) ) {
+				$( $comment_tr ).removeClass( 'unapproved' );
+				$( $comment_tr ).addClass( 'approved' );
+			}
 		});
 	};
 
