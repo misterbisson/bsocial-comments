@@ -25,7 +25,7 @@ class bSocial_Comments_Featured
 		add_filter( 'the_author', array( $this, 'filter_the_author' ) );
 		add_filter( 'the_author_posts_link', array( $this, 'filter_the_author_posts_link' ) );
 		add_filter( 'post_type_link', array( $this, 'post_type_link' ), 11, 2 );
-		add_filter( 'bsocial_comments_is_featured', array( $this, 'bsocial_comments_is_featured'), 10, 2 );
+		add_filter( 'bsocial_comments_is_featured', array( $this, 'bsocial_comments_is_featured' ), 10, 2 );
 	}// END __construct
 
 	/**
