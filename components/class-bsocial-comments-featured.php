@@ -503,7 +503,7 @@ class bSocial_Comments_Featured
 			array(
 				'numberposts' => 50,
 				// Just like comments we should default to
-				'order'       => ASC,
+				'order'       => 'ASC',
 			)
 		);
 
