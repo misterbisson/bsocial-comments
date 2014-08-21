@@ -223,12 +223,22 @@ class bSocial_Comments_Featured
 	 */
 	public function _get_featured_comment_text( $input )
 	{
-		preg_match( $this->wrapper_regex, $input, $text );
+		$featured_text = $this->get_only_the_featured_comment_text( $input );
 
-		$text = empty( $text[1] ) ? $input : $text[1];
+		$text = $featured_text ?: $input;
 
 		return wp_trim_words( $text, bsocial_comments()->options()->featured_comments->word_limit, '&hellip;' );
 	}// END _get_featured_comment_text
+
+	/**
+	 * Retrieves the content for the [featured_comment][/featured_comment] shortcode if there is any
+	 */
+	public function get_only_the_featured_comment_text( $input )
+	{
+		preg_match( $this->wrapper_regex, $input, $text );
+
+		return empty( $text[1] ) ? FALSE : $text[1];
+	}// END get_only_the_featured_comment_text
 
 	/**
 	 * Watches for comment edits and features the comment if either the comment_meta or content indicates it should be featured.
@@ -239,7 +249,7 @@ class bSocial_Comments_Featured
 
 		// check if the featured tags exist in the comment content, permissions will be checked in the next function
 		if (
-			   $featured = $this->_get_featured_comment_text( $comment->comment_content )
+			   $featured = $this->get_only_the_featured_comment_text( $comment->comment_content )
 			|| $this->get_comment_meta( $comment->comment_ID )
 		)
 		{
