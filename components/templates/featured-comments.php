@@ -1,6 +1,12 @@
 <?php
 foreach ( $this->featured_comments as $comment_post )
 {
+	// VIP is caching the earlier query which means comments that are unfeatured might still show up here for quite awhile
+	// This is only a partial fix but it's an easy one
+	if ( ! $this->is_featured( $comment_post->comment->comment_ID ) )
+	{
+		continue;
+	} // END if
 	?>
 	<div class="featured-comment" data-comment-id="<?php echo absint( $comment_post->comment->comment_ID ); ?>">
 		<?php echo $this->get_featured_comment_text( $comment_post->comment->comment_ID ); ?>
