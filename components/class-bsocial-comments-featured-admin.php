@@ -13,7 +13,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	} // END __construct
 
 	/**
-	 * Enqueu admin JS
+	 * Enqueue admin JS
 	 */
 	public function admin_enqueue_scripts()
 	{
@@ -47,10 +47,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	public function comment_row_actions( $actions, $comment )
 	{
 		// check permissions against the parent post
-		if (
-			   ! current_user_can( 'edit_post', $comment->comment_post_ID )
-			|| '' != $comment->comment_type
-		)
+		if ( ! current_user_can( 'edit_post', $comment->comment_post_ID ) || ( '' != $comment->comment_type && 'comment' != $comment->comment_type ) )
 		{
 			return $actions;
 		}
@@ -114,4 +111,4 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	{
 		require __DIR__ . '/templates/featured-comments.php';
 	} // END featured_comments_metabox
-} // END bSocial_Comments_Featured class
+}// END bSocial_Comments_Featured class
