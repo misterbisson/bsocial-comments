@@ -47,7 +47,10 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	public function comment_row_actions( $actions, $comment )
 	{
 		// check permissions against the parent post
-		if ( ! current_user_can( 'edit_post', $comment->comment_post_ID ) || ( '' != $comment->comment_type && 'comment' != $comment->comment_type ) )
+		if (
+			! current_user_can( 'edit_post', $comment->comment_post_ID )
+			|| ( '' != $comment->comment_type && 'comment' != $comment->comment_type )
+		)
 		{
 			return $actions;
 		}
