@@ -281,6 +281,9 @@ class bSocial_Comments_Featured
 				wp_delete_post( $post_id );
 				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id' );
 
+				// Clear out the get_featured_comment_posts cache for this post
+				wp_cache_delete( $comment->comment_post_ID, $this->id_base );
+
 				return TRUE;
 			}// END if
 		}// END if
@@ -308,13 +311,18 @@ class bSocial_Comments_Featured
 			{
 				// Post already exists so we just make sure that we account for any shortcode use
 				$featured = $this->_get_featured_comment_text( $comment->comment_content );
-				return wp_update_post( (object) array( 'ID' => $post_id, 'post_title' => $featured, 'post_content' => $featured ) );
+				$success  = wp_update_post( (object) array( 'ID' => $post_id, 'post_title' => $featured, 'post_content' => $featured ) );
 			}//END if
 			else
 			{
 				// Post doesn't exist yet so we create one
-				return $this->create_post( $comment_id );
+				$success = $this->create_post( $comment_id );
 			}//END else
+			
+			// Clear out the get_featured_comment_posts cache for this post
+			wp_cache_delete( $comment->comment_post_ID, $this->id_base );
+			
+			return $success;
 		}// END if
 	}// END feature_comment
 
@@ -505,32 +513,18 @@ class bSocial_Comments_Featured
 	 * @param $post_id int The post_id of the post you want featured comments for
 	 * @param $args array get_post args you want to use
 	 */
-	public function get_featured_comment_posts( $post_id, $args = array() )
+	public function get_featured_comment_posts( $post_id )
 	{
-		// Parse args once with defaults
-		$args = wp_parse_args(
-			$args,
-			array(
-				'numberposts' => 50,
-				// Just like comments we should default to
-				'order'       => 'ASC',
-			)
+		$args = array(
+			'post_parent' => absint( $post_id ),
+			'post_type'   => $this->post_type_name,
+			'numberposts' => 50,
+			// Just like comments we should default to
+			'order'       => 'ASC',
 		);
-
-		// Parse args again with the previously parsed args as the defaults
-		// This way we will always have the post_parent and post_type values that we need
-		$args = wp_parse_args(
-			array(
-				'post_parent' => absint( $post_id ),
-				'post_type'   => $this->post_type_name,
-			),
-			$args
-		);
-
-		$args_hash = md5( serialize( $args ) );
 
 		// Check the cache to see if we've already done this recently
-		if ( ! $comment_posts = wp_cache_get( $args_hash, $this->id_base )  )
+		if ( ! $comment_posts = wp_cache_get( $post_id, $this->id_base )  )
 		{
 			$comment_posts = get_posts( $args );
 
@@ -541,7 +535,7 @@ class bSocial_Comments_Featured
 			}// END foreach
 
 			// Store everything for 24 hours
-			wp_cache_set( $args_hash, $comment_posts, $this->id_base, 86400 );
+			wp_cache_set( $post_id, $comment_posts, $this->id_base, 86400 );
 		}// END if
 
 		return $comment_posts;
