@@ -546,6 +546,6 @@ class bSocial_Comments_Featured
 	 */
 	public function delete_featured_comment_posts_cache( $post_id )
 	{
-		return wp_cache_delete( $comment->comment_post_ID, $this->id_base );
+		return wp_cache_delete( $post_id, $this->id_base );
 	} // END delete_featured_comment_posts_cache
 }// END bSocial_Comments_Featured
