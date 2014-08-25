@@ -282,7 +282,7 @@ class bSocial_Comments_Featured
 				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id' );
 
 				// Clear out the get_featured_comment_posts cache for this post
-				wp_cache_delete( $comment->comment_post_ID, $this->id_base );
+				$this->delete_featured_comment_posts_cache( $comment->comment_post_ID );
 
 				return TRUE;
 			}// END if
@@ -320,7 +320,7 @@ class bSocial_Comments_Featured
 			}//END else
 			
 			// Clear out the get_featured_comment_posts cache for this post
-			wp_cache_delete( $comment->comment_post_ID, $this->id_base );
+			$this->delete_featured_comment_posts_cache( $comment->comment_post_ID );
 			
 			return $success;
 		}// END if
@@ -540,4 +540,12 @@ class bSocial_Comments_Featured
 
 		return $comment_posts;
 	}// END get_featured_comment_posts
+
+	/**
+	 * Delete the the featured comment posts cache for a given post_id
+	 */
+	public function delete_featured_comment_posts_cache( $post_id )
+	{
+		return wp_cache_delete( $comment->comment_post_ID, $this->id_base );
+	} // END delete_featured_comment_posts_cache
 }// END bSocial_Comments_Featured
