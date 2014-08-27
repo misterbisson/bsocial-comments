@@ -457,9 +457,9 @@ class bSocial_Comments
 	public function manage_links( $comment )
 	{
 		?>
-		<li class="trash-link"><?php echo $this->get_status_link( $comment->comment_ID, 'trash' ); ?></li>
-		<li class="spam-link"><?php echo $this->get_status_link( $comment->comment_ID, 'spam' ); ?></li>
 		<li class="approve-link"><?php echo $this->get_status_link( $comment->comment_ID, 'approve' ); ?></li>
+		<li class="spam-link"><?php echo $this->get_status_link( $comment->comment_ID, 'spam' ); ?></li>
+		<li class="trash-link"><?php echo $this->get_status_link( $comment->comment_ID, 'trash' ); ?></li>
 		<?php
 	}//end manage_links
 
