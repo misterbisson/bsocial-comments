@@ -135,8 +135,13 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-logged-out' ).slideDown( 'fast' );
 			return;
 		}//end if
-
-		$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-logged-in' ).slideDown( 'fast' );
+		else {
+			if ( 'flag' !== $comment.attr( 'data-comment-flag' ) ) {
+				$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-logged-in' ).slideDown( 'fast' );
+			} else {
+				this.confirm_flag_comment( $link );
+			}//end else
+		}//end else
 	};
 
 	/**
@@ -159,7 +164,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			$comment.attr( 'data-comment-flag', 'flag' );
 		}//end else
 
-		$comment.find( '.feedback-box' ).slideUp( 'fast' );
+		$comment.find( '.feedback-box' ).filter( ':visible' ).slideUp( 'fast' );
 	};
 
 	/**
