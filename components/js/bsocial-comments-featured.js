@@ -6,9 +6,7 @@ var bsocial_comments_featured = {};
 	// Start things up...
 	bsocial_comments_featured.init = function() {
 		// Add a featured comment button to quicktags when we're editing a comment
-		if( $( 'body' ).hasClass( 'comment-php' ) || $( 'body' ).hasClass( 'edit-comments-php' ) ) {
-			QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment' );
-		}
+		QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment' );
 
 		bsocial_comments_featured.watch_links();
 	};
