@@ -25,6 +25,7 @@ class bSocial_Comments_Register
 		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 11, 2 );
 		add_filter( 'wp_count_comments', array( $this, 'wp_count_comments' ), 10, 2 );
 		add_filter( 'comments_per_page', array( $this, 'comments_per_page' ) );
+		add_filter( 'comments_clauses', array( $this, 'comments_clauses' ) );
 		add_filter( 'admin_comment_types_dropdown', array( $this, 'admin_comment_types_dropdown' ) );
 
 		add_action( 'transition_comment_status', array( $this, 'transition_comment_status' ), 10, 3 );
@@ -481,6 +482,49 @@ class bSocial_Comments_Register
 
 		return $comments_per_page;
 	} // END comments_per_page
+
+	/**
+	 * Hook into the comments_clauses filter hook and return adjusted WHERE clause that includes ALL appropriate statuses if $_GET['comment_status'] == 'all'
+	 *
+	 * @param $clauses (array) Array of SQL clauses for the comments query
+	 */
+	public function comments_clauses( $clauses )
+	{
+		// Make sure the query is for all statuses
+		if ( 'all' != $_GET['comment_status'] )
+		{
+			return $clauses;
+		} // END if
+
+		// Make sure we actually need to add any statuses
+		if ( empty( $this->comment_statuses ) )
+		{
+			return $clauses;
+		} // END if
+
+		// Build status clause
+		$status_clause = '';
+
+		for ( $i = 0; $i < count( $this->comment_statuses ) ; $i++ )
+		{
+			$status_clause .= " OR comment_approved = '%s'";
+		} // END for
+
+		$prepare_args = array_keys( $this->comment_statuses );
+
+		// Add the status clause to the begining fo the prepare arguments
+		array_unshift( $prepare_args, trim( $status_clause ) );
+
+		global $wpdb;
+
+		$clauses['where'] = preg_replace(
+			'#^\( (comment_approved = \'0\' OR comment_approved = \'1\') \)#',
+			'( ${1} ' . call_user_func_array( array( $wpdb, 'prepare' ), $prepare_args ) . ' )',
+			$clauses['where']
+		);
+
+		return $clauses;
+	} // END comments_clauses
 
 	/**
 	 * Hook to transition_comment_status action to watch for status changes and delete relating stats caches in response
