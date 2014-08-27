@@ -89,7 +89,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		if ( ! this.authenticated ) {
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'fave' ] );
-			$comment.find( '.feedback-box:first' ).attr( 'data-type', 'fave-logged-out' ).slideDown( 'fast' );
+			$( document ).trigger( 'bsocial-comments-fave-not-authenticated', $comment );
 			return;
 		}//end if
 
@@ -132,12 +132,12 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		if ( ! this.authenticated ) {
 			var args = this.generate_ajax_args( $comment, $link, 'flag' );
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'flag' ] );
-			$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-logged-out' ).slideDown( 'fast' );
+			$( document ).trigger( 'bsocial-comments-flag-not-authenticated', $comment );
 			return;
 		}//end if
 		else {
 			if ( 'flag' !== $comment.attr( 'data-comment-flag' ) ) {
-				$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-logged-in' ).slideDown( 'fast' );
+				$( document ).trigger( 'bsocial-comments-flag-is-authenticated', $comment );
 			} else {
 				this.confirm_flag_comment( $link );
 			}//end else
@@ -164,7 +164,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			$comment.attr( 'data-comment-flag', 'flag' );
 		}//end else
 
-		$comment.find( '.feedback-box' ).filter( ':visible' ).slideUp( 'fast' );
+		$( document ).trigger( 'bsocial-comments-flag-confirmed', $comment );
 	};
 
 	/**
