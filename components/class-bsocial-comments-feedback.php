@@ -51,14 +51,6 @@ class bSocial_Comments_Feedback
 		bsocial_comments()->register()->comment_status( 'feedback', $args );
 
 		$args = array(
-			'label'                  => 'Test Status',
-			'label_count'            => _n_noop('Test Status <span class="count">(%s)</span>', 'Test Status <span class="count">(%s)</span>'),
-			'show_in_admin_all_list' => TRUE,
-		);
-
-		bsocial_comments()->register()->comment_status( 'test-status', $args );
-
-		$args = array(
 			'labels' => array(
 				'name'          => 'Faves',
 				'singular_name' => 'Fave',
@@ -239,7 +231,7 @@ class bSocial_Comments_Feedback
 		{
 			if ( $feedback_id = $this->get_feedback_id( $comment_id, $type, $comment_author_email ) )
 			{
-				$sucess = wp_delete_comment( $feedback->ID, TRUE );
+				$sucess = wp_delete_comment( $feedback_id, TRUE );
 			} // END if
 		} // END else
 
@@ -340,6 +332,8 @@ class bSocial_Comments_Feedback
 		{
 			return FALSE;
 		} // END if
+
+		global $wpdb;
 
 		$sql = 'SELECT comment_ID AS ID
 				FROM ' . $wpdb->comments . '
@@ -476,6 +470,9 @@ class bSocial_Comments_Feedback
 
 		// Pass the user to the ajax endpoint as well
 		$args['user'] = urlencode( $user );
+
+		// Pass post_id the post this comment is for
+		$args['post_id'] = $comment->comment_post_ID;
 
 		if ( empty( $args['direction'] ) )
 		{
