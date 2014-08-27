@@ -480,8 +480,8 @@ class bSocial_Comments
 	 */
 	public function feedback_info( $comment )
 	{
-		$message_logged_out = '<p>You must be authenticated to %1$s a comment. Please <a href="%2$s">sign in</a></p>';
-		$message_logged_in = '<p>Flag this comment.</p>';
+		$message_logged_out = '<p>Sign in to %1$s this comment</p>';
+		$message_logged_in = '<h2>Reason for flagging this comment:</h2>';
 
 		$message_fave_logged_out = apply_filters(
 			'bsocial_feedback_fave_logged_out_message',
