@@ -51,6 +51,14 @@ class bSocial_Comments_Feedback
 		bsocial_comments()->register()->comment_status( 'feedback', $args );
 
 		$args = array(
+			'label'                  => 'Test Status',
+			'label_count'            => _n_noop('Test Status <span class="count">(%s)</span>', 'Test Status <span class="count">(%s)</span>'),
+			'show_in_admin_all_list' => TRUE,
+		);
+
+		bsocial_comments()->register()->comment_status( 'test-status', $args );
+
+		$args = array(
 			'labels' => array(
 				'name'          => 'Faves',
 				'singular_name' => 'Fave',
@@ -90,7 +98,7 @@ class bSocial_Comments_Feedback
 			),
 		);
 
-		bsocial_comments()->register()->comment_type( 'flags', $args );
+		bsocial_comments()->register()->comment_type( 'flag', $args );
 	} // END init
 
 	/**
