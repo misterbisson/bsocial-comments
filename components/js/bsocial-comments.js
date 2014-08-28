@@ -88,11 +88,13 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		var args = this.generate_ajax_args( $comment, $link, 'fave' );
 
 		if ( ! this.authenticated ) {
+			$comment.addClass( 'faving' );
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'fave' ] );
 			$( document ).trigger( 'bsocial-comments-fave-not-authenticated', $comment );
 			return;
 		}//end if
 
+		$comment.removeClass( 'faving' );
 		this.authenticated_request( args );
 
 		// let's give immediate feedback so we don't have to wait for the ajax round-trip
@@ -128,8 +130,15 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	 */
 	bsocial_comments.flag_comment = function( $link ) {
 		var $comment = $link.closest( '.comment' );
+		var $feedback_box = $comment.find( '.feedback-box' ).filter( ':visible' );
+
+		if ( $feedback_box.length ) {
+			$feedback_box.find( '.flag-logged-in .cancel' ).click();
+			return;
+		}//end if
 
 		if ( ! this.authenticated ) {
+			$comment.addClass( 'flagging' );
 			var args = this.generate_ajax_args( $comment, $link, 'flag' );
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'flag' ] );
 			$( document ).trigger( 'bsocial-comments-flag-not-authenticated', $comment );
@@ -137,6 +146,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		}//end if
 		else {
 			if ( 'flag' !== $comment.attr( 'data-comment-flag' ) ) {
+				$comment.addClass( 'flagging' );
 				$( document ).trigger( 'bsocial-comments-flag-is-authenticated', $comment );
 			} else {
 				this.confirm_flag_comment( $link );
@@ -154,6 +164,8 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		if ( ! this.authenticated ) {
 			return;
 		}//end if
+
+		$comment.removeClass( 'flagging' );
 
 		this.authenticated_request( args );
 
@@ -248,7 +260,10 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	bsocial_comments.event.cancel_confirm_flag_comment = function( e ) {
 		e.preventDefault();
 
-		$( this ).closest( '.feedback-box' ).slideUp( 'fast' );
+		var $el = $( this );
+
+		$el.closest( '.comment' ).removeClass( 'flagging' );
+		$el.closest( '.feedback-box' ).slideUp( 'fast' );
 	};
 
 	$( function() {
