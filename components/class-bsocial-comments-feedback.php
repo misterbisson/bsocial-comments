@@ -62,7 +62,7 @@ class bSocial_Comments_Feedback
 			'description'   => 'Comment faves',
 			'public'        => TRUE,
 			'show_ui'       => TRUE,
-			'admin_actions' => array( 'trash' ),
+			'admin_actions' => array( 'trash', 'untrash', 'delete' ),
 			'statuses'      => array(
 				'feedback',
 				'trash',
@@ -83,7 +83,7 @@ class bSocial_Comments_Feedback
 			'description'   => 'Comment flags',
 			'public'        => TRUE,
 			'show_ui'       => TRUE,
-			'admin_actions' => array( 'trash' ),
+			'admin_actions' => array( 'trash', 'untrash', 'delete'  ),
 			'statuses'      => array(
 				'feedback',
 				'trash',
