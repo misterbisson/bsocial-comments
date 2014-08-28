@@ -478,8 +478,8 @@ class bSocial_Comments
 	 */
 	public function feedback_links( $comment )
 	{
-		$favorited_count = $this->feedback()->comment_fave_count( $comment->comment_ID );
-		$flagged_count = $this->feedback()->comment_flag_count( $comment->comment_ID );
+		$favorited_count = $this->feedback()->get_comment_fave_count( $comment->comment_ID );
+		$flagged_count = $this->feedback()->get_comment_flag_count( $comment->comment_ID );
 		?>
 		<span class="comment-fave">
 			<a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-fave" title="Fave this comment"></a>

@@ -4,6 +4,7 @@ class bSocial_Comments_Feedback
 {
 	public $id_base = 'bsocial-comments-feedback';
 	public $admin = FALSE;
+	public $current_feedback = array();
 
 	public function __construct()
 	{
@@ -12,6 +13,10 @@ class bSocial_Comments_Feedback
 		add_action( 'wp_ajax_bsocial_comments_comment_feedback', array( $this, 'ajax_comment_feedback' ) );
 		add_action( 'wp_ajax_nopriv_bsocial_comments_comment_feedback', array( $this, 'ajax_comment_feedback' ) );
 		add_action( 'wp_ajax_bsocial_comments_feedback_states_for_user', array( $this, 'ajax_states_for_user' ) );
+		add_action( 'delete_comment', array( $this, 'delete_comment' ) );
+		add_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
+		add_action( 'comment_delete_fave', array( $this, 'comment_delete_fave_flag' ), 10, 2 );
+		add_action( 'comment_delete_flag', array( $this, 'comment_delete_fave_flag' ), 10, 2 );
 	} // end __construct
 
 	/**
@@ -186,7 +191,7 @@ class bSocial_Comments_Feedback
 
 		$type = $directions_to_types[ $direction ];
 
-		$user_id = ! empty( $args['user']['user_id'] ) ? absint( $args['user']['user_id'] ) : null;
+		$user_id = ! empty( $args['user']['user_id'] ) ? absint( $args['user']['user_id'] ) : NULL;
 
 		if ( $user_id && $user = get_user_by( 'id', $user_id ) )
 		{
@@ -213,18 +218,11 @@ class bSocial_Comments_Feedback
 
 		if ( 0 != strncmp( 'un', $direction, 2 ) )
 		{
-			$content = empty( $args['flag_type'] ) ? $type : $args['flag_type'];
-
-			if ( ! empty( $args['flag_text'] ) )
-			{
-				$content .= ': ' . sanitize_text_field( $args['flag_text'] );
-			}//end if
-
 			$comment = array(
 					'comment_post_ID'      => $post_id,
 					'comment_author'       => $comment_author,
 					'comment_author_email' => $comment_author_email,
-					'comment_content'      => $content,
+					'comment_content'      => empty( $args['flag_type'] ) ? $type : $args['flag_type'],
 					'comment_type'         => $type,
 					'comment_parent'       => $comment_id,
 					'user_id'              => $user_id ?: 0,
@@ -410,31 +408,51 @@ class bSocial_Comments_Feedback
 	/**
 	 * gives a count for the number of times a comment has been favorited
 	 */
-	public function comment_fave_count( $comment_id )
+	public function get_comment_fave_count( $comment_id )
 	{
-		global $wpdb;
-
-		$sql = 'SELECT COUNT(*) AS count
-				FROM ' . $wpdb->comments . '
-				WHERE comment_parent = %d
-				AND comment_type = %s
-				AND comment_approved = %s';
-
-		$count = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, 'fave', 'feedback' ) );
-
-		if ( 0 < $count->count )
+		if ( ! $comment = get_comment( $comment_id ) )
 		{
-			return absint( $count->count );
+			return NULL;
 		} // END if
 
-		return 0;
-	}//end comment_fave_count
+		if ( ! $count = get_comment_meta( $comment_id, $this->id_base . '-flags', TRUE ) )
+		{
+			$count = $this->update_feedback_counts( $comment_id, 'faves' );
+		} // END if
+
+		return $count;
+	}//end get_comment_fave_count
 
 	/**
 	 * gives a count for the number of times a comment has been flagged
 	 */
-	public function comment_flag_count( $comment_id )
+	public function get_comment_flag_count( $comment_id )
 	{
+		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return NULL;
+		} // END if
+
+		if ( ! $count = get_comment_meta( $comment_id, $this->id_base . '-flags', TRUE ) )
+		{
+			$count = $this->update_feedback_counts( $comment_id, 'flags' );
+		} // END if
+
+		return $count;
+	}//end get_comment_flag_count
+
+	public function update_feedback_counts( $comment_id, $type )
+	{
+		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return NULL;
+		} // END if
+
+		if ( 'faves' != $type && 'flags' != $type )
+		{
+			return NULL;
+		} // END if
+
 		global $wpdb;
 
 		$sql = 'SELECT COUNT(*) AS count
@@ -443,15 +461,12 @@ class bSocial_Comments_Feedback
 				AND comment_type = %s
 				AND comment_approved = %s';
 
-		$count = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, 'flag', 'feedback' ) );
+		$query = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, substr( $type, 0, -1 ), 'feedback' ) );
+		$count = absint( $query->count );
+		update_comment_meta( $comment_id, $this->id_base . '-' . $type, $count );
 
-		if ( 0 < $count->count )
-		{
-			return absint( $count->count );
-		} // END if
-
-		return FALSE;
-	}//end comment_flag_count
+		return $count;
+	} // END update_feedback_counts
 
 	/**
 	 * returns a link for favoriting a comment
@@ -515,4 +530,81 @@ class bSocial_Comments_Feedback
 
 		return add_query_arg( $args, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
 	}//end get_comment_feedback_url
+
+	/**
+	 * Hook to delete_comment action and if a comment has feedback we store it so we can remove it later in deleted_comment
+	 *
+	 * @param $comment_id (int) The id of the comment
+	 */
+	public function delete_comment( $comment_id )
+	{
+		global $wpdb;
+
+		if ( ! $comment = get_comment( $comment_id ) )
+		{
+			return;
+		} // END if
+
+		// Make sure we're dealing with a comment that can have feedback
+		if ( '' != $comment->comment_type AND 'comment' != $comment->comment_type )
+		{
+			return;
+		} // END if
+
+		$sql = 'SELECT comment_ID
+				FROM ' . $wpdb->comments . '
+				WHERE comment_parent = %d
+				AND ( comment_type = %s
+				OR comment_type = %s )';
+
+		// If there was any feedback we want to store it so deleted_comment can delete it AFTER the parent comment has successful gone away
+		if ( $feedback = $wpdb->get_results( $wpdb->prepare( $sql, $comment_id, 'fave', 'flag' ) ) )
+		{
+			$this->current_feedback[ $comment_id ] = $feedback;
+		} // END if
+	} // END delete_comment
+
+	/**
+	 * Hook to deleted_comment action and if the comment has feedback children delete them as well
+	 *
+	 * @param $comment_id (int) The id of the comment
+	 */
+	public function deleted_comment( $comment_id )
+	{
+		if ( ! isset( $this->current_feedback[ $comment_id ] ) )
+		{
+			return;
+		} // END if
+
+		// Remove oursevles so we don't infinite loop
+		remove_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
+
+		foreach ( $this->current_feedback[ $comment_id ] as $comment )
+		{
+			wp_delete_comment( $comment->comment_ID, TRUE );
+		} // END foreach
+
+		unset( $this->current_feedback[ $comment_id ] );
+
+		// Add ourselves back in
+		add_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
+	} // END deleted_comment
+
+	/**
+	 * Hook to comment_delete_fave and comment_delete_flag actions and update counts
+	 *
+	 * @param $comment_id (int) The id of the comment
+	 */
+	public function comment_delete_fave_flag( $unused_comment_id, $comment )
+	{
+		if ( 'fave' == $comment->comment_type )
+		{
+			$this->update_feedback_counts( $comment->comment_parent, 'faves' );
+		} // END if
+
+		if ( 'flag' == $comment->comment_type )
+		{
+			$this->update_feedback_counts( $comment->comment_parent, 'flags' );
+		} // END if
+	} // END transition_comment_status
 }// END bSocial_Comments_Feedback
