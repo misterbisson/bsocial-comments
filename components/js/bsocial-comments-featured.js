@@ -7,8 +7,10 @@ var bsocial_comments_featured = {};
 	bsocial_comments_featured.init = function() {
 		// Add a featured comment button to quicktags when we're editing a comment
 		if( 'comment.php' == hook || 'edit-comments' == hook ) {
+			//we're on a comment-only page, we can add to all of them
 			QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment');
 		} else {
+			//we're not on a comment-only page, be picky where we put the button
 			QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment', 200, 'replycontent' );
 		}
 
