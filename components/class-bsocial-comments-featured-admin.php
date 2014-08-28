@@ -6,8 +6,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 
 	public function __construct()
 	{
-		//add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-		add_action( 'current_screen', array( $this, 'admin_enqueue_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 10, 2 );
 
 		add_filter( 'comment_row_actions', array( $this, 'comment_row_actions' ), 10, 2 );
@@ -16,18 +15,15 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	/**
 	 * Enqueue admin JS
 	 */
-	public function admin_enqueue_scripts( $current_screen )
+	public function admin_enqueue_scripts( $hook )
 	{
-		//If we're not editing a comment, get out of here
-		if( 'edit-comments' != $current_screen->id && 'comment' != $current_screen->id )
-		{
-			do_action( 'debug_robot', print_r( $current_screen, TRUE ) );
-			return;
-		}
+
 		$version_config = apply_filters( 'go_config', array( 'version' => bsocial_comments()->version ), 'go-script-version' );
 
 		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-featured.js', __FILE__ ), array( 'jquery' ), $version_config['version'], TRUE );
 		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-featured.css', __FILE__ ), array(), $version_config['version'] );
+
+		wp_localize_script( $this->id_base, 'hook', $hook );
 
 		$valid_bases = array(
 			'comment',
@@ -41,6 +37,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		{
 			return;
 		} // END if
+
 
 		wp_enqueue_script( $this->id_base );
 	} // END admin_enqueue_scripts

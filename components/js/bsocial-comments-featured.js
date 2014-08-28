@@ -5,8 +5,13 @@ var bsocial_comments_featured = {};
 
 	// Start things up...
 	bsocial_comments_featured.init = function() {
+		console.log(hook);
 		// Add a featured comment button to quicktags when we're editing a comment
-		QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment' );
+		if( 'comment.php' == hook || 'edit-comments' == hook ) {
+			QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment');
+		} else {
+			QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment', 200, 'replycontent' );
+		}
 
 		bsocial_comments_featured.watch_links();
 	};
