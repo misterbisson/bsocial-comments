@@ -163,6 +163,16 @@ class bSocial_Comments
 			'feedback' => (object) array(
 				'enable'      => TRUE,
 			),
+			'reasons' => array(
+				'spam' => array(
+					'reason' => 'Spam',
+					'display-text' => 'Spam',
+				),
+				'personal-attack' => array(
+					'reason' => 'Personal attack',
+					'display-text' => 'Personal attack',
+				),
+			),
 		);
 	} // END default_options
 
@@ -497,18 +507,7 @@ class bSocial_Comments
 		$message_logged_out = '<p>Sign in to %1$s this comment</p>';
 		$message_logged_in = '<h2>Reason for flagging this comment:</h2>';
 
-		$reasons = array(
-			'spam' => array(
-				'reason' => 'Spam',
-				'display-text' => 'Spam',
-			),
-			'personal-attack' => array(
-				'reason' => 'Personal attack',
-				'display-text' => 'Personal attack',
-			),
-		);
-
-		$reasons = apply_filters( 'bsocial_comments_feedback_flag_reasons', $reasons );
+		$reasons = $this->options()->reasons;
 
 		$message_fave_logged_out = apply_filters(
 			'bsocial_comments_feedback_fave_logged_out_message',
