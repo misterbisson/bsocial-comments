@@ -212,15 +212,26 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	 */
 	bsocial_comments.confirm_flag_comment = function( $link ) {
 		var $comment = $link.closest( '.comment' );
+		var $form = $comment.find( '> .feedback-box .flag-logged-in' );
 		var args = this.generate_ajax_args( $comment, $link, 'flag' );
 
 		if ( ! this.authenticated ) {
 			return;
 		}//end if
 
+		if ( 'flag' !== $comment.attr( 'data-comment-flag' ) ) {
+			if ( '' === $.trim( $form.find( '.reason-description' ).val() ) ) {
+				$form.find( '.required' ).show();
+				return;
+			}//end if
+		}//end if
+
 		$comment.removeClass( 'faving flagging' );
 
 		this.authenticated_request( args );
+
+		$form.find( '.reason:checked' ).prop( false );
+		$form.find( '.reason-description' ).val( '' );
 
 		// let's give immediate feedback so we don't have to wait for the ajax round-trip
 		if ( 'flag' === $comment.attr( 'data-comment-flag' ) ) {

@@ -590,6 +590,7 @@ class bSocial_Comments
 					</p>
 					<p>
 						<textarea class="reason-description" name="<?php echo esc_attr( $description_name ); ?>" id="<?php echo esc_attr( $description_id ); ?>"></textarea>
+						<span class="required">Describe your reason for flagging this comment.</span>
 					</p>
 					<p>
 						<a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>" class="button primary comment-flag-confirm">Flag</a>
