@@ -84,17 +84,24 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	 */
 	bsocial_comments.fave_comment = function( $link ) {
 		var $comment = $link.closest( '.comment' );
+		var $feedback_box = $comment.find( '.feedback-box .fave-logged-out' ).filter( ':visible' );
+
+		if ( $feedback_box.length ) {
+			$comment.removeClass( 'faving flagging' );
+			$comment.find( '.feedback-box' ).slideUp( 'fast' );
+			return;
+		}//end if
 
 		var args = this.generate_ajax_args( $comment, $link, 'fave' );
 
 		if ( ! this.authenticated ) {
-			$comment.addClass( 'faving' );
+			$comment.addClass( 'faving' ).removeClass( 'flagging' );
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'fave' ] );
 			$( document ).trigger( 'bsocial-comments-fave-not-authenticated', $comment );
 			return;
 		}//end if
 
-		$comment.removeClass( 'faving' );
+		$comment.removeClass( 'faving flagging' );
 		this.authenticated_request( args );
 
 		// let's give immediate feedback so we don't have to wait for the ajax round-trip
@@ -132,13 +139,18 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		var $comment = $link.closest( '.comment' );
 		var $feedback_box = $comment.find( '.feedback-box' ).filter( ':visible' );
 
-		if ( $feedback_box.length ) {
+		if ( $feedback_box.find( '.flag-logged-in' ).filter( ':visible' ).length ) {
 			$feedback_box.find( '.flag-logged-in .cancel' ).click();
 			return;
 		}//end if
+		else if ( $feedback_box.find( '.flag-logged-out' ).filter( ':visible' ).length ) {
+			$comment.removeClass( 'faving flagging' );
+			$feedback_box.slideUp( 'fast' );
+			return;
+		}//end else if
 
 		if ( ! this.authenticated ) {
-			$comment.addClass( 'flagging' );
+			$comment.addClass( 'flagging' ).removeClass( 'faving' );
 			var args = this.generate_ajax_args( $comment, $link, 'flag' );
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'flag' ] );
 			$( document ).trigger( 'bsocial-comments-flag-not-authenticated', $comment );
@@ -146,7 +158,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		}//end if
 		else {
 			if ( 'flag' !== $comment.attr( 'data-comment-flag' ) ) {
-				$comment.addClass( 'flagging' );
+				$comment.addClass( 'flagging' ).removeClass( 'faving' );
 				$( document ).trigger( 'bsocial-comments-flag-is-authenticated', $comment );
 			} else {
 				this.confirm_flag_comment( $link );
@@ -165,7 +177,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			return;
 		}//end if
 
-		$comment.removeClass( 'flagging' );
+		$comment.removeClass( 'faving flagging' );
 
 		this.authenticated_request( args );
 
@@ -262,7 +274,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		var $el = $( this );
 
-		$el.closest( '.comment' ).removeClass( 'flagging' );
+		$el.closest( '.comment' ).removeClass( 'faving flagging' );
 		$el.closest( '.feedback-box' ).slideUp( 'fast' );
 	};
 
