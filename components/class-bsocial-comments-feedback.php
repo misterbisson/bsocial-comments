@@ -508,16 +508,4 @@ class bSocial_Comments_Feedback
 
 		return add_query_arg( $args, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
 	}//end get_comment_feedback_url
-
-	/**
-	 * hooked to bsocial_comments_feedback_links outputs feedback UI for a comment
-	 */
-	public function feedback_links( $comment )
-	{
-		$fave_count = $this->comment_fave_count( $comment->comment_ID );
-		?>
-		<span class="comment-like"><a href="<?php echo esc_url( $this->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-star"></a><span class="like-count" data-count="<?php echo absint( $fave_count ); ?>"><?php echo absint( $fave_count ); ?></span></span>
-		<span class="comment-flag"><a href="<?php echo esc_url( $this->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-x"></a></span>
-		<?php
-	}//end feedback_links
 }// END bSocial_Comments_Feedback

@@ -183,8 +183,8 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		var has_state = false;
 
-		if ( 'undefined' !== typeof $comment.attr( 'comment-' + type ) ) {
-			has_state = type === $comment.attr( 'comment-' + type );
+		if ( 'undefined' !== typeof $comment.attr( 'data-comment-' + type ) ) {
+			has_state = type === $comment.attr( 'data-comment-' + type );
 		}//end else
 
 		var args = {
