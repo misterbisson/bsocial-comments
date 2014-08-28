@@ -7,8 +7,13 @@
 	margin-bottom: 0;
 }
 
+.comment .feedback-box .other-describe,
 .comment .feedback-box .required {
 	display: none;
+}
+
+.comment .feedback-box form[data-selected-reason="other"] .other-describe {
+	display: block;
 }
 
 .comment .feedback-box[data-type="fave-logged-out"] .fave-logged-out,
