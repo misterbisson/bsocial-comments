@@ -362,12 +362,12 @@ class bSocial_Comments_Feedback
 	 */
 	public function get_comment_state( $comment_id, $type, $user )
 	{
-		global $wpdb;
-
 		if ( 'fave' != $type && 'flag' != $type )
 		{
 			return FALSE;
 		} // END if
+
+		global $wpdb;
 
 		$sql = 'SELECT COUNT(*) AS count
 				FROM ' . $wpdb->comments . '
@@ -390,11 +390,11 @@ class bSocial_Comments_Feedback
 
 		if ( 'fave' == $type )
 		{
-			$state = isset( $count->count ) ? 'faved' : 'unfaved';
+			$state = 0 < $count->count ? 'faved' : 'unfaved';
 		} // END if
 		else
 		{
-			$state = isset( $count->count ) ? 'flagged' : 'unflagged';
+			$state = 0 < $count->count ? 'flagged' : 'unflagged';
 		} // END else
 
 		return $state;
@@ -415,12 +415,12 @@ class bSocial_Comments_Feedback
 
 		$count = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, 'fave', 'feedback' ) );
 
-		if ( isset( $count->count ) )
+		if ( 0 < $count->count )
 		{
 			return absint( $count->count );
 		} // END if
 
-		return FALSE;
+		return 0;
 	}//end comment_fave_count
 
 	/**
@@ -438,7 +438,7 @@ class bSocial_Comments_Feedback
 
 		$count = $wpdb->get_row( $wpdb->prepare( $sql, $comment_id, 'flag', 'feedback' ) );
 
-		if ( isset( $count->count ) )
+		if ( 0 < $count->count )
 		{
 			return absint( $count->count );
 		} // END if
