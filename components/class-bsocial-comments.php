@@ -566,7 +566,14 @@ class bSocial_Comments
 							$name = preg_replace( '/_reason_.+$/', '_reason', str_replace( '-', '_', $id ) );
 							?>
 							<label for="<?php echo esc_attr( $id ); ?>">
-								<input type="radio" class="go-radio reason" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $id ); ?>" value="<?php echo esc_attr( $reason['reason'] ); ?>">
+							<input
+								type="radio"
+								class="go-radio reason"
+								name="<?php echo esc_attr( $name ); ?>"
+								id="<?php echo esc_attr( $id ); ?>"
+								value="<?php echo esc_attr( $reason['reason'] ); ?>"
+								data-reason-type="<?php echo esc_attr( $reason_id ); ?>"
+							>
 								<span>
 									<?php
 									// using wp_kses_post because we wish to support HTML here
@@ -584,12 +591,12 @@ class bSocial_Comments
 						$description_name = str_replace( '-', '_', $description_id );
 						?>
 						<label for="<?php echo esc_attr( $id ); ?>">
-							<input type="radio" class="go-radio reason" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $id ); ?>" value="Other">
-							<span>Other (please describe):</span>
+							<input type="radio" class="go-radio reason" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $id ); ?>" value="Other" data-reason-type="other">
+							<span>Other</span>
 						</label>
 					</p>
-					<p>
-						<textarea class="reason-description" name="<?php echo esc_attr( $description_name ); ?>" id="<?php echo esc_attr( $description_id ); ?>"></textarea>
+					<p class="other-describe">
+						<textarea placeholder="Please describe" class="reason-description" name="<?php echo esc_attr( $description_name ); ?>" id="<?php echo esc_attr( $description_id ); ?>"></textarea>
 						<span class="required">Describe your reason for flagging this comment.</span>
 					</p>
 					<p>
