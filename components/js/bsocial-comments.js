@@ -27,9 +27,11 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		}
 
 		$( document ).on( 'click', '.comment-fave a', this.event.fave_comment );
-		$( document ).on( 'click', '.comment-flag a', this.event.flag_comment );
+		$( document ).on( 'click', '.comment-flag a, .flag-submitted .unflag', this.event.flag_comment );
 		$( document ).on( 'click', '.comment-flag-confirm', this.event.confirm_flag_comment );
+		$( document ).on( 'submit', '.flag-logged-in form', this.event.confirm_flag_comment );
 		$( document ).on( 'click', '.flag-logged-in .cancel', this.event.cancel_confirm_flag_comment );
+		$( document ).on( 'change', '.reason', this.event.select_reason );
 	};
 
 	/**
@@ -70,13 +72,53 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
 
 			if ( 'undefined' !== typeof states[ comment_id ].flagged && states[ comment_id ].flagged ) {
-				$comment.attr( 'data-comment-flag', 'flag' );
+				this.set_flag_state( comment_id, 'flag' );
 			}//end if
 
 			if ( 'undefined' !== typeof states[ comment_id ].faved && states[ comment_id ].faved ) {
-				$comment.attr( 'data-comment-fave', 'fave' );
+				this.set_fave_state( comment_id, 'fave' );
 			}//end if
 		}//end for
+	};
+
+	/**
+	 * sets a comments fave state
+	 */
+	bsocial_comments.set_fave_state = function( comment_id, state ) {
+		var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
+		var $fave_link = $comment.find( ' > .div-comment .comment-fave a' );
+		var href = $fave_link.attr( 'href' );
+
+		$comment.attr( 'data-comment-fave', state );
+		$comment.removeClass( 'faving' );
+
+		if ( 'fave' === state ) {
+			$fave_link.attr( 'title', 'Unfave this comment' );
+			$fave_link.attr( 'href', href.replace( 'direction=fave', 'direction=unfave' ) );
+		} else {
+			$fave_link.attr( 'title', 'Fave this comment' );
+			$fave_link.attr( 'href', href.replace( 'direction=unfave', 'direction=fave' ) );
+		}//end else
+	};
+
+	/**
+	 * sets a comments fave state
+	 */
+	bsocial_comments.set_flag_state = function( comment_id, state ) {
+		var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
+		var $flag_link = $comment.find( ' > .div-comment .comment-flag a' );
+		var href = $flag_link.attr( 'href' );
+
+		$comment.attr( 'data-comment-flag', state );
+		$comment.removeClass( 'flagging' );
+
+		if ( 'flag' === state ) {
+			$flag_link.attr( 'title', 'Unflag this comment' );
+			$flag_link.attr( 'href', href.replace( 'direction=flag', 'direction=unflag' ) );
+		} else {
+			$flag_link.attr( 'title', 'Flag this comment' );
+			$flag_link.attr( 'href', href.replace( 'direction=unflag', 'direction=flag' ) );
+		}//end else
 	};
 
 	/**
@@ -96,8 +138,9 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		if ( ! this.authenticated ) {
 			$comment.addClass( 'faving' ).removeClass( 'flagging' );
+			$( comment ).find( '.feedback-box:first' ).attr( 'data-type', 'fave-logged-out' ).slideDown( 'fast' );
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'fave' ] );
-			$( document ).trigger( 'bsocial-comments-fave-not-authenticated', $comment );
+			$( document ).trigger( 'bsocial-comments-fave-not-authenticated', [ $comment ] );
 			return;
 		}//end if
 
@@ -126,9 +169,9 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		$fave_count.html( count ).attr( 'data-count', count );
 
 		if ( 'fave' === $comment.attr( 'data-comment-fave' ) ) {
-			$comment.attr( 'data-comment-fave', 'unfave' );
+			this.set_fave_state( $comment.data( 'comment-id' ), 'unfave' );
 		} else {
-			$comment.attr( 'data-comment-fave', 'fave' );
+			this.set_fave_state( $comment.data( 'comment-id' ), 'fave' );
 		}//end else
 	};
 
@@ -151,15 +194,17 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		if ( ! this.authenticated ) {
 			$comment.addClass( 'flagging' ).removeClass( 'faving' );
+			$( comment ).find( '.feedback-box:first' ).attr( 'data-type', 'flag-logged-out' ).slideDown( 'fast' );
 			var args = this.generate_ajax_args( $comment, $link, 'flag' );
 			$( document ).trigger( 'bsocial-comments-defer-action-for-auth', [ args, 'flag' ] );
-			$( document ).trigger( 'bsocial-comments-flag-not-authenticated', $comment );
+			$( document ).trigger( 'bsocial-comments-flag-not-authenticated', [ $comment ] );
 			return;
 		}//end if
 		else {
 			if ( 'flag' !== $comment.attr( 'data-comment-flag' ) ) {
 				$comment.addClass( 'flagging' ).removeClass( 'faving' );
-				$( document ).trigger( 'bsocial-comments-flag-is-authenticated', $comment );
+				$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-logged-in' ).slideDown( 'fast' );
+				$( document ).trigger( 'bsocial-comments-flag-is-authenticated', [ $comment ] );
 			} else {
 				this.confirm_flag_comment( $link );
 			}//end else
@@ -171,24 +216,38 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	 */
 	bsocial_comments.confirm_flag_comment = function( $link ) {
 		var $comment = $link.closest( '.comment' );
+		var $form = $comment.find( '> .feedback-box .flag-logged-in' );
 		var args = this.generate_ajax_args( $comment, $link, 'flag' );
 
 		if ( ! this.authenticated ) {
 			return;
 		}//end if
 
+		// if we are flagging a comment AND it is the "Other" option, make sure a description has been entered
+		if ( 'flag' !== $comment.attr( 'data-comment-flag' ) && $form.filter( '[data-selected-reason="other"]' ).length ) {
+			if ( '' === $.trim( $form.find( '.reason-description' ).val() ) ) {
+				$form.find( '.required' ).show();
+				return;
+			}//end if
+		}//end if
+
 		$comment.removeClass( 'faving flagging' );
 
 		this.authenticated_request( args );
 
+		$form.find( '.reason:checked' ).prop( false );
+		$form.find( '.reason-description' ).val( '' );
+
 		// let's give immediate feedback so we don't have to wait for the ajax round-trip
 		if ( 'flag' === $comment.attr( 'data-comment-flag' ) ) {
-			$comment.attr( 'data-comment-flag', 'unflag' );
+			$comment.find( '.feedback-box:first' ).attr( 'data-type', '' ).slideUp( 'fast' );
+			this.set_flag_state( $comment.data( 'comment-id' ), 'unflag' );
 		} else {
-			$comment.attr( 'data-comment-flag', 'flag' );
+			$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-submitted' ).slideDown( 'fast' );
+			this.set_flag_state( $comment.data( 'comment-id' ), 'flag' );
 		}//end else
 
-		$( document ).trigger( 'bsocial-comments-flag-confirmed', $comment );
+		$( document ).trigger( 'bsocial-comments-flag-confirmed', [ $comment ] );
 	};
 
 	/**
@@ -216,12 +275,17 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			url: url,
 			data: {
 				action: 'bsocial_comments_comment_feedback',
-				comment_id: $comment.closest( '.comment' ).data( 'comment-id' ),
+				comment_id: $comment.data( 'comment-id' ),
 				post_id: this.post_id,
 				direction: has_state ? type_inverse : type,
 				user: {}
 			}
 		};
+
+		if ( 'flag' === type && 'flag' === args.data.direction ) {
+			args.data.flag_type = $comment.find( '> .feedback-box .reason:checked' ).val();
+			args.data.flag_text = $comment.find( '> .feedback-box .reason-description' ).val();
+		}//end if
 
 		return args;
 	};
@@ -249,6 +313,13 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		}//end for
 
 		$.ajax( args );
+	};
+
+	bsocial_comments.event.select_reason = function( e ) {
+		e.preventDefault();
+		var $el = $( this );
+
+		$el.closest( 'form' ).attr( 'data-selected-reason', $el.data( 'reason-type' ) );
 	};
 
 	bsocial_comments.event.fave_comment = function( e ) {

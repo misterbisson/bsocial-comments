@@ -163,6 +163,16 @@ class bSocial_Comments
 			'feedback' => (object) array(
 				'enable'      => TRUE,
 			),
+			'reasons' => array(
+				'spam' => array(
+					'reason' => 'Spam',
+					'display-text' => 'Spam',
+				),
+				'personal-attack' => array(
+					'reason' => 'Personal attack',
+					'display-text' => 'Personal attack',
+				),
+			),
 		);
 	} // END default_options
 
@@ -469,9 +479,23 @@ class bSocial_Comments
 	public function feedback_links( $comment )
 	{
 		$favorited_count = $this->feedback()->comment_fave_count( $comment->comment_ID );
+		$flagged_count = $this->feedback()->comment_flag_count( $comment->comment_ID );
 		?>
-		<span class="comment-fave"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-fave"></a><span class="fave-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span></span>
-		<span class="comment-flag"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-flag"></a></span>
+		<span class="comment-fave">
+			<a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-fave" title="Fave this comment"></a>
+			<span class="fave-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span>
+		</span>
+		<span class="comment-flag">
+			<a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-flag" title="Flag this comment"></a>
+			<?php
+			if ( current_user_can( 'edit_comment', $comment->comment_ID ) )
+			{
+				?>
+				<span class="flag-count" data-count="<?php echo absint( $flagged_count ); ?>"><?php echo absint( $flagged_count ); ?></span>
+				<?php
+			}//end if
+			?>
+		</span>
 		<?php
 	}//end feedback_links
 
@@ -483,8 +507,10 @@ class bSocial_Comments
 		$message_logged_out = '<p>Sign in to %1$s this comment</p>';
 		$message_logged_in = '<h2>Reason for flagging this comment:</h2>';
 
+		$reasons = $this->options()->reasons;
+
 		$message_fave_logged_out = apply_filters(
-			'bsocial_feedback_fave_logged_out_message',
+			'bsocial_comments_feedback_fave_logged_out_message',
 			sprintf(
 				$message_logged_out,
 				'fave',
@@ -494,7 +520,7 @@ class bSocial_Comments
 		);
 
 		$message_flag_logged_out = apply_filters(
-			'bsocial_feedback_flag_logged_out_message',
+			'bsocial_comments_feedback_flag_logged_out_message',
 			sprintf(
 				$message_logged_out,
 				'flag',
@@ -504,7 +530,7 @@ class bSocial_Comments
 		);
 
 		$message_flag_logged_in = apply_filters(
-			'bsocial_feedback_flag_logged_in_message',
+			'bsocial_comments_feedback_flag_logged_in_message',
 			sprintf(
 				$message_logged_in,
 				'flag'
@@ -526,14 +552,55 @@ class bSocial_Comments
 				?>
 			</section>
 			<section class="flag flag-logged-in">
-				<?php
-				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo $message_flag_logged_in;
-				?>
-				<p>
-					<a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>" class="button primary comment-flag-confirm">Flag</a>
-					<button class="button link cancel">Cancel</button>
-				</p>
+				<form class="<?php echo esc_attr( implode( ' ', apply_filters( 'bsocial_comments_feedback_form_classes', array() ) ) ); ?>">
+					<?php
+					// this will need to be sanitized up stream as we must be able to support HTML in here
+					echo $message_flag_logged_in;
+					?>
+					<p>
+						<?php
+						foreach ( $reasons as $reason_id => $reason )
+						{
+							$id = "comment-{$comment->comment_ID}-reason-" . sanitize_key( $reason_id );
+							$name = preg_replace( '/_reason_.+$/', '_reason', str_replace( '-', '_', $id ) );
+							?>
+							<label for="<?php echo esc_attr( $id ); ?>">
+							<input
+								type="radio"
+								class="go-radio reason"
+								name="<?php echo esc_attr( $name ); ?>"
+								id="<?php echo esc_attr( $id ); ?>"
+								value="<?php echo esc_attr( $reason['reason'] ); ?>"
+								data-reason-type="<?php echo esc_attr( $reason_id ); ?>"
+							>
+								<span><?php /* using wp_kses_post because we wish to support HTML here */ echo wp_kses_post( $reason['display-text'] ); ?></span>
+							</label>
+							<?php
+						}//end foreach
+
+						$id = "comment-{$comment->comment_ID}-reason-other";
+						$name = preg_replace( '/_reason_.+$/', '_reason', str_replace( '-', '_', $id ) );
+
+						$description_id = "comment-{$comment->comment_ID}-reason-description";
+						$description_name = str_replace( '-', '_', $description_id );
+						?>
+						<label for="<?php echo esc_attr( $id ); ?>">
+							<input type="radio" class="go-radio reason" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $id ); ?>" value="Other" data-reason-type="other">
+							<span>Other</span>
+						</label>
+					</p>
+					<p class="other-describe">
+						<textarea placeholder="Please describe" class="reason-description" name="<?php echo esc_attr( $description_name ); ?>" id="<?php echo esc_attr( $description_id ); ?>"></textarea>
+						<span class="required">Describe your reason for flagging this comment.</span>
+					</p>
+					<p>
+						<a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>" class="button primary comment-flag-confirm">Flag</a>
+						<button class="button link cancel">Cancel</button>
+					</p>
+				</form>
+			</section>
+			<section class="flag flag-submitted">
+				<p>You have flagged this post. <a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'unflag' ) ) ); ?>" class="unflag">Unflag it</a>.</p>
 			</section>
 		</div>
 		<?php
