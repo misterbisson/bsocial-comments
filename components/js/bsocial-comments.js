@@ -70,13 +70,53 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
 
 			if ( 'undefined' !== typeof states[ comment_id ].flagged && states[ comment_id ].flagged ) {
-				$comment.attr( 'data-comment-flag', 'flag' );
+				this.set_flag_state( comment_id, 'flag' );
 			}//end if
 
 			if ( 'undefined' !== typeof states[ comment_id ].faved && states[ comment_id ].faved ) {
-				$comment.attr( 'data-comment-fave', 'fave' );
+				this.set_fave_state( comment_id, 'fave' );
 			}//end if
 		}//end for
+	};
+
+	/**
+	 * sets a comments fave state
+	 */
+	bsocial_comments.set_fave_state = function( comment_id, state ) {
+		var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
+		var $fave_link = $comment.find( ' > .div-comment .comment-fave a' );
+		var href = $fave_link.attr( 'href' );
+
+		$comment.attr( 'data-comment-fave', state );
+		$comment.removeClass( 'faving' );
+
+		if ( 'fave' === state ) {
+			$fave_link.attr( 'title', 'Unfave this comment' );
+			$fave_link.attr( 'href', href.replace( 'direction=fave', 'direction=unfave' ) );
+		} else {
+			$fave_link.attr( 'title', 'Fave this comment' );
+			$fave_link.attr( 'href', href.replace( 'direction=unfave', 'direction=fave' ) );
+		}//end else
+	};
+
+	/**
+	 * sets a comments fave state
+	 */
+	bsocial_comments.set_flag_state = function( comment_id, state ) {
+		var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
+		var $flag_link = $comment.find( ' > .div-comment .comment-flag a' );
+		var href = $flag_link.attr( 'href' );
+
+		$comment.attr( 'data-comment-flag', state );
+		$comment.removeClass( 'flagging' );
+
+		if ( 'flag' === state ) {
+			$flag_link.attr( 'title', 'Unflag this comment' );
+			$flag_link.attr( 'href', href.replace( 'direction=flag', 'direction=unflag' ) );
+		} else {
+			$flag_link.attr( 'title', 'flag this comment' );
+			$flag_link.attr( 'href', href.replace( 'direction=unflag', 'direction=flag' ) );
+		}//end else
 	};
 
 	/**
@@ -126,9 +166,9 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		$fave_count.html( count ).attr( 'data-count', count );
 
 		if ( 'fave' === $comment.attr( 'data-comment-fave' ) ) {
-			$comment.attr( 'data-comment-fave', 'unfave' );
+			this.set_fave_state( $comment.data( 'comment-id' ), 'unfave' );
 		} else {
-			$comment.attr( 'data-comment-fave', 'fave' );
+			this.set_fave_state( $comment.data( 'comment-id' ), 'fave' );
 		}//end else
 	};
 
@@ -183,9 +223,9 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		// let's give immediate feedback so we don't have to wait for the ajax round-trip
 		if ( 'flag' === $comment.attr( 'data-comment-flag' ) ) {
-			$comment.attr( 'data-comment-flag', 'unflag' );
+			this.set_flag_state( $comment.data( 'comment-id' ), 'unflag' );
 		} else {
-			$comment.attr( 'data-comment-flag', 'flag' );
+			this.set_flag_state( $comment.data( 'comment-id' ), 'flag' );
 		}//end else
 
 		$( document ).trigger( 'bsocial-comments-flag-confirmed', $comment );
