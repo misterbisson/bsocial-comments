@@ -574,12 +574,7 @@ class bSocial_Comments
 								value="<?php echo esc_attr( $reason['reason'] ); ?>"
 								data-reason-type="<?php echo esc_attr( $reason_id ); ?>"
 							>
-								<span>
-									<?php
-									// using wp_kses_post because we wish to support HTML here
-									echo wp_kses_post( $reason['display-text'] );
-									?>
-								</span>
+								<span><?php /* using wp_kses_post because we wish to support HTML here */ echo wp_kses_post( $reason['display-text'] ); ?></span>
 							</label>
 							<?php
 						}//end foreach

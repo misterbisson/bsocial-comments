@@ -220,7 +220,8 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			return;
 		}//end if
 
-		if ( 'flag' !== $comment.attr( 'data-comment-flag' ) ) {
+		// if we are flagging a comment AND it is the "Other" option, make sure a description has been entered
+		if ( 'flag' !== $comment.attr( 'data-comment-flag' ) && $form.filter( '[data-selected-reason="other"]' ).length ) {
 			if ( '' === $.trim( $form.find( '.reason-description' ).val() ) ) {
 				$form.find( '.required' ).show();
 				return;
