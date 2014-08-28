@@ -114,7 +114,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			$flag_link.attr( 'title', 'Unflag this comment' );
 			$flag_link.attr( 'href', href.replace( 'direction=flag', 'direction=unflag' ) );
 		} else {
-			$flag_link.attr( 'title', 'flag this comment' );
+			$flag_link.attr( 'title', 'Flag this comment' );
 			$flag_link.attr( 'href', href.replace( 'direction=unflag', 'direction=flag' ) );
 		}//end else
 	};
