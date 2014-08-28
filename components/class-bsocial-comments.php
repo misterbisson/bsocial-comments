@@ -470,8 +470,8 @@ class bSocial_Comments
 	{
 		$favorited_count = $this->feedback()->comment_fave_count( $comment->comment_ID );
 		?>
-		<span class="comment-fave"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-star"></a><span class="fave-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span></span>
-		<span class="comment-flag"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-x"></a></span>
+		<span class="comment-fave"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-fave"></a><span class="fave-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span></span>
+		<span class="comment-flag"><a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-flag"></a></span>
 		<?php
 	}//end feedback_links
 
