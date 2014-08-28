@@ -24,7 +24,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-featured.css', __FILE__ ), array(), $version_config['version'] );
 
 		//pass the hook to the javascript for comparison
-		wp_localize_script( $this->id_base, 'hook', $hook );
+		wp_localize_script( $this->id_base, 'bsocial_comments_edit_hook', array( 'hook' => $hook ) );
 
 		$valid_bases = array(
 			'comment',
