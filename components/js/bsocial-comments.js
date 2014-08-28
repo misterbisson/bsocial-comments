@@ -29,6 +29,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		$( document ).on( 'click', '.comment-fave a', this.event.fave_comment );
 		$( document ).on( 'click', '.comment-flag a', this.event.flag_comment );
 		$( document ).on( 'click', '.comment-flag-confirm', this.event.confirm_flag_comment );
+		$( document ).on( 'submit', '.flag-logged-in form', this.event.confirm_flag_comment );
 		$( document ).on( 'click', '.flag-logged-in .cancel', this.event.cancel_confirm_flag_comment );
 	};
 
@@ -256,12 +257,17 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			url: url,
 			data: {
 				action: 'bsocial_comments_comment_feedback',
-				comment_id: $comment.closest( '.comment' ).data( 'comment-id' ),
+				comment_id: $comment.data( 'comment-id' ),
 				post_id: this.post_id,
 				direction: has_state ? type_inverse : type,
 				user: {}
 			}
 		};
+
+		if ( 'flag' === type && 'flag' === args.data.direction ) {
+			args.data.flag_type = $comment.find( '> .feedback-box .reason:checked' ).val();
+			args.data.flag_text = $comment.find( '> .feedback-box .reason-description' ).val();
+		}//end if
 
 		return args;
 	};
