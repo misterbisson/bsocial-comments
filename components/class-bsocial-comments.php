@@ -498,8 +498,14 @@ class bSocial_Comments
 		$message_logged_in = '<h2>Reason for flagging this comment:</h2>';
 
 		$reasons = array(
-			'Spam',
-			'Personal attack',
+			'spam' => array(
+				'reason' => 'Spam',
+				'display-text' => 'Spam',
+			),
+			'personal-attack' => array(
+				'reason' => 'Personal attack',
+				'display-text' => 'Personal attack',
+			),
 		);
 
 		$reasons = apply_filters( 'bsocial_comments_feedback_flag_reasons', $reasons );
@@ -554,29 +560,32 @@ class bSocial_Comments
 					?>
 					<p>
 						<?php
-						foreach ( $reasons as $reason )
+						foreach ( $reasons as $reason_id => $reason )
 						{
-							$id = "comment-{$comment->comment_ID}-reason-" . sanitize_key( $reason );
+							$id = "comment-{$comment->comment_ID}-reason-" . sanitize_key( $reason_id );
 							$name = preg_replace( '/_reason_.+$/', '_reason', str_replace( '-', '_', $id ) );
 							?>
 							<label for="<?php echo esc_attr( $id ); ?>">
-								<input type="radio" class="go-radio reason" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $id ); ?>">
-								<span><?php echo esc_html( $reason ); ?></span>
+								<input type="radio" class="go-radio reason" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $id ); ?>" value="<?php echo esc_attr( $reason['reason'] ); ?>">
+								<span>
+									<?php
+									// using wp_kses_post because we wish to support HTML here
+									echo wp_kses_post( $reason['display-text'] );
+									?>
+								</span>
 							</label>
 							<?php
 						}//end foreach
 
-						$reason = 'Other';
-
-						$id = "comment-{$comment->comment_ID}-reason-" . sanitize_key( $reason );
+						$id = "comment-{$comment->comment_ID}-reason-other";
 						$name = preg_replace( '/_reason_.+$/', '_reason', str_replace( '-', '_', $id ) );
 
 						$description_id = "comment-{$comment->comment_ID}-reason-description";
 						$description_name = str_replace( '-', '_', $description_id );
 						?>
 						<label for="<?php echo esc_attr( $id ); ?>">
-							<input type="radio" class="go-radio reason" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $id ); ?>" value="<?php echo esc_attr( $reason ); ?>">
-							<span><?php echo esc_html( $reason ); ?> (please describe):</span>
+							<input type="radio" class="go-radio reason" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $id ); ?>" value="Other">
+							<span>Other (please describe):</span>
 						</label>
 					</p>
 					<p>
