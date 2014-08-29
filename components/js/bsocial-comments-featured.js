@@ -1,5 +1,7 @@
 if ( 'undefined' === typeof bsocial_comments_featured ) {
-	var bsocial_comments_featured = {};
+	var bsocial_comments_featured = {
+		hook: null
+	};
 }//end if
 
 (function($) {
