@@ -1,0 +1,12 @@
+table.comments .column-faves,
+table.comments .column-flags {
+	width: 3.5em;
+}
+
+table.comments .column-faves .faves {
+	color: green;
+}
+
+table.comments .column-flags .flags {
+	color: #af050e;
+}

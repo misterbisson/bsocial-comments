@@ -24,8 +24,7 @@ class bSocial_Comments_Feedback
 	 */
 	public function admin_init()
 	{
-		// @TODO I'm imagining some way of seeing the counts for faves/flags other stuff for the admin
-		//$this->admin();
+		$this->admin();
 	}// END admin_init
 
 	/**
@@ -607,4 +606,22 @@ class bSocial_Comments_Feedback
 			$this->update_feedback_counts( $comment->comment_parent, 'flags' );
 		} // END if
 	} // END transition_comment_status
+	
+	/**
+	 * Hook to manage_edit-comments_columns filter and add columns for flags and faves
+	 *
+	 * @param $columns (array) array of column slugs and names
+	 */
+	public function comments_columns( $columns )
+	{
+		$columns['faves'] = 'Faves';
+		$columns['flags'] = 'Flags';
+		
+		// Force the response to the end of the list
+		$response = $columns['response'];
+		unset( $columns['response'] );
+		$columns['response'] = $response;
+
+		return $columns;
+	} // END comments_columns
 }// END bSocial_Comments_Feedback
