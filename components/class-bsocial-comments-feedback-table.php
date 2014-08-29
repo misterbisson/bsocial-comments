@@ -259,7 +259,7 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		$classes = parent::get_table_classes();
 		$classes[] = 'comments-box';
 		$classes[] = 'bsocial-comments-feedback-list';
-		$classes[] = $type;
+		$classes[] = $this->type;
 		return $classes;
 	}
 
@@ -271,8 +271,12 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 			if ( 0 == count( $this->items ) )
 			{
 				?>
-				<tbody id="the-feedback-list none">
-					There are currently no <?php echo esc_html( $type ); ?>s for this comment.
+				<tbody id="the-feedback-list" class="none">
+					<tr>
+						<td>
+							There are currently no <?php echo esc_html( $this->type ); ?>s for this comment.
+						</td>
+					</tr>
 				</tbody>
 				<?php
 			} // END if

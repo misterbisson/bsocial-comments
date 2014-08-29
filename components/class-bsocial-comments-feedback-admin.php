@@ -28,9 +28,26 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	{
 		if ( 'comment' == $post_type )
 		{
-			add_meta_box( $this->id_base, 'Comment Flags', array( $this, 'flags_meta_box' ), 'comment', 'normal', 'high' );
+			add_meta_box( $this->id_base . '-faves', 'Comment Faves', array( $this, 'faves_meta_box' ), 'comment', 'normal', 'high' );
+			add_meta_box( $this->id_base . '-flags', 'Comment Flags', array( $this, 'flags_meta_box' ), 'comment', 'normal', 'high' );
 		} // END if
 	} // END add_meta_boxes
+
+	/**
+	 * Render the comment faves metabox
+	 */
+	public function faves_meta_box( $comment )
+	{
+		require_once __DIR__ . '/class-bsocial-comments-feedback-table.php';
+
+		$go_list_table = new bSocial_Comments_Feedback_Table();
+
+		$go_list_table->current_comment = $comment;
+		$go_list_table->type = 'fave';
+
+		$go_list_table->prepare_items();
+		$go_list_table->custom_display();
+	} // END faves_meta_box
 
 	/**
 	 * Render the comment flags metabox
