@@ -247,7 +247,7 @@ class bSocial_Comments
 		} // END if
 
 		$arguments = array(
-			'action'        => 'bsocial_comment_status',
+			'action'        => 'bsocial_comments_status',
 			'comment_id'    => absint( $comment->comment_ID ),
 			'bsocial-nonce' => wp_create_nonce( 'bsocial-comment-status' ),
 			'direction'     => NULL,
@@ -468,6 +468,8 @@ class bSocial_Comments
 	{
 		?>
 		<li class="approve-link"><?php echo $this->get_status_link( $comment->comment_ID, 'approve' ); ?></li>
+		<li class="feature-link"><?php echo $this->featured_comments()->get_feature_link( $comment->comment_ID ); ?></li>
+		<li class="edit-link"><?php echo edit_comment_link( 'Edit' ); ?></li>
 		<li class="spam-link"><?php echo $this->get_status_link( $comment->comment_ID, 'spam' ); ?></li>
 		<li class="trash-link"><?php echo $this->get_status_link( $comment->comment_ID, 'trash' ); ?></li>
 		<?php
