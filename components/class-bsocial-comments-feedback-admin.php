@@ -11,7 +11,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	} // end __construct
 
 	/**
-	 *
+	 * Hook to admin_enqueue_scripts
 	 */
 	public function admin_enqueue_scripts()
 	{
@@ -44,6 +44,12 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		return $new_columns;
 	} // END comments_columns
 
+	/**
+	 * Hook to the manage_comments_custom_column filter and echo appropriate content for the column
+	 *
+	 * @param $column (string) slug of the column being rendered
+	 * @param $comment_id (int) WP comment_id value for the comment being viewed
+	 */
 	public function manage_comments_custom_column( $column, $comment_id )
 	{
 		if ( 'faves' != $column && 'flags' != $column )
@@ -63,6 +69,11 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		} // END switch
 	} // END manage_comments_custom_column
 
+	/**
+	 * Render and echo fave column value for a given comment
+	 *
+	 * @param $comment_id (int) WP comment_id value for the comment being viewed
+	 */
 	public function faves_column( $comment_id )
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
@@ -81,6 +92,11 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		} // END elseif
 	} // END faves_column
 
+	/**
+	 * Render and echo flag column value for a given comment
+	 *
+	 * @param $comment_id (int) WP comment_id value for the comment being viewed
+	 */
 	public function flags_column( $comment_id )
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
@@ -90,7 +106,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 
 		if ( 'flag' == $comment->comment_type )
 		{
-			echo $this->get_parent_link( $comment->comment_parent );
+			$this->parent_link( $comment->comment_parent );
 		} // END if
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
@@ -99,9 +115,14 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		} // END elseif
 	} // END flags_column
 
-	public function get_parent_link( $parent_id )
+	/**
+	 * Echos a comment edit link for a flag/fave parent
+	 *
+	 * @param $parent_id (int) WP parent_id value the link should be created for
+	 */
+	public function parent_link( $parent_id )
 	{
 		$url = add_query_arg( array( 'action' => 'editcomment', 'c' => absint( $parent_id ) ), admin_url( 'comment.php' ) );
 		echo '<a href="' . esc_url( $url ) . '" title="Edit parent comment">' . absint( $parent_id ) . '</a>';
-	} // END get_parent_link
+	} // END parent_link
 }// END bSocial_Comments_Feedback_Admin
