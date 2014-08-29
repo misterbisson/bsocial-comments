@@ -24,8 +24,7 @@ class bSocial_Comments_Feedback
 	 */
 	public function admin_init()
 	{
-		// @TODO I'm imagining some way of seeing the counts for faves/flags other stuff for the admin
-		//$this->admin();
+		$this->admin();
 	}// END admin_init
 
 	/**
