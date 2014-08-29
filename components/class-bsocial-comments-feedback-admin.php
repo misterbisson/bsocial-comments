@@ -5,6 +5,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	public function __construct()
 	{
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 10, 2 );
 
 		add_filter( 'manage_edit-comments_columns', array( $this, 'comments_columns' ) );
 		add_filter( 'manage_comments_custom_column', array( $this, 'manage_comments_custom_column' ), 10, 2 );
@@ -19,6 +20,50 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 
 		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-feedback.css', __FILE__ ), array(), $version_config['version'] );
 	} // END admin_enqueue_scripts
+
+	/**
+	 * Add metaboxes
+	 */
+	public function add_meta_boxes( $post_type, $post )
+	{
+		if ( 'comment' == $post_type )
+		{
+			add_meta_box( $this->id_base . '-faves', 'Comment Faves', array( $this, 'faves_meta_box' ), 'comment', 'normal', 'high' );
+			add_meta_box( $this->id_base . '-flags', 'Comment Flags', array( $this, 'flags_meta_box' ), 'comment', 'normal', 'high' );
+		} // END if
+	} // END add_meta_boxes
+
+	/**
+	 * Render the comment faves metabox
+	 */
+	public function faves_meta_box( $comment )
+	{
+		require_once __DIR__ . '/class-bsocial-comments-feedback-table.php';
+
+		$go_list_table = new bSocial_Comments_Feedback_Table();
+
+		$go_list_table->current_comment = $comment;
+		$go_list_table->type = 'fave';
+
+		$go_list_table->prepare_items();
+		$go_list_table->custom_display();
+	} // END faves_meta_box
+
+	/**
+	 * Render the comment flags metabox
+	 */
+	public function flags_meta_box( $comment )
+	{
+		require_once __DIR__ . '/class-bsocial-comments-feedback-table.php';
+
+		$go_list_table = new bSocial_Comments_Feedback_Table();
+
+		$go_list_table->current_comment = $comment;
+		$go_list_table->type = 'flag';
+
+		$go_list_table->prepare_items();
+		$go_list_table->custom_display();
+	} // END flags_meta_box
 
 	/**
 	 * Hook to manage_edit-comments_columns filter and add columns for flags and faves

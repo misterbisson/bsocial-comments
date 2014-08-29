@@ -1,3 +1,6 @@
+/* @override 
+	http://go.local.gostage.it/wp-content/themes/vip/gigaom4-plugins/bsocial-comments/components//css/bsocial-comments-feedback.css?ver=1409350788 */
+
 table.comments .column-faves,
 table.comments .column-flags {
 	width: 3.5em;
@@ -9,4 +12,31 @@ table.comments .column-faves .faves {
 
 table.comments .column-flags .flags {
 	color: #af050e;
+}
+
+#bsocial-comments-feedback-faves.postbox,
+#bsocial-comments-feedback-flags.postbox {
+	border: none;
+}
+
+#bsocial-comments-feedback-faves.postbox .inside,
+#bsocial-comments-feedback-flags.postbox .inside {
+	margin: 0;
+	padding: 0;
+	
+}
+
+#bsocial-comments-feedback-faves.postbox table,
+#bsocial-comments-feedback-flags.postbox table {
+	border: none;
+}
+
+#bsocial-comments-feedback-faves.postbox table tr td,
+#bsocial-comments-feedback-flags.postbox table tr td {
+	border-bottom: 1px solid #e6e6e6;
+}
+
+#bsocial-comments-feedback-faves.postbox table tr td.column-author,
+#bsocial-comments-feedback-flags.postbox table tr td.column-author {
+	width: 30%;
 }
