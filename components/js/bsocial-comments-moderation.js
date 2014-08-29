@@ -9,7 +9,7 @@ var bsocial_comments_moderation = {
 	 * initialize moderation JS
 	 */
 	bsocial_comments_moderation.init = function() {
-		$( document ).on( 'click', '.comment-manage .approve-link a, .comment-manage .spam-link a, .comment-manage .trash-link a', this.event.click_manage );
+		$( document ).on( 'click', '.comment-manage li:not(.edit-link) a', this.event.click_manage );
 	};
 
 	/**
@@ -25,6 +25,12 @@ var bsocial_comments_moderation = {
 		if ( ! confirm( message ) ) {
 			return;
 		}
+
+		if ( $comment.attr( 'id' ).match( /-featured$/ ) ) {
+			$comment = $comment.add( '#' + $comment.attr( 'id' ).replace( '-featured', '' ) );
+		} else {
+			$comment = $comment.add( '#' + $comment.attr( 'id' ) + '-featured' );
+		}//end else
 
 		// block the comment until the state has changed
 		$comment.block( {
@@ -47,8 +53,23 @@ var bsocial_comments_moderation = {
 			$comment.unblock();
 
 			if ( data.success ) {
-				$el.replaceWith( data.link );
+				var $li = $el.closest( 'li' );
+				var $els = $comment.find( '.' + $li.attr( 'class' ) ).find( 'a' );
+
+				$els.replaceWith( data.link );
 				var opposite_type = $el.data( 'type' );
+
+				if ( 'featured' === data.state ) {
+					$comment.addClass( 'featured' );
+				} else if ( 'unfeatured' === data.state ) {
+					$comment.filter( '[id$="-featured"]' ).closest( '.comment' ).remove();
+					$comment.removeClass( 'featured' );
+
+					if ( ! $( '#comments-list-featured ol li' ).length ) {
+						$( '#comments-list-featured' ).remove();
+						$( 'h3.subheader.featured' ).remove();
+					}//end if
+				}//end else
 
 				$comment.attr( 'data-state', data.state );
 			}//end if

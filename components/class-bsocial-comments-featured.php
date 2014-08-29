@@ -432,16 +432,24 @@ class bSocial_Comments_Featured
 
 		if ( get_comment( $comment_id ) )
 		{
+			$state = $this->is_featured( $comment_id ) ? 'featured' : 'unfeatured';
+
 			if ( 'feature' == $_GET['direction'] )
 			{
-				$sucess = $this->feature_comment( $comment_id );
+				$success = $this->feature_comment( $comment_id );
+				$state = 'featured';
 			}//END if
 			else
 			{
-				$sucess = $this->unfeature_comment( $comment_id );
+				$success = $this->unfeature_comment( $comment_id );
+				$state = 'unfeatured';
 			}//END else
 
-			$data = array( 'link' => $this->get_feature_link( $comment_id ) );
+			$data = array(
+				'success' => $success,
+				'link' => $this->get_feature_link( $comment_id ),
+				'state' => $state,
+			);
 
 			// We only need to return text if the comment was unfeatured
 			if ( 'unfeature' == $_GET['direction'] )
