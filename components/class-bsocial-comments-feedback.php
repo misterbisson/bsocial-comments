@@ -17,6 +17,9 @@ class bSocial_Comments_Feedback
 		add_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
 		add_action( 'comment_delete_fave', array( $this, 'comment_delete_fave_flag' ), 10, 2 );
 		add_action( 'comment_delete_flag', array( $this, 'comment_delete_fave_flag' ), 10, 2 );
+
+		// this should be the first filter that returns comment feedback
+		add_filter( 'bsocial_comments_feedback_get_comment_feedback', array( $this, 'get_comment_feedback' ), 1, 4 );
 	} // end __construct
 
 	/**
@@ -403,6 +406,49 @@ class bSocial_Comments_Feedback
 
 		return $state;
 	} // END get_comment_state
+
+	/**
+	 * Returns the comment state for a state type
+	 */
+	public function get_comment_feedback( $unused_feedback, $comment_id, $type, $user = NULL )
+	{
+		if ( 'fave' != $type && 'flag' != $type )
+		{
+			return FALSE;
+		} // END if
+
+		global $wpdb;
+
+		$args = array(
+			$comment_id,
+			$type,
+			'feedback',
+		);
+
+		$sql = 'SELECT *
+				FROM ' . $wpdb->comments . '
+				WHERE comment_parent = %d
+				AND comment_type = %s
+				AND comment_approved = %s';
+
+		// See what kind of user value we are dealing with
+		if ( NULL != $user )
+		{
+			if ( is_numeric( $user ) )
+			{
+				$sql .= ' AND user_id = %d';
+			} // END if
+			else
+			{
+				// If we weren't given a user_id then we assume it's an author email
+				$sql .= ' AND comment_author_email = %s';
+			} // END else
+
+			$args[] = $user;
+		}//end if
+
+		return $wpdb->get_results( $wpdb->prepare( $sql, $args ) );
+	} // END get_comment_feedback
 
 	/**
 	 * gives a count for the number of times a comment has been favorited
