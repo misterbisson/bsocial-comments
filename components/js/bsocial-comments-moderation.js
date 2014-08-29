@@ -69,6 +69,10 @@ var bsocial_comments_moderation = {
 						$( '#comments-list-featured' ).remove();
 						$( 'h3.subheader.featured' ).remove();
 					}//end if
+				} else if ( 'unapproved' === data.state ) {
+					$comment.addClass( 'unapproved' );
+				} else if ( 'approved' === data.state ) {
+					$comment.removeClass( 'unapproved' );
 				}//end else
 
 				if ( 'spammed' === data.state || 'trashed' === data.state ) {
