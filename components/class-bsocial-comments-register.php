@@ -12,6 +12,7 @@ class bSocial_Comments_Register
 	);
 	public $comment_types = array();
 	public $comment_statuses = array();
+	public $current_comment = NULL;
 
 	/**
 	 * Start things up by plugging us into all of filter and actions hooks we'll need to support custom comment type registration
@@ -30,6 +31,9 @@ class bSocial_Comments_Register
 
 		add_action( 'transition_comment_status', array( $this, 'transition_comment_status' ), 10, 3 );
 		add_action( 'wp_insert_comment', array( $this, 'wp_insert_comment' ) );
+		add_action( 'untrash_comment', array( $this, 'untrash_unspam_comment' ) );
+		add_action( 'unspam_comment', array( $this, 'untrash_unspam_comment' ) );
+		add_action( 'wp_set_comment_status', array( $this, 'wp_set_comment_status' ) );
 
 		// Doing this involves a performance hit, so it'll be off by default until a better method for this comes along
 		if ( bsocial_comments()->options()->register->filter_text )
@@ -62,9 +66,12 @@ class bSocial_Comments_Register
 				'edit',
 				'spam',
 				'trash',
+				'untrash',
+				'delete',
 			),
 			'statuses' => array(
 				'approved',
+				'hold',
 				'spam',
 				'trash',
 			),
@@ -555,6 +562,64 @@ class bSocial_Comments_Register
 	{
 		$this->delete_caches( $comment );
 	} // END wp_insert_comment
+
+	/**
+	 * Hook to untrash_comment and unspam_comment actions so our custom statuses get handled correctly
+	 *
+	 * @param $comment_id (int) The id of the comment
+	 */
+	public function untrash_unspam_comment( $comment_id )
+	{
+		if ( ! $this->current_comment = get_comment( $comment_id ) )
+		{
+			return;
+		} // END if
+
+		if ( ! isset( $this->comment_types[ $this->current_comment->comment_type ] ) )
+		{
+			return;
+		} // END if
+
+		// Keep track of the status for later (we are going to set it correctly inside the wp_set_comment_status action)
+		$this->current_comment->status = get_comment_meta( $comment_id, '_wp_trash_meta_status', TRUE );
+
+		// We want to remove the trash meta so it doesn't cause issues (our custom status will cause a failure)
+		delete_comment_meta( $comment_id, '_wp_trash_meta_status ');
+	} // END untrash_unspam_comment
+
+	/**
+	 * Hook to wp_set_comment_status action and correctly update the status if necessary
+	 *
+	 * @param $comment_id (int) The id of the comment
+	 */
+	public function wp_set_comment_status( $comment_id )
+	{
+		// Make sure we are working with a comment we have data for
+		if ( ! isset( $this->current_comment->status ) || $this->current_comment->comment_ID != $comment_id )
+		{
+			return;
+		} // END if
+
+		$comment_status = $this->current_comment->status;
+
+		// Set $this->current_comment back to NULL now that we're finished
+		$this->current_comment = NULL;
+
+		global $wpdb;
+
+		// Update comment status with the CORRECT value for this comment
+		$wpdb->update( $wpdb->comments, array( 'comment_approved' => $comment_status ), array( 'comment_ID' => $comment_id ) );
+
+		// We've changed stuff so the cache needs to be cleared again
+		clean_comment_cache( $comment_id );
+
+		// The rest of this is apeing default WP behavior to make sure things fire correctly based on the status change
+		do_action( 'wp_set_comment_status', $comment_id, $comment_status );
+		$comment = get_comment( $comment_id );
+		$comment_old = clone get_comment($comment_id);
+		wp_transition_comment_status( $comment_status, $comment_old->comment_approved, $comment );
+		wp_update_comment_count( $comment->comment_post_ID );
+	} // END wp_set_comment_status
 
 	/**
 	 * Deletes caches related to our custom comment types and statuses
