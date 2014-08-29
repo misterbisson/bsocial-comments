@@ -86,10 +86,6 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 			$delete_url = esc_url( $url . "&action=deletecomment&$del_nonce" );
 		}
 
-		echo '<div class="comment-author">';
-			$this->column_author( $comment );
-		echo '</div>';
-
 		echo '<div class="submitted-on">';
 		/* translators: 2: comment date, 3: comment time */
 		printf( __( 'Submitted on <a href="%1$s">%2$s at %3$s</a>' ), $comment_url,
@@ -199,14 +195,19 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 
 	public function single_row( $comment )
 	{
+		// Prep some stuff so the functions have what they need
+		$GLOBALS['comment'] = $comment;
+		$this->user_can = current_user_can( 'edit_comment', $comment->comment_ID );
+		
 		static $row_class = '';
 		$row_class = ( '' == $row_class ) ? ' class="alternate"' : '';
 
-		$this->user_can = current_user_can( 'edit_comment', $comment->comment_ID );
-
-		echo '<tr id="' . $type . '-feedback-' . absint( $comment->comment_ID ) . '"' . $row_class . '>';
+		echo '<tr id="' . $this->type . '-feedback-' . absint( $comment->comment_ID ) . '"' . $row_class . '>';
 		echo $this->single_row_columns( $comment );
 		echo '</tr>';
+
+		// Set the comment global back to the current comment
+		$GLOBALS['comment'] = $this->current_comment;
 	} // END single_row
 
 	public function display_tablenav( $which )
@@ -253,10 +254,19 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		$this->items = get_comments( $args );
 	} // END prepare_items
 
+	public function get_table_classes()
+	{
+		$classes = parent::get_table_classes();
+		$classes[] = 'comments-box';
+		$classes[] = 'bsocial-comments-feedback-list';
+		$classes[] = $type;
+		return $classes;
+	}
+
 	public function custom_display()
 	{
 		?>
-		<table class="bsocial-comments-feedback-list <?php echo esc_attr( $type ); ?>">
+		<table class="<?php echo esc_attr( implode( ' ', $this->get_table_classes() ) ); ?>">
 			<?php
 			if ( 0 == count( $this->items ) )
 			{
