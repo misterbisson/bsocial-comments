@@ -71,6 +71,10 @@ var bsocial_comments_moderation = {
 					}//end if
 				}//end else
 
+				if ( 'spammed' === data.state || 'trashed' === data.state ) {
+					$comment.slideUp( 'fast' );
+				}//end if
+
 				$comment.attr( 'data-state', data.state );
 			}//end if
 		} );
