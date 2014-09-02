@@ -220,11 +220,18 @@ class bSocial_Comments_Feedback
 
 		if ( 0 != strncmp( 'un', $direction, 2 ) )
 		{
+			$content = empty( $args['flag_type'] ) ? $type : $args['flag_type'];
+
+			if ( ! empty( $args['flag_text'] ) )
+			{
+				$content .= ': ' . sanitize_text_field( $args['flag_text'] );
+			}//end if
+
 			$comment = array(
 					'comment_post_ID'      => $post_id,
 					'comment_author'       => $comment_author,
 					'comment_author_email' => $comment_author_email,
-					'comment_content'      => empty( $args['flag_type'] ) ? $type : $args['flag_type'],
+					'comment_content'      => $content,
 					'comment_type'         => $type,
 					'comment_parent'       => $comment_id,
 					'user_id'              => $user_id ?: 0,
