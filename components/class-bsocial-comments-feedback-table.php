@@ -20,45 +20,46 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 
 	public function column_author( $comment )
 	{
-		global $comment_status;
-
+		?>
+		<strong><?php comment_author(); ?></strong><br />
+		<?php
 		$author_url = get_comment_author_url();
 
 		if ( 'http://' == $author_url )
 		{
 			$author_url = '';
-		}
+		} // END if
 
 		$author_url_display = preg_replace( '|http://(www\.)?|i', '', $author_url );
 
 		if ( strlen( $author_url_display ) > 50 )
 		{
 			$author_url_display = substr( $author_url_display, 0, 49 ) . '&hellip;';
-		}
+		} // END if
 
-		echo "<strong>"; comment_author(); echo '</strong><br />';
-
-		if ( !empty( $author_url ) )
+		if ( ! empty( $author_url ) )
 		{
-			echo "<a title='$author_url' href='$author_url'>$author_url_display</a><br />";
-		}
+			?>
+			<a href="<?php echo esc_url( $author_url ); ?>" title="<?php echo esc_url( $author_url ); ?>"><?php esc_html( $author_url_display ); ?></a>
+			<?php
+		} // END if
 
 		if ( $this->user_can )
 		{
 			if ( !empty( $comment->comment_author_email ) )
 			{
 				comment_author_email_link();
-				echo '<br />';
-			}
-			echo '<a href="edit-comments.php?s=';
-			comment_author_IP();
-			echo '&amp;mode=detail';
-			if ( 'spam' == $comment_status )
-				echo '&amp;comment_status=spam';
-			echo '">';
-			comment_author_IP();
-			echo '</a>';
-		}
+			} // END if
+
+			$args = array(
+				's'    => get_comment_author_IP(),
+				'mode' => 'detail',
+			);
+			?>
+			<br />
+			<a href="<?php echo esc_url( add_query_arg( $args, admin_url( 'edit-comments.php' ) ) ); ?>"><?php echo esc_html( get_comment_author_IP() ); ?></a>
+			<?php
+		} // END if
 	} // END column_default
 
 	public function column_comment( $comment )
@@ -66,12 +67,11 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		global $comment_status;
 		$post = get_post();
 
-		$user_can = $this->user_can;
-
 		$comment_url = esc_url( get_comment_link( $comment->comment_ID ) );
 		$the_comment_status = wp_get_comment_status( $comment->comment_ID );
 
-		if ( $user_can ) {
+		if ( $this->user_can )
+		{
 			$del_nonce = esc_html( '_wpnonce=' . wp_create_nonce( "delete-comment_$comment->comment_ID" ) );
 			$approve_nonce = esc_html( '_wpnonce=' . wp_create_nonce( "approve-comment_$comment->comment_ID" ) );
 
@@ -103,7 +103,7 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 
 		echo '</div>';
 		comment_text();
-		if ( $user_can ) { ?>
+		if ( $this->user_can ) { ?>
 		<div id="inline-<?php echo $comment->comment_ID; ?>" class="hidden">
 		<textarea class="comment" rows="1" cols="1"><?php
 			/** This filter is documented in wp-admin/includes/comment.php */
@@ -117,7 +117,7 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		<?php
 		}
 
-		if ( $user_can ) {
+		if ( $this->user_can ) {
 			// preorder it: Approve | Reply | Quick Edit | Edit | Spam | Trash
 			$actions = array(
 				'approve' => '', 'unapprove' => '',
@@ -195,10 +195,16 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 
 	public function single_row( $comment )
 	{
+		// Sort of goofy but this is how WP does it so we might as well copy
+		if ( get_option('show_avatars') )
+		{
+			add_filter( 'comment_author', 'floated_admin_avatar' );
+		}
+
 		// Prep some stuff so the functions have what they need
 		$GLOBALS['comment'] = $comment;
 		$this->user_can = current_user_can( 'edit_comment', $comment->comment_ID );
-		
+
 		static $row_class = '';
 		$row_class = ( '' == $row_class ) ? ' class="alternate"' : '';
 
@@ -209,28 +215,6 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		// Set the comment global back to the current comment
 		$GLOBALS['comment'] = $this->current_comment;
 	} // END single_row
-
-	public function display_tablenav( $which )
-	{
-		if ( 'bottom' == $which )
-		{
-			return;
-		} // END if
-
-		$add_chart_url = wp_nonce_url( admin_url( 'admin-ajax.php?action=go_datamodule_add_chart&parent_id=' . absint( $this->current_post->ID ) ), 'go_datamodule_add_chart' );
-
-		$count = count( $this->items );
-		$text  = ( 1 == $count ) ? $count . ' chart associated with this post.' : $count . ' charts associated with this post.';
-		?>
-		<div class="tablenav <?php echo esc_attr( $which ); ?>" style="min-height: 43px;">
-			<div class="alignleft"><p><?php echo $text; ?></p></div>
-			<div class="alignright">
-				<p><a href="<?php echo $add_chart_url; ?>" title="Add Chart" class="button add-chart" target="_blank">Add Chart</a></p>
-			</div>
-			<br class="clear" />
-		</div>
-		<?php
-	} // END display_tablenav
 
 	public function prepare_items()
 	{

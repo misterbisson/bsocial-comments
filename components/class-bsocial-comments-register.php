@@ -28,6 +28,7 @@ class bSocial_Comments_Register
 		add_filter( 'comments_per_page', array( $this, 'comments_per_page' ) );
 		add_filter( 'comments_clauses', array( $this, 'comments_clauses' ) );
 		add_filter( 'admin_comment_types_dropdown', array( $this, 'admin_comment_types_dropdown' ) );
+		add_filter( 'get_avatar_comment_types', array( $this, 'get_avatar_comment_types' ) );
 
 		add_action( 'transition_comment_status', array( $this, 'transition_comment_status' ), 10, 3 );
 		add_action( 'wp_insert_comment', array( $this, 'wp_insert_comment' ) );
@@ -55,11 +56,12 @@ class bSocial_Comments_Register
 		$comment_type = sanitize_key( $comment_type );
 
 		$defaults = array(
-			'labels'        => array(),
-			'description'   => '',
-			'public'        => FALSE,
-			'show_ui'       => NULL,
-			'admin_actions' => array(
+			'labels'           => array(),
+			'description'      => '',
+			'public'           => FALSE,
+			'show_ui'          => NULL,
+			'supports_avatars' => TRUE,
+			'admin_actions'    => array(
 				'approve',
 				'reply',
 				'quickedit',
@@ -167,6 +169,24 @@ class bSocial_Comments_Register
 
 		return $comment_types;
 	} // END admin_comment_types_dropdown
+
+	/**
+	 * Filters the get_avatar_comment_types hook and adds any comment types have supports_avatars set to TRUE
+	 *
+	 * @param $comment_types (array) Array of comment types that should have avatars associated with them
+	 */
+	public function get_avatar_comment_types( $comment_types )
+	{
+		foreach ( $this->comment_types as $comment_type )
+		{
+			if ( $comment_type->supports_avatars && ! in_array( $comment_type->name, $comment_types ) )
+			{
+				$comment_types[] = $comment_type->name;
+			} // END if
+		} // END foreach
+
+		return $comment_types;
+	} // END get_avatar_comment_types
 
 	/**
 	 * Filters the gettext_with_context hook by passing the parameters to the gettext method below

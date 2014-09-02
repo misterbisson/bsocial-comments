@@ -151,7 +151,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 
 		if ( 'flag' == $comment->comment_type )
 		{
-			$this->parent_link( $comment->comment_parent );
+			echo $this->get_parent_link( $comment->comment_parent );
 		} // END if
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
@@ -165,9 +165,9 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	 *
 	 * @param $parent_id (int) WP parent_id value the link should be created for
 	 */
-	public function parent_link( $parent_id )
+	public function get_parent_link( $parent_id )
 	{
 		$url = add_query_arg( array( 'action' => 'editcomment', 'c' => absint( $parent_id ) ), admin_url( 'comment.php' ) );
 		echo '<a href="' . esc_url( $url ) . '" title="Edit parent comment">' . absint( $parent_id ) . '</a>';
-	} // END parent_link
+	} // END get_parent_link
 }// END bSocial_Comments_Feedback_Admin
