@@ -79,6 +79,8 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 				this.set_fave_state( comment_id, 'fave' );
 			}//end if
 		}//end for
+
+		$( document ).trigger( 'bsocial-comments-parsed-comment-states' );
 	};
 
 	/**
