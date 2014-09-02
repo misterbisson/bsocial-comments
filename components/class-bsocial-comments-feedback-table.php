@@ -11,8 +11,8 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		//Set parent defaults
 		parent::__construct(
 			array(
-				'singular' => 'embedded-chart',  //singular name of the listed records
-				'plural'   => 'embedded-charts', //plural name of the listed records
+				'singular' => 'bsocial-comments-feedback',  //singular name of the listed records
+				'plural'   => 'bsocial-comments-feedback', //plural name of the listed records
 				'ajax'     => FALSE,             //does this table support ajax?
 			)
 		);
@@ -242,7 +242,6 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 	{
 		$classes = parent::get_table_classes();
 		$classes[] = 'comments-box';
-		$classes[] = 'bsocial-comments-feedback-list';
 		$classes[] = $this->type;
 		return $classes;
 	}
@@ -255,7 +254,7 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 			if ( 0 == count( $this->items ) )
 			{
 				?>
-				<tbody id="the-feedback-list" class="none">
+				<tbody class="none">
 					<tr>
 						<td>
 							There are currently no <?php echo esc_html( $this->type ); ?>s for this comment.
@@ -267,7 +266,7 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 			else
 			{
 				?>
-				<tbody id="the-feedback-list">
+				<tbody>
 					<?php $this->display_rows_or_placeholder(); ?>
 				</tbody>
 				<?php
