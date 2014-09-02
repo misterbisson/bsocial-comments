@@ -12,7 +12,7 @@ class bSocial_Comments_Feedback
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'wp_ajax_bsocial_comments_comment_feedback', array( $this, 'ajax_comment_feedback' ) );
 		add_action( 'wp_ajax_nopriv_bsocial_comments_comment_feedback', array( $this, 'ajax_comment_feedback' ) );
-		add_action( 'wp_ajax_bsocial_comments_feedback_states_for_user', array( $this, 'ajax_states_for_user' ) );
+		add_action( 'wp_ajax_nopriv_bsocial_comments_feedback_states_for_user', array( $this, 'ajax_states_for_user' ) );
 		add_action( 'delete_comment', array( $this, 'delete_comment' ) );
 		add_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
 		add_action( 'comment_delete_fave', array( $this, 'comment_delete_fave_flag' ), 10, 2 );
@@ -277,7 +277,7 @@ class bSocial_Comments_Feedback
 		}//end if
 		elseif ( ! empty( $_GET['user']['comment_author_email'] ) )
 		{
-			$user = $_GET['user']['comment_author'];
+			$user = $_GET['user']['comment_author_email'];
 		}//end elseif
 		else
 		{
