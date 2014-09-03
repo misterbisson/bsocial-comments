@@ -351,7 +351,7 @@ class bSocial_Comments_Register
 	 * Builds a status link for use in the admin panelf or a given comment status status
 	 *
 	 * @param $status (string) The comment status you want a link for
-	 * @param $status (array) An array of labels appropriate for use in translate_nooped_plural
+	 * @param $label (array) An array of labels appropriate for use in translate_nooped_plural
 	 */
 	public function get_status_link( $status, $label )
 	{
@@ -363,7 +363,7 @@ class bSocial_Comments_Register
 			$link = add_query_arg( 'comment_type', $comment_type, $link );
 		} // END if
 
-		$class = ( $status == $comment_status ) ? ' class="current"' : '';
+		$class = ( $status == $_GET['comment_status'] ) ? ' class="current"' : '';
 
 		$link = add_query_arg( 'comment_status', $status, $link );
 
