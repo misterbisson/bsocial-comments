@@ -517,8 +517,13 @@ class bSocial_Comments_Register
 	 */
 	public function comments_clauses( $clauses )
 	{
+		$current_screen = get_current_screen();
+
 		// Make sure the query is for all statuses
-		if ( 'all' != $_GET['comment_status'] )
+		if (
+			( isset( $_GET['comment_status'] ) && 'all' != $_GET['comment_status']  )
+			|| ( ! isset( $_GET['comment_status'] ) && 'edit-comments' != $current_screen->base )
+		)
 		{
 			return $clauses;
 		} // END if
