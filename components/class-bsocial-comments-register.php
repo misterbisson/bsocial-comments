@@ -518,6 +518,11 @@ class bSocial_Comments_Register
 	 */
 	public function comments_clauses( $clauses )
 	{
+		if ( ! is_admin() )
+		{
+			return $clauses;
+		} // END if
+
 		$current_screen = get_current_screen();
 
 		// Make sure the query is for all statuses
