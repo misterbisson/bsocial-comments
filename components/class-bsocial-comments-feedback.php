@@ -51,9 +51,10 @@ class bSocial_Comments_Feedback
 	public function init()
 	{
 		$args = array(
-			'label'                  => 'Feedback',
-			'label_count'            => _n_noop('Feedback <span class="count">(%s)</span>', 'Feedback <span class="count">(%s)</span>'),
-			'show_in_admin_all_list' => FALSE,
+			'label'             => 'Feedback',
+			'label_count'       => _n_noop('Feedback <span class="count">(%s)</span>', 'Feedback <span class="count">(%s)</span>'),
+			'status_links_show' => FALSE,
+			'include_in_all'    => TRUE,
 		);
 
 		bsocial_comments()->register()->comment_status( 'feedback', $args );

@@ -125,10 +125,11 @@ class bSocial_Comments_Register
 	public function comment_status( $status, $args = array() )
 	{
 		$defaults = array(
-			'label'                  => FALSE,
-			'label_count'            => FALSE,
-			'public'                 => FALSE,
-			'show_in_admin_all_list' => NULL,
+			'label'             => FALSE,
+			'label_count'       => FALSE,
+			'public'            => FALSE,
+			'status_links_show' => TRUE,
+			'include_in_all'    => FALSE,
 		);
 
 		$args = wp_parse_args( $args, $defaults );
@@ -142,7 +143,7 @@ class bSocial_Comments_Register
 			return new WP_Error( 'comment_status_too_long', 'Comment statuses cannot exceed 20 characters in length' );
 		} // END if
 
-		if ( NULL === $args->show_in_admin_all_list  )
+		if ( NULL === $args->status_links_show )
 		{
 			$args->show_in_admin_all_list = $args->public;
 		}
@@ -338,7 +339,7 @@ class bSocial_Comments_Register
 				continue;
 			} // END if
 
-			if ( ! isset( $status_links[ $status->name ] ) && $status->show_in_admin_all_list )
+			if ( ! isset( $status_links[ $status->name ] ) && $status->status_links_show )
 			{
 				$status_links[ $status->name ] = $this->get_status_link( $status->name, $status->label_count );
 			} // END if
@@ -534,6 +535,17 @@ class bSocial_Comments_Register
 			return $clauses;
 		} // END if
 
+		// Create args for $wpdb->prepare out of statuses that have include_in_all set to TRUE
+		$prepare_args = array();
+
+		foreach ( $this->comment_statuses as $status )
+		{
+			if ( $status->include_in_all )
+			{
+				$prepare_args[] = $status->name;
+			} // END if
+		} // END foreach
+
 		// Build status clause
 		$status_clause = '';
 
@@ -541,8 +553,6 @@ class bSocial_Comments_Register
 		{
 			$status_clause .= " OR comment_approved = '%s'";
 		} // END for
-
-		$prepare_args = array_keys( $this->comment_statuses );
 
 		// Add the status clause to the begining fo the prepare arguments
 		array_unshift( $prepare_args, trim( $status_clause ) );
