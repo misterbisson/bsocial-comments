@@ -250,6 +250,9 @@ class bSocial_Comments_Feedback
 			} // END if
 		} // END else
 
+		// This keeps our feedback count meta up to date
+		$this->update_feedback_counts( $comment_id, $type );
+
 		return $sucess;
 	} // END update_comment_feedback
 
