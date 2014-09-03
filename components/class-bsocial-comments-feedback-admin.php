@@ -21,7 +21,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-feedback.css', __FILE__ ), array(), $version_config['version'] );
 		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-feedback.js', __FILE__ ), array( 'jquery' ), $version_config['version'] );
 
-		// Only load 
+		// Only enqueue script when on a comment edit page where it's needed
 		if ( 'comment.php' == $current_page )
 		{
 			wp_enqueue_script( $this->id_base );
