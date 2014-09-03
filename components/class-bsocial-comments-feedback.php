@@ -53,7 +53,7 @@ class bSocial_Comments_Feedback
 		$args = array(
 			'label'                  => 'Feedback',
 			'label_count'            => _n_noop('Feedback <span class="count">(%s)</span>', 'Feedback <span class="count">(%s)</span>'),
-			'show_in_admin_all_list' => TRUE,
+			'show_in_admin_all_list' => FALSE,
 		);
 
 		bsocial_comments()->register()->comment_status( 'feedback', $args );

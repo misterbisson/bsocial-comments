@@ -14,11 +14,18 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	/**
 	 * Hook to admin_enqueue_scripts
 	 */
-	public function admin_enqueue_scripts()
+	public function admin_enqueue_scripts( $current_page )
 	{
 		$version_config = apply_filters( 'go_config', array( 'version' => bsocial_comments()->version ), 'go-script-version' );
 
 		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-feedback.css', __FILE__ ), array(), $version_config['version'] );
+		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-feedback.js', __FILE__ ), array( 'jquery' ), $version_config['version'] );
+
+		// Only load 
+		if ( 'comment.php' == $current_page )
+		{
+			wp_enqueue_script( $this->id_base );
+		} // END if
 	} // END admin_enqueue_scripts
 
 	/**
@@ -151,7 +158,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 
 		if ( 'flag' == $comment->comment_type )
 		{
-			$this->parent_link( $comment->comment_parent );
+			echo $this->get_parent_link( $comment->comment_parent );
 		} // END if
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
@@ -165,9 +172,9 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	 *
 	 * @param $parent_id (int) WP parent_id value the link should be created for
 	 */
-	public function parent_link( $parent_id )
+	public function get_parent_link( $parent_id )
 	{
 		$url = add_query_arg( array( 'action' => 'editcomment', 'c' => absint( $parent_id ) ), admin_url( 'comment.php' ) );
 		echo '<a href="' . esc_url( $url ) . '" title="Edit parent comment">' . absint( $parent_id ) . '</a>';
-	} // END parent_link
+	} // END get_parent_link
 }// END bSocial_Comments_Feedback_Admin
