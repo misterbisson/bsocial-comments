@@ -256,6 +256,7 @@ class bSocial_Comments_Feedback
 			$success = wp_insert_comment( $comment );
 
 			// Send email notification to mederator/author if appropriate
+			// @TODO Move this and related code to the register class and have notify be a custom comment type param
 			if ( $success && get_option( 'comments_notify' ) && 'flag' == $type )
 			{
 				$this->send_email_notifications( $success );
@@ -742,6 +743,7 @@ class bSocial_Comments_Feedback
 
 	/**
 	 * Send email notification to authors and moderator for a flag
+	 * @TODO Move this and related code to the register class and have notify be a custom comment type param
 	 *
 	 * @param $feedback_id (int) The id of the feedback comment
 	 * @param $email (string) The email address the flag email will be sent to
