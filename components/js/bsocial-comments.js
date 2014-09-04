@@ -27,7 +27,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		}
 
 		$( document ).on( 'click', '.comment-fave a', this.event.fave_comment );
-		$( document ).on( 'click', '.comment-flag a, .flag-submitted .unflag', this.event.flag_comment );
+		$( document ).on( 'click', '.comment-flag a', this.event.flag_comment );
 		$( document ).on( 'click', '.comment-flag-confirm', this.event.confirm_flag_comment );
 		$( document ).on( 'submit', '.flag-logged-in form', this.event.confirm_flag_comment );
 		$( document ).on( 'click', '.flag-logged-in .cancel', this.event.cancel_confirm_flag_comment );
@@ -245,7 +245,6 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			$comment.find( '.feedback-box:first' ).attr( 'data-type', '' ).slideUp( 'fast' );
 			this.set_flag_state( $comment.data( 'comment-id' ), 'unflag' );
 		} else {
-			$comment.find( '.feedback-box:first' ).attr( 'data-type', 'flag-submitted' ).slideDown( 'fast' );
 			this.set_flag_state( $comment.data( 'comment-id' ), 'flag' );
 		}//end else
 
