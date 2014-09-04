@@ -384,8 +384,6 @@ class bSocial_Comments_Register
 	 *
 	 * @param $stats (object) Stats of comment counts for each comment status
 	 * @param $post_id (int) A WordPress post id value
-	 *
-	 * @TODO Need to make sure that this cache gets refreshed at the right times? (i.e. whenever a comment is deleted or it's post_status changes in some way)
 	 */
 	public function wp_count_comments( $stats, $post_id )
 	{
