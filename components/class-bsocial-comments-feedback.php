@@ -757,9 +757,9 @@ class bSocial_Comments_Feedback
 <?php echo esc_html( $subject ); ?>
 
 
-<?php echo esc_html( $feedback->comment_author ); ?> flagged a comment on the post "POSTITLTE"
+<?php echo esc_html( $feedback->comment_author ); ?> flagged a comment on the post "<?php echo get_the_title( $post->ID ); ?>"
 
-Comment flagged as:
+Reason:
 <?php echo esc_html( $feedback->comment_content ); ?>
 
 
