@@ -1,12 +1,22 @@
-var bsocial_comments_featured_admin = {};
+if ( 'undefined' === typeof bsocial_comments_featured_admin ) {
+	var bsocial_comments_featured_admin = {
+		hook: null
+	};
+}//end if
 
 (function($) {
 	'use strict';
 
 	// Start things up...
 	bsocial_comments_featured_admin.init = function() {
-		// Add a featured comment button to quicktags
-		QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment' );
+		// Add a featured comment button to quicktags when we're editing a comment
+		if( 'comment.php' === bsocial_comments_featured_admin.hook || 'edit-comments.php' === bsocial_comments_featured_admin.hook ) {
+			//we're on a comment-only page, we can add to all of them
+			QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment');
+		} else {
+			//we're not on a comment-only page, be picky where we put the button
+			QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment', 200, 'replycontent' );
+		}
 
 		bsocial_comments_featured_admin.watch_links();
 	};
