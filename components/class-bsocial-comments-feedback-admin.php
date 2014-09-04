@@ -16,10 +16,10 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	 */
 	public function admin_enqueue_scripts( $current_page )
 	{
-		$version_config = apply_filters( 'go_config', array( 'version' => bsocial_comments()->version ), 'go-script-version' );
+		$script_config = apply_filters( 'go_config', array( 'version' => bsocial_comments()->version ), 'go-script-version' );
 
-		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-feedback.css', __FILE__ ), array(), $version_config['version'] );
-		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-feedback.js', __FILE__ ), array( 'jquery' ), $version_config['version'] );
+		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-feedback-admin.css', __FILE__ ), array(), $script_config['version'] );
+		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-feedback-admin.js', __FILE__ ), array( 'jquery' ), $script_config['version'], TRUE );
 
 		// Only enqueue script when on a comment edit page where it's needed
 		if ( 'comment.php' == $current_page )
