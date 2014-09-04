@@ -245,6 +245,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			$comment.find( '.feedback-box:first' ).attr( 'data-type', '' ).slideUp( 'fast' );
 			this.set_flag_state( $comment.data( 'comment-id' ), 'unflag' );
 		} else {
+			$comment.find( '.feedback-box:first' ).attr( 'data-type', '' ).slideUp( 'fast' );
 			this.set_flag_state( $comment.data( 'comment-id' ), 'flag' );
 		}//end else
 
