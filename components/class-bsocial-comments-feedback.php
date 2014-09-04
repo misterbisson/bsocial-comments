@@ -685,6 +685,7 @@ class bSocial_Comments_Feedback
 
 	/**
 	 * Send email notification to authors and moderator for a flag
+	 * @TODO Move this and related code to the register class and have notify be a custom comment type param
 	 *
 	 * @param $feedback_id (int) The id of the feedback comment
 	 */
