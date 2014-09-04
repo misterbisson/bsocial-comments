@@ -603,9 +603,6 @@ class bSocial_Comments
 					</p>
 				</form>
 			</section>
-			<section class="flag flag-submitted">
-				<p>You have flagged this post. <a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'unflag' ) ) ); ?>" class="unflag">Unflag it</a>.</p>
-			</section>
 		</div>
 		<?php
 	}//end feedback_info
