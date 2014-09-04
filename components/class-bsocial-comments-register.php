@@ -375,7 +375,7 @@ class bSocial_Comments_Register
 
 		$stats = wp_count_comments();
 
-		return $status_links[ $status ] = '<a href=' . $link . $class . '>' . sprintf( translate_nooped_plural( $label, $stats->$status ), number_format_i18n( $stats->$status ) ) . '</a>';
+		return $status_links[ $status ] = '<a href=' . esc_url( $link ) . $class . '>' . esc_html( sprintf( translate_nooped_plural( $label, $stats->$status ), number_format_i18n( $stats->$status ) ) ) . '</a>';
 	} // END get_status_link
 
 	/**
