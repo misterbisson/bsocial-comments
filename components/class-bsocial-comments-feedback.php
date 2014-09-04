@@ -254,6 +254,12 @@ class bSocial_Comments_Feedback
 			);
 
 			$sucess = wp_insert_comment( $comment );
+
+			// Send email notification to mederator/author if appropriate
+			if ( $sucess && get_option( 'comments_notify' ) && 'flag' == $type )
+			{
+				$this->send_email_notifications( $sucess );
+			} // END if
 		} // END if
 		else
 		{
@@ -676,4 +682,124 @@ class bSocial_Comments_Feedback
 			$this->update_feedback_counts( $comment->comment_parent, 'flags' );
 		} // END if
 	} // END comment_delete_fave_flag
+
+	/**
+	 * Send email notification to authors and moderator for a flag
+	 *
+	 * @param $feedback_id (int) The id of the feedback comment
+	 */
+	public function send_email_notifications( $feedback_id )
+	{
+		$feedback = get_comment( $feedback_id );
+		$post     = get_post( $feedback->comment_post_ID );
+
+		if ( 'flag' != $feedback->comment_type )
+		{
+			return FALSE;
+		} // END if
+
+		if ( function_exists( 'get_coauthors' ) )
+		{
+			$authors = get_coauthors( $post->ID );
+		} // END if
+		else
+		{
+			$authors = array( get_user_by( 'id', $post->post_author ) );
+		} // END else
+
+		// Loop through authors and send a notice if appropriate
+		foreach ( $authors as $author )
+		{
+			// The comment was left by the author
+			if ( $feedback->user_id == $author->ID )
+			{
+				continue;
+			} // END if
+
+			// The author is messing with a comment on their own post
+			if ( $author->ID == get_current_user_id() )
+			{
+				continue;
+			} // END if
+
+			// There's no email to send the comment to
+			if ( '' == $author->user_email )
+			{
+				continue;
+			}
+
+			// The user can't edit the comment
+			if ( ! user_can( $author->ID, 'edit_comment', $feedback->comment_parent ) )
+			{
+				continue;
+			} // END if
+
+			// We passed the checks lets send this thing
+			$this->send_flag_email( $feedback_id, $author->user_email );
+		} // END foreach
+	} // END send_email_notifications
+
+	/**
+	 * Send email notification to authors and moderator for a flag
+	 *
+	 * @param $feedback_id (int) The id of the feedback comment
+	 * @param $email (string) The email address the flag email will be sent to
+	 */
+	public function send_flag_email( $feedback_id, $email )
+	{
+		$feedback = get_comment( $feedback_id );
+		$post     = get_post( $comment->comment_post_ID );
+
+		if ( 'flag' != $feedback->comment_type )
+		{
+			return FALSE;
+		} // END if
+
+		// This header stuff is heavily borrowed from the core WP comment alert stuff
+		$wp_email = 'wordpress@' . preg_replace('#^www\.#', '', strtolower( $_SERVER['SERVER_NAME'] ) );
+		$from     = 'From: "' . wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES ) . '" <' . $wp_email . '>';
+		$headers  = $from . "\n" . 'Content-Type: text/plain; charset="' . get_option('blog_charset') . '"' . "\n";
+
+		// Email subject
+		$subject = 'A comment has been flagged and is waiting your moderation on ' . esc_html( get_site_url() );
+
+		// Email message
+		ob_start();
+		?>
+<?php echo esc_html( $subject ); ?>
+
+
+<?php echo esc_html( $feedback->comment_author ); ?> flagged a comment on the post "<?php echo get_the_title( $post->ID ); ?>"
+
+Reason:
+<?php echo esc_html( $feedback->comment_content ); ?>
+
+
+Flagged comment:
+<?php echo wp_kses( get_comment_text( $feedback->comment_parent ) ); ?>
+
+
+View flagged comment:
+<?php echo esc_url_raw( get_comment_link( $feedback->comment_parent ) ); ?>
+
+
+Trash it: <?php echo esc_url_raw( bsocial_comments()->get_status_url( $feedback->comment_parent, 'trash' ) ); ?>
+
+Spam it: <?php echo esc_url_raw( bsocial_comments()->get_status_url( $feedback->comment_parent, 'spam' ) ); ?>
+
+
+More info on <?php echo esc_html( $feedback->comment_author ); ?>
+
+IP: <?php echo esc_html( $feedback->comment_author_IP ); ?>, <?php echo esc_html( gethostbyaddr( $feedback->comment_author_IP ) ); ?>
+		<?php
+		$message = ob_get_contents();
+		ob_end_clean();
+
+		if ( 'jamie@gigaom.com' != $email )
+		{
+			return;
+		} // END if
+
+		return wp_mail( $email, $subject, $message, $headers );
+	} // END send_email_notifications
 }// END bSocial_Comments_Feedback
