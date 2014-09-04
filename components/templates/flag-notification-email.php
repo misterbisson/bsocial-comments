@@ -8,7 +8,7 @@ Reason:
 
 
 Flagged comment:
-<?php echo wp_kses( get_comment_text( $feedback->comment_parent ) ); ?>
+<?php echo wp_kses( get_comment_text( $feedback->comment_parent ), wp_kses_allowed_html() ); ?>
 
 
 View flagged comment:

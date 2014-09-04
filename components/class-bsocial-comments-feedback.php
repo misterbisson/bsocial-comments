@@ -772,11 +772,6 @@ class bSocial_Comments_Feedback
 		$message = ob_get_contents();
 		ob_end_clean();
 
-		if ( 'jamie@gigaom.com' != $email )
-		{
-			return;
-		} // END if
-
 		return wp_mail( $email, $subject, $message, $headers );
 	} // END send_email_notifications
 }// END bSocial_Comments_Feedback
