@@ -230,7 +230,7 @@ class bSocial_Comments_Feedback
 			return FALSE;
 		}//end if
 
-		$sucess = FALSE;
+		$success = FALSE;
 
 		if ( 0 != strncmp( 'un', $direction, 2 ) )
 		{
@@ -253,26 +253,26 @@ class bSocial_Comments_Feedback
 					'comment_approved'     => 'feedback',
 			);
 
-			$sucess = wp_insert_comment( $comment );
+			$success = wp_insert_comment( $comment );
 
 			// Send email notification to mederator/author if appropriate
-			if ( $sucess && get_option( 'comments_notify' ) && 'flag' == $type )
+			if ( $success && get_option( 'comments_notify' ) && 'flag' == $type )
 			{
-				$this->send_email_notifications( $sucess );
+				$this->send_email_notifications( $success );
 			} // END if
 		} // END if
 		else
 		{
 			if ( $feedback_id = $this->get_feedback_id( $comment_id, $type, $comment_author_email ) )
 			{
-				$sucess = wp_delete_comment( $feedback_id, TRUE );
+				$success = wp_delete_comment( $feedback_id, TRUE );
 			} // END if
 		} // END else
 
 		// This keeps our feedback count meta up to date
 		$this->update_feedback_counts( $comment_id, $type );
 
-		return $sucess;
+		return $success;
 	} // END update_comment_feedback
 
 	/**
@@ -765,33 +765,7 @@ class bSocial_Comments_Feedback
 
 		// Email message
 		ob_start();
-		?>
-<?php echo esc_html( $subject ); ?>
-
-
-<?php echo esc_html( $feedback->comment_author ); ?> flagged a comment on the post "<?php echo get_the_title( $post->ID ); ?>"
-
-Reason:
-<?php echo esc_html( $feedback->comment_content ); ?>
-
-
-Flagged comment:
-<?php echo wp_kses( get_comment_text( $feedback->comment_parent ) ); ?>
-
-
-View flagged comment:
-<?php echo esc_url_raw( get_comment_link( $feedback->comment_parent ) ); ?>
-
-
-Trash it: <?php echo esc_url_raw( bsocial_comments()->get_status_url( $feedback->comment_parent, 'trash' ) ); ?>
-
-Spam it: <?php echo esc_url_raw( bsocial_comments()->get_status_url( $feedback->comment_parent, 'spam' ) ); ?>
-
-
-More info on <?php echo esc_html( $feedback->comment_author ); ?>
-
-IP: <?php echo esc_html( $feedback->comment_author_IP ); ?>, <?php echo esc_html( gethostbyaddr( $feedback->comment_author_IP ) ); ?>
-		<?php
+		require __DIR__ . '/templates/flag-notification-email.php';
 		$message = ob_get_contents();
 		ob_end_clean();
 
