@@ -46,7 +46,7 @@ class bSocial_Comments
 	 */
 	public function wp_enqueue_scripts()
 	{
-		$script_config = apply_filters( 'go_config', array( 'version' => 1 ), 'go-script-version' );
+		$script_config = apply_filters( 'go_config', array( 'version' => $this->version ), 'go-script-version' );
 
 		wp_register_style(
 			'bsocial-comments',

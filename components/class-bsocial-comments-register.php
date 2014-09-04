@@ -341,7 +341,7 @@ class bSocial_Comments_Register
 
 			if ( ! isset( $status_links[ $status->name ] ) && $status->status_links_show )
 			{
-				$status_links[ $status->name ] = $this->get_status_link( $status->name, $status->label_count );
+				$status_links[ $status->name ] = $this->get_status_link( $status->name, $status->label_count, $_GET );
 			} // END if
 		} // END foreach
 
@@ -351,20 +351,21 @@ class bSocial_Comments_Register
 	/**
 	 * Builds a status link for use in the admin panelf or a given comment status status
 	 *
-	 * @param $status (string) The comment status you want a link for
-	 * @param $label (array) An array of labels appropriate for use in translate_nooped_plural
+	 * @param string $status The comment status you want a link for
+	 * @param array $label An array of labels appropriate for use in translate_nooped_plural
+	 * @param array $args Additional arguments to modify output
 	 */
-	public function get_status_link( $status, $label )
+	public function get_status_link( $status, $label, $args = array() )
 	{
 		$link = 'edit-comments.php';
 
-		if ( isset( $_GET['comment_type'] ) && ! empty( $_GET['comment_type'] ) && 'all' != $_GET['comment_type'] )
+		if ( isset( $args['comment_type'] ) && ! empty( $args['comment_type'] ) && 'all' != $args['comment_type'] )
 		{
-			$comment_type = $_GET['comment_type'];
+			$comment_type = $args['comment_type'];
 			$link = add_query_arg( 'comment_type', $comment_type, $link );
 		} // END if
 
-		$class = ( $status == $_GET['comment_status'] ) ? ' class="current"' : '';
+		$class = ( $status == $args['comment_status'] ) ? ' class="current"' : '';
 
 		$link = add_query_arg( 'comment_status', $status, $link );
 
@@ -375,7 +376,7 @@ class bSocial_Comments_Register
 
 		$stats = wp_count_comments();
 
-		return $status_links[ $status ] = '<a href=' . $link . $class . '>' . sprintf( translate_nooped_plural( $label, $stats->$status ), number_format_i18n( $stats->$status ) ) . '</a>';
+		return $status_links[ $status ] = '<a href=' . esc_url( $link ) . $class . '>' . esc_html( sprintf( translate_nooped_plural( $label, $stats->$status ), number_format_i18n( $stats->$status ) ) ) . '</a>';
 	} // END get_status_link
 
 	/**

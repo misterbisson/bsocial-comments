@@ -31,7 +31,7 @@
 }
 
 .comment-fave a:after {
-	content: 'Like';
+	content: 'Fave';
 }
 
 .comment-flag a:after {
@@ -39,7 +39,7 @@
 }
 
 .comment[data-comment-fave="fave"] > .div-comment .comment-fave a:after {
-	content: 'Unlike';
+	content: 'Unfave';
 }
 
 .comment[data-comment-flag="flag"] > .div-comment .comment-flag a:after {

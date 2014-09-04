@@ -6,6 +6,9 @@ class bSocial_Comments_Feedback
 	public $admin = FALSE;
 	public $current_feedback = array();
 
+	/**
+	 * constructor!
+	 */
 	public function __construct()
 	{
 		add_action( 'init', array( $this, 'init' ) );
@@ -52,7 +55,7 @@ class bSocial_Comments_Feedback
 	{
 		$args = array(
 			'label'             => 'Feedback',
-			'label_count'       => _n_noop('Feedback <span class="count">(%s)</span>', 'Feedback <span class="count">(%s)</span>'),
+			'label_count'       => _n_noop( 'Feedback <span class="count">(%s)</span>', 'Feedback <span class="count">(%s)</span>' ),
 			'status_links_show' => FALSE,
 			'include_in_all'    => TRUE,
 		);
@@ -160,7 +163,8 @@ class bSocial_Comments_Feedback
 			'state'     => $success ? $direction : $inverse_directions[ $direction ],
 		);
 
-		if ( $success ) {
+		if ( $success )
+		{
 			wp_send_json_success( $data );
 			die;
 		}//end if
@@ -169,6 +173,14 @@ class bSocial_Comments_Feedback
 		die;
 	}//end ajax_comment_feedback
 
+	/**
+	 * Adds or removes a feedback comment to/from the given comment_id
+	 *
+	 * @param int $post_id Post ID the comment that is being (un)faved/flagged is from
+	 * @param int $comment_id Comment ID that is being (un)faved/flagged
+	 * @param string $direction Direction of the feedback: fave, unfave, flag, unflag
+	 * @param array $args Additional arguments
+	 */
 	public function update_comment_feedback( $post_id, $comment_id, $direction, $args = array() )
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
@@ -609,7 +621,7 @@ class bSocial_Comments_Feedback
 		} // END if
 
 		// Make sure we're dealing with a comment that can have feedback
-		if ( '' != $comment->comment_type AND 'comment' != $comment->comment_type )
+		if ( '' != $comment->comment_type && 'comment' != $comment->comment_type )
 		{
 			return;
 		} // END if
@@ -669,7 +681,7 @@ class bSocial_Comments_Feedback
 		{
 			$this->update_feedback_counts( $comment->comment_parent, 'flags' );
 		} // END if
-	} // END transition_comment_status
+	} // END comment_delete_fave_flag
 
 	/**
 	 * Send email notification to authors and moderator for a flag

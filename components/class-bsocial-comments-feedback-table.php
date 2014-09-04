@@ -6,6 +6,9 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 	public $type = 'fave';
 	public $user_can;
 
+	/**
+	 * constructor!
+	 */
 	public function __construct()
 	{
 		//Set parent defaults
@@ -18,6 +21,11 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		);
 	} // END __construct
 
+	/**
+	 * Custom column to render comment authors
+	 *
+	 * @param Object $comment Current comment
+	 */
 	public function column_author( $comment )
 	{
 		?>
@@ -25,12 +33,12 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		<?php
 		$author_url = get_comment_author_url();
 
-		if ( 'http://' == $author_url )
+		if ( preg_match( '|^https?://$|', $author_url ) )
 		{
 			$author_url = '';
 		} // END if
 
-		$author_url_display = preg_replace( '|http://(www\.)?|i', '', $author_url );
+		$author_url_display = preg_replace( '|https?://(www\.)?|i', '', $author_url );
 
 		if ( strlen( $author_url_display ) > 50 )
 		{
@@ -62,6 +70,11 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		} // END if
 	} // END column_default
 
+	/**
+	 * Custom column to output info on the comment the feedback is attached to
+	 *
+	 * @param Object $comment Current comment
+	 */
 	public function column_comment( $comment )
 	{
 		global $comment_status;
@@ -106,6 +119,9 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		}
 	} // END column_default
 
+	/**
+	 * Returns an associative array of columns
+	 */
 	public function get_columns()
 	{
 		$columns = array(
@@ -116,6 +132,11 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		return $columns;
 	} // END get_columns
 
+	/**
+	 * This echos a single item (from the items property) to the page. 
+	 *
+	 * @param Object $comment Current comment
+	 */
 	public function single_row( $comment )
 	{
 		// Sort of goofy but this is how WP does it so we might as well copy
@@ -139,6 +160,9 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		$GLOBALS['comment'] = $this->current_comment;
 	} // END single_row
 
+	/**
+	 * prepares the comments for rendering
+	 */
 	public function prepare_items()
 	{
 		global $wpdb;
@@ -161,6 +185,9 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		$this->items = get_comments( $args );
 	} // END prepare_items
 
+	/**
+	 * Returns a list of css classes to be attached to the table element.
+	 */
 	public function get_table_classes()
 	{
 		$classes = parent::get_table_classes();
@@ -169,6 +196,9 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		return $classes;
 	}
 
+	/**
+	 * Outputs the list table the way we want for feedback info!
+	 */
 	public function custom_display()
 	{
 		?>
