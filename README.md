@@ -13,9 +13,10 @@ The featured comments from [bSocial](https://github.com/misterbisson/bsocial) ar
 
 ```php
 $args = array(
-	'label'                  => 'Feedback',
-	'label_count'            => _n_noop('Feedback <span class="count">(%s)</span>', 'Feedback <span class="count">(%s)</span>'),
-	'show_in_admin_all_list' => TRUE,
+	'label'             => 'Feedback',
+	'label_count'       => _n_noop('Feedback <span class="count">(%s)</span>', 'Feedback <span class="count">(%s)</span>'),
+	'status_links_show' => TRUE,
+	'include_in_all'    => FALSE,
 );
 
 bsocial_comments()->register()->comment_status( 'feedback', $args );
@@ -32,7 +33,7 @@ $args = array(
 	'description'   => 'Comment faves',
 	'public'        => TRUE,
 	'show_ui'       => TRUE,
-	'admin_actions' => array( 'trash' ),
+	'admin_actions' => array( 'trash', 'untrash', 'delete' ),
 	'statuses'      => array(
 		'feedback',
 		'trash',
