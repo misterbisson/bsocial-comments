@@ -50,38 +50,47 @@ var bsocial_comments_moderation = {
 
 		// when we've received data back from our status update, replace links and update data attributes
 		jqxhr.done( function( data ) {
-			$comment.unblock();
-
-			if ( data.success ) {
-				var $li = $el.closest( 'li' );
-				var $els = $comment.find( '.' + $li.attr( 'class' ) ).find( 'a' );
-
-				$els.replaceWith( data.link );
-				var opposite_type = $el.data( 'type' );
-
-				if ( 'featured' === data.state ) {
-					$comment.addClass( 'featured' );
-				} else if ( 'unfeatured' === data.state ) {
-					$comment.filter( '[id$="-featured"]' ).closest( '.comment' ).remove();
-					$comment.removeClass( 'featured' );
-
-					if ( ! $( '#comments-list-featured ol li' ).length ) {
-						$( '#comments-list-featured' ).remove();
-						$( 'h3.subheader.featured' ).remove();
-					}//end if
-				} else if ( 'unapproved' === data.state ) {
-					$comment.addClass( 'unapproved' );
-				} else if ( 'approved' === data.state ) {
-					$comment.removeClass( 'unapproved' );
-				}//end else
-
-				if ( 'spammed' === data.state || 'trashed' === data.state ) {
-					$comment.slideUp( 'fast' );
-				}//end if
-
-				$comment.attr( 'data-state', data.state );
-			}//end if
+			bsocial_comments_moderation.moderation_state_complete( data, $el, $comment );
 		} );
+	};
+
+	/**
+	 * handle the successful completion of a moderation save ajax request
+	 */
+	bsocial_comments_moderation.moderation_state_complete = function( data, $el, $comment ) {
+		$comment.unblock();
+
+		if ( ! data.success ) {
+			return;
+		}//end if
+
+		var $li = $el.closest( 'li' );
+		var $els = $comment.find( '.' + $li.attr( 'class' ) ).find( 'a' );
+
+		$els.replaceWith( data.link );
+		var opposite_type = $el.data( 'type' );
+
+		if ( 'featured' === data.state ) {
+			$comment.addClass( 'featured' );
+		} else if ( 'unfeatured' === data.state ) {
+			$comment.filter( '[id$="-featured"]' ).closest( '.comment' ).remove();
+			$comment.removeClass( 'featured' );
+
+			if ( ! $( '#comments-list-featured ol li' ).length ) {
+				$( '#comments-list-featured' ).remove();
+				$( 'h3.subheader.featured' ).remove();
+			}//end if
+		} else if ( 'unapproved' === data.state ) {
+			$comment.addClass( 'unapproved' );
+		} else if ( 'approved' === data.state ) {
+			$comment.removeClass( 'unapproved' );
+		}//end else
+
+		if ( 'spammed' === data.state || 'trashed' === data.state ) {
+			$comment.slideUp( 'fast' );
+		}//end if
+
+		$comment.attr( 'data-state', data.state );
 	};
 
 	/**

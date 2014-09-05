@@ -140,7 +140,7 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 	public function single_row( $comment )
 	{
 		// Sort of goofy but this is how WP does it so we might as well copy
-		if ( get_option('show_avatars') )
+		if ( get_option( 'show_avatars' ) )
 		{
 			add_filter( 'comment_author', 'floated_admin_avatar' );
 		}

@@ -27,12 +27,12 @@ var bsocial_comments_feedback_admin = {};
 		});
 
 		// On error indicate something didn't work
-		request.error( function() {
+		request.fail( function() {
 			bsocial_comments_feedback_admin.error();
 		});
 
 		// On success we do some stuff
-		request.success( function( success ) {
+		request.done( function( success ) {
 			// Did the feedback actually get removed?
 			if ( ! $( success ).find( '#moderated a' ).attr( 'href' ).search( 'action=untrash&ids=' + bsocial_comments_feedback_admin.$comment_id ) ) {
 				bsocial_comments_feedback_admin.error();
