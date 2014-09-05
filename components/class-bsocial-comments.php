@@ -467,11 +467,11 @@ class bSocial_Comments
 	public function manage_links( $comment )
 	{
 		?>
-		<li class="approve-link"><?php echo $this->get_status_link( $comment->comment_ID, 'approve' ); ?></li>
-		<li class="feature-link"><?php echo $this->featured_comments()->get_feature_link( $comment->comment_ID ); ?></li>
-		<li class="edit-link"><?php echo edit_comment_link( 'Edit' ); ?></li>
-		<li class="spam-link"><?php echo $this->get_status_link( $comment->comment_ID, 'spam' ); ?></li>
-		<li class="trash-link"><?php echo $this->get_status_link( $comment->comment_ID, 'trash' ); ?></li>
+		<li class="approve-link"><?php echo esc_url( $this->get_status_link( $comment->comment_ID, 'approve' ) ); ?></li>
+		<li class="feature-link"><?php echo esc_url( $this->featured_comments()->get_feature_link( $comment->comment_ID ) ); ?></li>
+		<li class="edit-link"><?php echo esc_url( edit_comment_link( 'Edit' ) ); ?></li>
+		<li class="spam-link"><?php echo esc_url( $this->get_status_link( $comment->comment_ID, 'spam' ) ); ?></li>
+		<li class="trash-link"><?php echo esc_url( $this->get_status_link( $comment->comment_ID, 'trash' ) ); ?></li>
 		<?php
 	}//end manage_links
 

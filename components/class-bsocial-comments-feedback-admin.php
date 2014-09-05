@@ -33,11 +33,13 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	 */
 	public function add_meta_boxes( $post_type, $post )
 	{
-		if ( 'comment' == $post_type )
+		if ( 'comment' != $post_type )
 		{
-			add_meta_box( $this->id_base . '-faves', 'Comment Faves', array( $this, 'faves_meta_box' ), 'comment', 'normal', 'high' );
-			add_meta_box( $this->id_base . '-flags', 'Comment Flags', array( $this, 'flags_meta_box' ), 'comment', 'normal', 'high' );
+			return;
 		} // END if
+
+		add_meta_box( $this->id_base . '-faves', 'Comment Faves', array( $this, 'faves_meta_box' ), 'comment', 'normal', 'high' );
+		add_meta_box( $this->id_base . '-flags', 'Comment Flags', array( $this, 'flags_meta_box' ), 'comment', 'normal', 'high' );
 	} // END add_meta_boxes
 
 	/**

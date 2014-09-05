@@ -219,13 +219,13 @@ class bSocial_Comments_Register
 			return $translated_text;
 		} // END if
 
-		// Does this text eve apply?
+		// Does this text even apply?
 		if ( ! in_array( $translated_text, $this->label_defaults ) )
 		{
 			return $translated_text;
 		} // END if
 
-		// Try to get a comment object, if we can't there's no point in conituing
+		// Try to get a comment object, if we can't there's no point in continuing
 		// Passing a 0 value to get_comment forces it to find the comment on it's own
 		// You have to pass 0 as a variable because of the way get_comment is written in WordPress core
 		$comment = 0;
@@ -349,7 +349,7 @@ class bSocial_Comments_Register
 	} // END comment_status_links_add
 
 	/**
-	 * Builds a status link for use in the admin panelf or a given comment status status
+	 * Builds a status link for use in the admin panel or a given comment status status
 	 *
 	 * @param string $status The comment status you want a link for
 	 * @param array $label An array of labels appropriate for use in translate_nooped_plural
@@ -369,9 +369,9 @@ class bSocial_Comments_Register
 
 		$link = add_query_arg( 'comment_status', $status, $link );
 
-		if ( $post_id )
+		if ( $args['post_id'] )
 		{
-			$link = add_query_arg( 'p', absint( $post_id ), $link );
+			$link = add_query_arg( 'p', absint( $args['post_id'] ), $link );
 		} // END if
 
 		$stats = wp_count_comments();
@@ -504,7 +504,7 @@ class bSocial_Comments_Register
 
 		if ( isset( $_GET['comment_status'] ) && in_array( $_GET['comment_status'], $this->get_all_statuses() ) )
 		{
-			$comment_status = $_GET['comment_status'];
+			$comment_status = sanitize_key( $_GET['comment_status'] );
 		} // END if
 
 		return $comments_per_page;
@@ -558,14 +558,16 @@ class bSocial_Comments_Register
 			$status_clause .= " OR comment_approved = '%s'";
 		} // END for
 
-		// Add the status clause to the begining fo the prepare arguments
+		// Add the status clause to the beginning of the prepare arguments
 		array_unshift( $prepare_args, trim( $status_clause ) );
 
 		global $wpdb;
 
+		$prepared_clauses = call_user_func_array( array( $wpdb, 'prepare' ), $prepare_args );
+
 		$clauses['where'] = preg_replace(
 			'#^\( (comment_approved = \'0\' OR comment_approved = \'1\') \)#',
-			'( ${1} ' . call_user_func_array( array( $wpdb, 'prepare' ), $prepare_args ) . ' )',
+			'( ${1} ' . $prepared_clauses . ' )',
 			$clauses['where']
 		);
 
