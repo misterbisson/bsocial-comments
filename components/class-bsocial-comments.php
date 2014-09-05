@@ -79,7 +79,12 @@ class bSocial_Comments
 
 		wp_localize_script( 'bsocial-comments', 'bsocial_comments', $data );
 		wp_enqueue_script( 'bsocial-comments' );
-		wp_enqueue_script( 'bsocial-comments-moderation' );
+
+		if ( current_user_can( 'moderate_comments' ) )
+		{
+			wp_enqueue_script( 'bsocial-comments-moderation' );
+		}//end if
+
 		wp_enqueue_style( 'bsocial-comments' );
 	}//end wp_enqueue_scripts
 
