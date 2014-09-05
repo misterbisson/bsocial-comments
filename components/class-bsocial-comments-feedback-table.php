@@ -111,8 +111,8 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 			// There's only one valid action for feedback comments
 			?>
 			<div class="row-actions">
-				<span class='trash'>
-					<a href='<?php echo esc_url( $trash_url ); ?>' class='delete vim-d vim-destructive' title='Move this comment to the trash'>Trash</a>
+				<span class="trash">
+					<a href="<?php echo esc_url( $trash_url ); ?>" class="delete vim-d vim-destructive" title="Move this comment to the trash">Trash</a>
 				</span>
 			</div>
 			<?php
@@ -165,8 +165,6 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 	 */
 	public function prepare_items()
 	{
-		global $wpdb;
-
 		// Set columns
 		$columns  = $this->get_columns();
 		$hidden   = array();

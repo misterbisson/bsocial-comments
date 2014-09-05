@@ -115,13 +115,12 @@ class bSocial_Comments_Feedback
 
 		if ( ! check_ajax_referer( 'bsocial-comment-feedback', 'bsocial-nonce', FALSE ) )
 		{
-			return wp_send_json_error();
+			wp_send_json_error();
 		} // END if
 
 		if ( ! $comment = get_comment( $comment_id ) )
 		{
 			wp_send_json_error();
-			die;
 		} // END if
 
 		$valid_directions = array(
@@ -141,19 +140,16 @@ class bSocial_Comments_Feedback
 		if ( ! in_array( $direction, $valid_directions ) )
 		{
 			wp_send_json_error();
-			die;
 		} // END if
 
 		if ( ! $_GET['post_id'] )
 		{
 			wp_send_json_error();
-			die;
 		} // END if
 
 		if ( ! $post = get_post( absint( $_GET['post_id'] ) ) )
 		{
 			wp_send_json_error();
-			die;
 		} // END if
 
 		$success = $this->update_comment_feedback( $post->ID, $comment->comment_ID, $direction, $_GET );
@@ -166,11 +162,9 @@ class bSocial_Comments_Feedback
 		if ( $success )
 		{
 			wp_send_json_success( $data );
-			die;
 		}//end if
 
 		wp_send_json_error();
-		die;
 	}//end ajax_comment_feedback
 
 	/**
@@ -216,8 +210,8 @@ class bSocial_Comments_Feedback
 		}//end if
 		elseif ( ! empty( $args['user']['comment_author'] ) && ! empty( $args['user']['comment_author_email'] ) )
 		{
-			$comment_author = $_GET['user']['comment_author'];
-			$comment_author_email = $_GET['user']['comment_author_email'];
+			$comment_author = sanitize_text_field( $_GET['user']['comment_author'] );
+			$comment_author_email = sanitize_email( $_GET['user']['comment_author_email'] );
 		}//end elseif
 		else
 		{
@@ -255,7 +249,7 @@ class bSocial_Comments_Feedback
 
 			$success = wp_insert_comment( $comment );
 
-			// Send email notification to mederator/author if appropriate
+			// Send email notification to moderator/author if appropriate
 			// @TODO Move this and related code to the register class and have notify be a custom comment type param
 			if ( $success && get_option( 'comments_notify' ) && 'flag' == $type )
 			{
@@ -285,12 +279,12 @@ class bSocial_Comments_Feedback
 
 		if ( ! check_ajax_referer( 'bsocial-comment-feedback', 'nonce', FALSE ) )
 		{
-			return wp_send_json_error();
+			wp_send_json_error();
 		} // END if
 
 		if ( ! $post = get_post( $post_id ) )
 		{
-			return wp_send_json_error();
+			wp_send_json_error();
 		} // END if
 
 		$user_id = ! empty( $_GET['user']['user_id'] ) ? absint( $_GET['user']['user_id'] ) : null;
@@ -301,11 +295,11 @@ class bSocial_Comments_Feedback
 		}//end if
 		elseif ( ! empty( $_GET['user']['comment_author_email'] ) )
 		{
-			$user = $_GET['user']['comment_author_email'];
+			$user = sanitize_email( $_GET['user']['comment_author_email'] );
 		}//end elseif
 		else
 		{
-			return wp_send_json_error();
+			wp_send_json_error();
 		}//end else
 
 		$data = $this->get_post_comment_states( $post_id, $user );
@@ -316,7 +310,6 @@ class bSocial_Comments_Feedback
 		} // END if
 
 		wp_send_json_success( $data );
-		die;
 	}//end ajax_states_for_user
 
 	/**
