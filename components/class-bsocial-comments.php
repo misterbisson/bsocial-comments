@@ -79,7 +79,12 @@ class bSocial_Comments
 
 		wp_localize_script( 'bsocial-comments', 'bsocial_comments', $data );
 		wp_enqueue_script( 'bsocial-comments' );
-		wp_enqueue_script( 'bsocial-comments-moderation' );
+
+		if ( current_user_can( 'moderate_comments' ) )
+		{
+			wp_enqueue_script( 'bsocial-comments-moderation' );
+		}//end if
+
 		wp_enqueue_style( 'bsocial-comments' );
 	}//end wp_enqueue_scripts
 
@@ -467,11 +472,11 @@ class bSocial_Comments
 	public function manage_links( $comment )
 	{
 		?>
-		<li class="approve-link"><?php echo esc_url( $this->get_status_link( $comment->comment_ID, 'approve' ) ); ?></li>
-		<li class="feature-link"><?php echo esc_url( $this->featured_comments()->get_feature_link( $comment->comment_ID ) ); ?></li>
-		<li class="edit-link"><?php echo esc_url( edit_comment_link( 'Edit' ) ); ?></li>
-		<li class="spam-link"><?php echo esc_url( $this->get_status_link( $comment->comment_ID, 'spam' ) ); ?></li>
-		<li class="trash-link"><?php echo esc_url( $this->get_status_link( $comment->comment_ID, 'trash' ) ); ?></li>
+		<li class="approve-link"><?php echo wp_kses_post( $this->get_status_link( $comment->comment_ID, 'approve' ) ); ?></li>
+		<li class="feature-link"><?php echo wp_kses_post( $this->featured_comments()->get_feature_link( $comment->comment_ID ) ); ?></li>
+		<li class="edit-link"><?php echo wp_kses_post( edit_comment_link( 'Edit' ) ); ?></li>
+		<li class="spam-link"><?php echo wp_kses_post( $this->get_status_link( $comment->comment_ID, 'spam' ) ); ?></li>
+		<li class="trash-link"><?php echo wp_kses_post( $this->get_status_link( $comment->comment_ID, 'trash' ) ); ?></li>
 		<?php
 	}//end manage_links
 
@@ -602,9 +607,6 @@ class bSocial_Comments
 						<button class="button link cancel">Cancel</button>
 					</p>
 				</form>
-			</section>
-			<section class="flag flag-submitted">
-				<p>You have flagged this post. <a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'unflag' ) ) ); ?>" class="unflag">Unflag it</a>.</p>
 			</section>
 		</div>
 		<?php
