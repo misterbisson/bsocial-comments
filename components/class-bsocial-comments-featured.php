@@ -279,7 +279,7 @@ class bSocial_Comments_Featured
 				wp_update_comment( $cleaned_comment );
 
 				wp_delete_post( $post_id );
-				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id' );
+				delete_comment_meta( $comment->comment_ID, $this->meta_key . '-post_id' );
 
 				// Clear out the get_featured_comment_posts cache for this post
 				$this->delete_featured_comment_posts_cache( $comment->comment_post_ID );
@@ -358,8 +358,8 @@ class bSocial_Comments_Featured
 		}
 
 		// save the meta
-		update_post_meta( $post_id, $this->meta_key .'-comment_id', $comment->comment_ID );
-		update_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id', $post_id );
+		update_post_meta( $post_id, $this->meta_key . '-comment_id', $comment->comment_ID );
+		update_comment_meta( $comment->comment_ID, $this->meta_key . '-post_id', $post_id );
 
 		// get all the terms on the parent post
 		foreach ( (array) wp_get_object_terms( $parent->ID, get_object_taxonomies( $parent->post_type ) ) as $term )
@@ -410,7 +410,7 @@ class bSocial_Comments_Featured
 	 */
 	public function get_post_meta( $post_id )
 	{
-		return get_post_meta( $post_id, $this->meta_key .'-comment_id', TRUE );
+		return get_post_meta( $post_id, $this->meta_key . '-comment_id', TRUE );
 	}// END get_post_meta
 
 	/**
