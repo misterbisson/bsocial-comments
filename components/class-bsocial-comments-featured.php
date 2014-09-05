@@ -318,10 +318,10 @@ class bSocial_Comments_Featured
 				// Post doesn't exist yet so we create one
 				$success = $this->create_post( $comment_id );
 			}//END else
-			
+
 			// Clear out the get_featured_comment_posts cache for this post
 			$this->delete_featured_comment_posts_cache( $comment->comment_post_ID );
-			
+
 			return $success;
 		}// END if
 	}// END feature_comment

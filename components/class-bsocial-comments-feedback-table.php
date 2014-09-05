@@ -133,7 +133,7 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 	} // END get_columns
 
 	/**
-	 * This echos a single item (from the items property) to the page. 
+	 * This echos a single item (from the items property) to the page.
 	 *
 	 * @param Object $comment Current comment
 	 */

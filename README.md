@@ -14,7 +14,7 @@ The featured comments from [bSocial](https://github.com/misterbisson/bsocial) ar
 ```php
 $args = array(
 	'label'             => 'Feedback',
-	'label_count'       => _n_noop('Feedback <span class="count">(%s)</span>', 'Feedback <span class="count">(%s)</span>'),
+	'label_count'       => _n_noop( 'Feedback <span class="count">(%s)</span>', 'Feedback <span class="count">(%s)</span>' ),
 	'status_links_show' => TRUE,
 	'include_in_all'    => FALSE,
 );
