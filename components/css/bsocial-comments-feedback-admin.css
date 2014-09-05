@@ -1,6 +1,3 @@
-/* @override 
-	http://go.local.gostage.it/wp-content/themes/vip/gigaom4-plugins/bsocial-comments/components//css/bsocial-comments-feedback.css?ver=1409350788 */
-
 table.comments .column-faves,
 table.comments .column-flags {
 	width: 3.5em;
@@ -23,7 +20,7 @@ table.comments .column-flags .flags {
 #bsocial-comments-feedback-flags.postbox .inside {
 	margin: 0;
 	padding: 0;
-	
+
 }
 
 #bsocial-comments-feedback-faves.postbox table,
