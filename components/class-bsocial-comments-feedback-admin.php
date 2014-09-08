@@ -202,6 +202,8 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	 */
 	public function comments_clauses( $clauses )
 	{
+		global $wpdb;
+
 		if ( ! is_admin() )
 		{
 			return $clauses;
@@ -217,8 +219,6 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		{
 			return $clauses;
 		} // END if
-
-		global $wpdb;
 
 		// Make sure we can work with the commentmeta table
 		$clauses['join'] = trim( $clauses['join'] ) . ' JOIN ' . $wpdb->commentmeta .' ON ' . $wpdb->commentmeta . '.comment_id = ' . $wpdb->comments . '.comment_ID';
