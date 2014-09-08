@@ -20,12 +20,6 @@ var bsocial_comments_moderation = {
 		var url = $el.attr( 'href' );
 		var action = $el.html();
 
-		var message = 'Are you sure you wish to ' + action + ' this comment by ' + $el.closest( '.div-comment' ).find( '.comment-info:first cite' ).text() + '?';
-
-		if ( ! confirm( message ) ) {
-			return;
-		}
-
 		if ( $comment.attr( 'id' ).match( /-featured$/ ) ) {
 			$comment = $comment.add( '#' + $comment.attr( 'id' ).replace( '-featured', '' ) );
 		} else {
