@@ -213,7 +213,8 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 
 		// Make sure the query is for all statuses
 		if (
-			( isset( $_GET['orderby'] ) && 'faves' != $_GET['orderby'] && 'flags' != $_GET['orderby'] )
+			! isset( $_GET['orderby'] )
+			|| ( isset( $_GET['orderby'] ) && 'faves' != $_GET['orderby'] && 'flags' != $_GET['orderby'] )
 			|| 'edit-comments' != $current_screen->base
 		)
 		{
