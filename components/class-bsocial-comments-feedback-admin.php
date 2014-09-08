@@ -9,6 +9,8 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 
 		add_filter( 'manage_edit-comments_columns', array( $this, 'comments_columns' ) );
 		add_filter( 'manage_comments_custom_column', array( $this, 'manage_comments_custom_column' ), 10, 2 );
+		add_filter( 'manage_edit-comments_sortable_columns', array( $this, 'manage_edit_comments_sortable_columns' ) );
+		add_filter( 'comments_clauses', array( $this, 'comments_clauses' ) );
 	} // end __construct
 
 	/**
@@ -22,7 +24,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		wp_register_script( $this->id_base . '-admin', plugins_url( '/js/bsocial-comments-feedback-admin.js', __FILE__ ), array( 'jquery' ), $script_config['version'], TRUE );
 
 		// Only enqueue script when on a comment edit page where it's needed
-		if ( 'comment.php' == $current_page )
+		if ( 'comment.php' == $current_page || 'edit-comments.php' == $current_page )
 		{
 			wp_enqueue_script( $this->id_base . '-admin' );
 		} // END if
@@ -142,7 +144,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
 			$count = $this->get_comment_fave_count( $comment_id );
-			echo 0 == $count ? $count : '<span class="faves">+ ' . $count . '</span>';
+			echo 0 == $count ? '<span class="zero">' . $count . '</span>' : '<span class="faves">+ ' . $count . '</span>';
 		} // END elseif
 	} // END faves_column
 
@@ -165,7 +167,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
 			$count = $this->get_comment_flag_count( $comment_id );
-			echo 0 == $count ? $count : '<span class="flags">- ' . $count . '</span>';
+			echo 0 == $count ? '<span class="zero">' . $count . '</span>' : '<span class="flags">- ' . $count . '</span>';
 		} // END elseif
 	} // END flags_column
 
@@ -177,6 +179,59 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	public function get_parent_link( $parent_id )
 	{
 		$url = add_query_arg( array( 'action' => 'editcomment', 'c' => absint( $parent_id ) ), admin_url( 'comment.php' ) );
-		echo '<a href="' . esc_url( $url ) . '" title="Edit parent comment">' . absint( $parent_id ) . '</a>';
+		echo '<a href="' . esc_url( $url ) . '" title="Edit parent comment" class="post-com-count"><span class="comment-count">&nbsp;</span></a>';
 	} // END get_parent_link
+
+	/**
+	 * Hook to the manage_edit-comments_sortable_columns filter and add faves/flags to the list of sortable columns
+	 *
+	 * @param $parent_id (int) WP parent_id value the link should be created for
+	 */
+	public function manage_edit_comments_sortable_columns( $sortable_columns )
+	{
+		$sortable_columns['faves'] = 'faves';
+		$sortable_columns['flags'] = 'flags';
+
+		return $sortable_columns;
+	} // END manage_edit_comments_sortable_columns
+
+	/**
+	 * Hook into the comments_clauses filter hook and return adjusted WHERE clause that includes ALL appropriate statuses if $_GET['comment_status'] == 'all'
+	 *
+	 * @param $clauses (array) Array of SQL clauses for the comments query
+	 */
+	public function comments_clauses( $clauses )
+	{
+		if ( ! is_admin() )
+		{
+			return $clauses;
+		} // END if
+
+		$current_screen = get_current_screen();
+
+		// Make sure the query is for all statuses
+		if (
+			( isset( $_GET['orderby'] ) && 'faves' != $_GET['orderby'] && 'flags' != $_GET['orderby'] )
+			|| 'edit-comments' != $current_screen->base
+		)
+		{
+			return $clauses;
+		} // END if
+
+		global $wpdb;
+
+		// Make sure we can work with the commentmeta table
+		$clauses['join'] = trim( $clauses['join'] ) . ' JOIN ' . $wpdb->commentmeta .' ON ' . $wpdb->commentmeta . '.comment_id = ' . $wpdb->comments . '.comment_ID';
+
+		$type = 'faves' == $_GET['orderby'] ? 'faves' : 'flags';
+
+		// Get fave/flag meta value so we can sort on it
+		$clauses['where'] = trim( $clauses['where'] ) . $wpdb->prepare( ' AND meta_key = %s', $this->id_base . '-' . $type );
+
+		// Order by the meta_value first then the date second this is a little hacky looking but it works
+		$clauses['orderby'] = 'meta_value ' . $clauses['order'] . ',';
+		$clauses['order']   = 'comment_date_gmt DESC';
+
+		return $clauses;
+	} // END comments_clauses
 }// END bSocial_Comments_Feedback_Admin
