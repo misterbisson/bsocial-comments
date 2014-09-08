@@ -196,7 +196,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	} // END manage_edit_comments_sortable_columns
 
 	/**
-	 * Hook into the comments_clauses filter hook and return adjusted WHERE clause that includes ALL appropriate statuses if $_GET['comment_status'] == 'all'
+	 * Hook into the comments_clauses filter hook and return adjusted clauses to support fave/flag column sorting
 	 *
 	 * @param $clauses (array) Array of SQL clauses for the comments query
 	 */
