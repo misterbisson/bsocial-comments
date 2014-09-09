@@ -257,9 +257,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	 * generates feedback ajax args
 	 */
 	bsocial_comments.generate_ajax_args = function( $comment, $trigger, type ) {
-		console.log( $trigger.get(0) )
-
-		if ( 'BUTTON' == $trigger.get(0).tagName ) {
+		if ( $trigger.is( 'button' ) ) {
 			var url = $trigger.closest( 'form' ).attr( 'action' );
 		} else {
 			var url = $trigger.attr( 'href' );
@@ -330,7 +328,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		var $flag_button = $el.closest( 'form' ).find( '.comment-flag-confirm' );
 
-		if ( 'radio' == $el.get(0).type ) {
+		if ( 'radio' == $el.prop( 'type' ) ) {
 			if ( 'other' == $el.data( 'reason-type' ) && 0 >= $el.closest( 'form' ).find( '.reason-description' ).val().length ) {
 				$flag_button.prop( { 'disabled': true } );
 			}else {
