@@ -654,7 +654,7 @@ class bSocial_Comments_Register
 		// We've changed stuff so the cache needs to be cleared again
 		clean_comment_cache( $comment_id );
 
-		// The rest of this is apeing default WP behavior to make sure things fire correctly based on the status change
+		// The rest of this is aping default WP behavior to make sure things fire correctly based on the status change
 		do_action( 'wp_set_comment_status', $comment_id, $comment_status );
 		$comment = get_comment( $comment_id );
 		$comment_old = clone get_comment($comment_id);
