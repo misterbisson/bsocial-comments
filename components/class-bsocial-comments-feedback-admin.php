@@ -144,7 +144,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
 			$count = $this->get_comment_fave_count( $comment_id );
-			echo 0 == $count ? '<span class="zero">' . $count . '</span>' : '<span class="faves">+ ' . $count . '</span>';
+			echo 0 == $count ? '<span class="zero">' . absint( $count ) . '</span>' : '<span class="faves">+ ' . absint( $count ) . '</span>';
 		} // END elseif
 	} // END faves_column
 
@@ -167,7 +167,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
 			$count = $this->get_comment_flag_count( $comment_id );
-			echo 0 == $count ? '<span class="zero">' . $count . '</span>' : '<span class="flags">- ' . $count . '</span>';
+			echo 0 == $count ? '<span class="zero">' . absint( $count ) . '</span>' : '<span class="flags">- ' . absint( $count ) . '</span>';
 		} // END elseif
 	} // END flags_column
 

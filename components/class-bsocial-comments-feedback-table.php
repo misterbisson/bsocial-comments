@@ -149,10 +149,11 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		$GLOBALS['comment'] = $comment;
 		$this->user_can = current_user_can( 'edit_comment', $comment->comment_ID );
 
-		static $row_class = '';
-		$row_class = ( '' == $row_class ) ? ' class="alternate"' : '';
+		static $row_class = 'insane';
+		$row_class = ( 'insane' == $row_class ) ? 'alternate' : 'insane';
 
-		echo '<tr id="' . $this->type . '-feedback-' . absint( $comment->comment_ID ) . '"' . $row_class . '>';
+		// Look two lines above to see why row_class is not e
+		echo '<tr id="' . esc_attr( $this->type ) . '-feedback-' . absint( $comment->comment_ID ) . '" class="' . esc_attr( $row_class ) . '">';
 		echo $this->single_row_columns( $comment );
 		echo '</tr>';
 
