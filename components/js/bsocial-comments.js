@@ -104,7 +104,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	};
 
 	/**
-	 * sets a comments fave state
+	 * sets a comments flag state
 	 */
 	bsocial_comments.set_flag_state = function( comment_id, state ) {
 		var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
