@@ -6,6 +6,12 @@ var bsocial_comments_feedback_admin = {};
 	// Start things up...
 	bsocial_comments_feedback_admin.init = function() {
 		$( document ).on( 'click', 'table.bsocial-comments-feedback .row-actions .trash a', bsocial_comments_feedback_admin.trash_feedback );
+
+		$( 'table.comments .column-flags').each(function() {
+			if ( $(this).find( '.flags' ).length ) {
+				$(this).addClass( 'has-flags' );
+			}
+		});
 	};
 
 	// Trash feedback

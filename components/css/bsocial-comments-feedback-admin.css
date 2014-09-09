@@ -1,14 +1,14 @@
 table.comments .column-faves,
 table.comments .column-flags {
-	width: 4em;
+	width: 5.5em;
 }
 
 table.comments .column-faves .faves {
 	color: green;
 }
 
-table.comments .column-flags .flags {
-	color: #af050e;
+table.comments .column-flags.has-flags {
+	background-color: #f2c4c4;
 }
 
 #bsocial-comments-feedback-faves.postbox,
