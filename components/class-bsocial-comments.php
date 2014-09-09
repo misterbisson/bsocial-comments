@@ -603,7 +603,7 @@ class bSocial_Comments
 						<span class="required">Describe your reason for flagging this comment.</span>
 					</p>
 					<p>
-						<a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>" class="button primary comment-flag-confirm">Flag</a>
+						<button class="button primary comment-flag-confirm" disabled="true" data-href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>">Flag</button>
 						<button class="button link cancel">Cancel</button>
 					</p>
 				</form>
