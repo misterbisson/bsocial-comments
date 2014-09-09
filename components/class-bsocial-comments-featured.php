@@ -422,16 +422,16 @@ class bSocial_Comments_Featured
 
 		// If the comment's new status is will make it invisible we unfeature it
 		// Because orphaned featured comment posts are sad
-		if (
-			   'unapproved' == $new_status
-			|| 'spam' == $new_status
-			|| 'trash' == $new_status
-			|| 'hold' == $new_status
-			|| 'delete' == $new_status
-		)
+		switch ( $new_status )
 		{
-			$this->unfeature_comment( $comment->comment_ID );
-		} // END if
+			case 'unapproved':
+			case 'spam':
+			case 'trash':
+			case 'hold':
+			case 'delete':
+				$this->unfeature_comment( $comment->comment_ID );
+			break;
+		} // END switch
 	} // END transition_comment_status
 
 	/**
