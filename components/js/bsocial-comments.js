@@ -256,8 +256,14 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	/**
 	 * generates feedback ajax args
 	 */
-	bsocial_comments.generate_ajax_args = function( $comment, $button, type ) {
-		var url = $button.closest( 'form' ).attr( 'action' );
+	bsocial_comments.generate_ajax_args = function( $comment, $trigger, type ) {
+		console.log( $trigger.get(0) )
+
+		if ( 'BUTTON' == $trigger.get(0).tagName ) {
+			var url = $trigger.closest( 'form' ).attr( 'action' );
+		} else {
+			var url = $trigger.attr( 'href' );
+		}
 
 		var type_inverse = null;
 
