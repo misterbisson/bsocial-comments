@@ -430,7 +430,7 @@ class bSocial_Comments_Featured
 			case 'hold':
 			case 'delete':
 				$this->unfeature_comment( $comment->comment_ID );
-			break;
+				break;
 		} // END switch
 	} // END transition_comment_status
 
