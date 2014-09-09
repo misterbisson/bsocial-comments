@@ -212,8 +212,6 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 				this.confirm_flag_comment( $link );
 			}//end else
 		}//end else
-
-
 	};
 
 	/**
@@ -292,8 +290,6 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			args.data.flag_text = $comment.find( '> .feedback-box .reason-description' ).val();
 		}//end if
 
-		console.log( args );
-
 		return args;
 	};
 
@@ -348,7 +344,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	bsocial_comments.event.fave_comment = function( e ) {
 		e.preventDefault();
 
-		bsocial_comments.fave_comment();
+		bsocial_comments.fave_comment( $( this ) );
 	};
 
 	bsocial_comments.event.flag_comment = function( e ) {
