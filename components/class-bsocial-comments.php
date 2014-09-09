@@ -474,7 +474,9 @@ class bSocial_Comments
 		?>
 		<li class="approve-link"><?php echo wp_kses_post( $this->get_status_link( $comment->comment_ID, 'approve' ) ); ?></li>
 		<li class="feature-link"><?php echo wp_kses_post( $this->featured_comments()->get_feature_link( $comment->comment_ID ) ); ?></li>
-		<li class="edit-link"><?php echo wp_kses_post( edit_comment_link( 'Edit' ) ); ?></li>
+		<li class="edit-link">
+			<a class="comment-edit-link" href="<?php echo esc_url( get_edit_comment_link( $comment->comment_ID ) ); ?>">Edit</a>
+		</li>
 		<li class="spam-link"><?php echo wp_kses_post( $this->get_status_link( $comment->comment_ID, 'spam' ) ); ?></li>
 		<li class="trash-link"><?php echo wp_kses_post( $this->get_status_link( $comment->comment_ID, 'trash' ) ); ?></li>
 		<?php

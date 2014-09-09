@@ -26,6 +26,7 @@ class bSocial_Comments_Featured
 		add_filter( 'the_author_posts_link', array( $this, 'filter_the_author_posts_link' ) );
 		add_filter( 'post_type_link', array( $this, 'post_type_link' ), 11, 2 );
 		add_filter( 'bsocial_comments_is_featured', array( $this, 'bsocial_comments_is_featured' ), 10, 2 );
+		add_filter( 'transition_comment_status', array( $this, 'transition_comment_status' ), 10, 3 );
 	}// END __construct
 
 	/**
@@ -404,6 +405,34 @@ class bSocial_Comments_Featured
 	{
 		return $this->is_featured( $comment_id );
 	} // END bsocial_comments_is_featured
+
+	/**
+	 * Watch for status transitions that should result in the comment being unfeatured
+	 *
+	 * @param string $new_status The new comment status
+	 * @param string $old_status The old comment status
+	 * @param object $comment WP comment object
+	 */
+	public function transition_comment_status( $new_status, $old_status, $comment )
+	{
+		if ( ! $this->is_featured( $comment->comment_ID ) )
+		{
+			return;
+		} // END if
+
+		// If the comment's new status is will make it invisible we unfeature it
+		// Because orphaned featured comment posts are sad
+		switch ( $new_status )
+		{
+			case 'unapproved':
+			case 'spam':
+			case 'trash':
+			case 'hold':
+			case 'delete':
+				$this->unfeature_comment( $comment->comment_ID );
+				break;
+		} // END switch
+	} // END transition_comment_status
 
 	/**
 	 * Returns the matching comment_id of the post if it exists
