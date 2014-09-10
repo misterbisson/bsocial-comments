@@ -563,7 +563,7 @@ class bSocial_Comments
 				?>
 			</section>
 			<section class="flag flag-logged-in">
-				<form class="<?php echo esc_attr( implode( ' ', apply_filters( 'bsocial_comments_feedback_form_classes', array() ) ) ); ?>">
+				<form class="<?php echo esc_attr( implode( ' ', apply_filters( 'bsocial_comments_feedback_form_classes', array() ) ) ); ?>" action="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>">
 					<?php
 					// this will need to be sanitized up stream as we must be able to support HTML in here
 					echo $message_flag_logged_in;
@@ -605,7 +605,7 @@ class bSocial_Comments
 						<span class="required">Describe your reason for flagging this comment.</span>
 					</p>
 					<p>
-						<a href="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>" class="button primary comment-flag-confirm">Flag</a>
+						<button class="button primary comment-flag-confirm" disabled="true">Flag</button>
 						<button class="button link cancel">Cancel</button>
 					</p>
 				</form>

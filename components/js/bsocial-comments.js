@@ -32,6 +32,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		$( document ).on( 'submit', '.flag-logged-in form', this.event.confirm_flag_comment );
 		$( document ).on( 'click', '.flag-logged-in .cancel', this.event.cancel_confirm_flag_comment );
 		$( document ).on( 'change', '.reason', this.event.select_reason );
+		$( document ).on( 'keyup', '.reason-description', this.event.select_reason );
 	};
 
 	/**
@@ -255,8 +256,12 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	/**
 	 * generates feedback ajax args
 	 */
-	bsocial_comments.generate_ajax_args = function( $comment, $link, type ) {
-		var url = $link.attr( 'href' );
+	bsocial_comments.generate_ajax_args = function( $comment, $trigger, type ) {
+		if ( $trigger.is( 'button' ) ) {
+			var url = $trigger.closest( 'form' ).attr( 'action' );
+		} else {
+			var url = $trigger.attr( 'href' );
+		}
 
 		var type_inverse = null;
 
@@ -321,7 +326,23 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		e.preventDefault();
 		var $el = $( this );
 
-		$el.closest( 'form' ).attr( 'data-selected-reason', $el.data( 'reason-type' ) );
+		var $flag_button = $el.closest( 'form' ).find( '.comment-flag-confirm' );
+
+		if ( 'radio' == $el.prop( 'type' ) ) {
+			if ( 'other' == $el.data( 'reason-type' ) && 0 >= $el.closest( 'form' ).find( '.reason-description' ).val().length ) {
+				$flag_button.prop( { 'disabled': true } );
+			}else {
+				$flag_button.prop( { 'disabled': false } );
+			}
+
+			$el.closest( 'form' ).attr( 'data-selected-reason', $el.data( 'reason-type' ) );
+		} else {
+			if ( 0 < $el.val().length ) {
+				$flag_button.prop( { 'disabled': false } );
+			} else {
+				$flag_button.prop( { 'disabled': true } );
+			}
+		}
 	};
 
 	bsocial_comments.event.fave_comment = function( e ) {
