@@ -271,20 +271,34 @@ class bSocial_Comments_Featured
 		{
 			if ( $post_id = $this->get_comment_meta( $comment->comment_ID ) )
 			{
+				// turn off our transition_comment_status filter so we don't fire this off while updating the status
+				remove_filter( 'transition_comment_status', array( $this, 'transition_comment_status' ), 10, 3 );
+
 				// The comment might have a shortcode in it so we'll remove that since it could refeature the comment accidentally
 				$cleaned_comment = array(
 					'comment_ID'      => $comment->comment_ID,
 					'comment_content' => preg_replace( $this->tag_regex, '', $comment->comment_content ),
+					// if comment_approved isn't provided with 'hold', the comment will be auto-transitioned to approved
+					'comment_approved' => 0 == $comment->comment_approved ? 'hold' : 'approve',
 				);
+
+				// we need to delete the comment meta BEFORE updating the comment because wp_update_comment fires off
+				// the edit_comment action. We hook to edit_comment to check if this comment is featured (determined by
+				// the contents of the comment OR wether or not it has comment meta.  Deleting the meta BEFORE updating
+				// allows our check in edit_comment to succeed as expected.
+				delete_comment_meta( $comment->comment_ID, $this->meta_key . '-post_id' );
 
 				wp_update_comment( $cleaned_comment );
 
+				$comment = get_comment( $comment_id );
+
 				wp_delete_post( $post_id );
-				delete_comment_meta( $comment->comment_ID, $this->meta_key . '-post_id' );
 
 				// Clear out the get_featured_comment_posts cache for this post
 				$this->delete_featured_comment_posts_cache( $comment->comment_post_ID );
 
+				// let's turn this back on
+				add_filter( 'transition_comment_status', array( $this, 'transition_comment_status' ), 10, 3 );
 				return TRUE;
 			}// END if
 		}// END if
