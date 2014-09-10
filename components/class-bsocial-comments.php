@@ -553,20 +553,20 @@ class bSocial_Comments
 			<section class="fave fave-logged-out">
 				<?php
 				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo $message_fave_logged_out;
+				echo wp_kses_post( $message_fave_logged_out );
 				?>
 			</section>
 			<section class="flag flag-logged-out">
 				<?php
 				// this will need to be sanitized up stream as we must be able to support HTML in here
-				echo $message_flag_logged_out;
+				echo wp_kses_post( $message_flag_logged_out );
 				?>
 			</section>
 			<section class="flag flag-logged-in">
 				<form class="<?php echo esc_attr( implode( ' ', apply_filters( 'bsocial_comments_feedback_form_classes', array() ) ) ); ?>" action="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>">
 					<?php
 					// this will need to be sanitized up stream as we must be able to support HTML in here
-					echo $message_flag_logged_in;
+					echo wp_kses_post( $message_flag_logged_in );
 					?>
 					<p>
 						<?php
