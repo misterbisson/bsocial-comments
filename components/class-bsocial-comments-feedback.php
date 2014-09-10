@@ -249,7 +249,7 @@ class bSocial_Comments_Feedback
 
 			$success = FALSE;
 
-			if ( ! $this->get_existing_feedback( $comment_id, $type, $user_id ?: $comment_author_email ) )
+			if ( ! $this->get_feedback_id( $comment_id, $type, $user_id ?: $comment_author_email ) )
 			{
 				$success = wp_insert_comment( $comment );
 			} // END if
@@ -263,7 +263,7 @@ class bSocial_Comments_Feedback
 		} // END if
 		else
 		{
-			if ( $feedback_id = $this->get_feedback_id( $comment_id, $type, $comment_author_email ) )
+			if ( $feedback_id = $this->get_feedback_id( $comment_id, $type, $user_id ?: $comment_author_email ) )
 			{
 				$success = wp_delete_comment( $feedback_id, TRUE );
 			} // END if
@@ -274,35 +274,6 @@ class bSocial_Comments_Feedback
 
 		return $success;
 	} // END update_comment_feedback
-
-	/**
-	 * Check for existing feedback from a user for a specific comment
-	 */
-	public function get_existing_feedback( $comment_id, $type, $user )
-	{
-		global $wpdb;
-
-		$sql = 'SELECT comment_id
-				FROM ' . $wpdb->comments .
-				' WHERE comment_parent = %d
-				AND comment_type = %s
-				AND comment_approved = %s';
-
-		// See what kind of user value we are dealing with
-		if ( is_numeric( $user ) )
-		{
-			$sql .= ' AND user_id = %d';
-		} // END if
-		else
-		{
-			// If we weren't given a user_id then we assume it's an author email
-			$sql .= ' AND comment_author_email = %s';
-		} // END else
-
-		$feedback_id = $wpdb->get_var( $wpdb->prepare( $sql, $comment_id, $type, 'feedback', $user ) );
-
-		return get_comment( $feedback_id );
-	} // END get_existing_feedback
 
 	/**
 	 * handles ajax requests to get the states of all comments on post for the oauth'd user

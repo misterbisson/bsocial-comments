@@ -152,7 +152,6 @@ class bSocial_Comments_Feedback_Table extends WP_List_Table
 		static $row_class = 'insane';
 		$row_class = ( 'insane' == $row_class ) ? 'alternate' : 'insane';
 
-		// Look two lines above to see why row_class is not e
 		echo '<tr id="' . esc_attr( $this->type ) . '-feedback-' . absint( $comment->comment_ID ) . '" class="' . esc_attr( $row_class ) . '">';
 		echo $this->single_row_columns( $comment );
 		echo '</tr>';
