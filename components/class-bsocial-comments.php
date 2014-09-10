@@ -4,6 +4,8 @@ class bSocial_Comments
 {
 	public $id_base = 'bsocial-comments';
 	public $featured_comments = NULL;
+	public $register = NULL;
+	public $feedback = NULL;
 	public $version = '1.0';
 
 	private $options = NULL;
@@ -11,9 +13,14 @@ class bSocial_Comments
 	public function __construct()
 	{
 		add_action( 'init', array( $this, 'init' ), 1 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
 		add_action( 'wp_ajax_bsocial_comments_status', array( $this, 'ajax_comment_status' ) );
 
 		add_action( 'delete_comment', array( $this, 'comment_id_by_meta_delete_cache' ) );
+
+		add_action( 'bsocial_comments_manage_links', array( $this, 'manage_links' ) );
+		add_action( 'bsocial_comments_feedback_links', array( $this, 'feedback_links' ) );
+		add_action( 'bsocial_comments_feedback_info', array( $this, 'feedback_info' ) );
 	} // END __construct
 
 	public function init()
@@ -22,7 +29,64 @@ class bSocial_Comments
 		{
 			$this->featured_comments();
 		} // END if
+
+		if ( $this->options()->register->enable )
+		{
+			$this->register();
+		} // END if
+
+		if ( $this->options()->feedback->enable )
+		{
+			$this->feedback();
+		} // END if
 	} // END init
+
+	/**
+	 * hooked to the wp_enqueue_scripts action
+	 */
+	public function wp_enqueue_scripts()
+	{
+		$script_config = apply_filters( 'go_config', array( 'version' => $this->version ), 'go-script-version' );
+
+		wp_register_style(
+			'bsocial-comments',
+			plugins_url( 'css/bsocial-comments.css', __FILE__ ),
+			array(),
+			$script_config['version']
+		);
+
+		wp_register_script(
+			'bsocial-comments',
+			plugins_url( 'js/bsocial-comments.js', __FILE__ ),
+			array( 'jquery' ),
+			$script_config['version'],
+			TRUE
+		);
+
+		wp_register_script(
+			'bsocial-comments-moderation',
+			plugins_url( 'js/bsocial-comments-moderation.js', __FILE__ ),
+			array( 'jquery' ),
+			$script_config['version'],
+			TRUE
+		);
+
+		$data = array(
+			'nonce' => wp_create_nonce( 'bsocial-comment-feedback' ),
+			'endpoint' => admin_url( 'admin-ajax.php' ),
+			'logged_in_as' => get_current_user_id(),
+		);
+
+		wp_localize_script( 'bsocial-comments', 'bsocial_comments', $data );
+		wp_enqueue_script( 'bsocial-comments' );
+
+		if ( current_user_can( 'moderate_comments' ) )
+		{
+			wp_enqueue_script( 'bsocial-comments-moderation' );
+		}//end if
+
+		wp_enqueue_style( 'bsocial-comments' );
+	}//end wp_enqueue_scripts
 
 	/**
 	 * featured comments object accessor
@@ -37,6 +101,34 @@ class bSocial_Comments
 
 		return $this->featured_comments;
 	} // END featured_comments
+
+	/**
+	 * Comment type/status registration object accessor
+	 */
+	public function register()
+	{
+		if ( ! $this->register )
+		{
+			require_once __DIR__ . '/class-bsocial-comments-register.php';
+			$this->register = new bSocial_Comments_Register();
+		} // END if
+
+		return $this->register;
+	} // END register
+
+	/**
+	 * Comment feedback object accessor
+	 */
+	public function feedback()
+	{
+		if ( ! $this->feedback )
+		{
+			require_once __DIR__ . '/class-bsocial-comments-feedback.php';
+			$this->feedback = new bSocial_Comments_Feedback();
+		} // END if
+
+		return $this->feedback;
+	} // END feedback
 
 	/**
 	 * plugin options getter
@@ -68,6 +160,23 @@ class bSocial_Comments
 				'has_archive'      => FALSE,
 				'rewrite_slug'     => 'talkbox',
 				'word_limit'       => 50,
+			),
+			'register' => (object) array(
+				'enable'      => TRUE,
+				'filter_text' => FALSE,
+			),
+			'feedback' => (object) array(
+				'enable'      => TRUE,
+			),
+			'reasons' => array(
+				'spam' => array(
+					'reason' => 'Spam',
+					'display-text' => 'Spam',
+				),
+				'personal-attack' => array(
+					'reason' => 'Personal attack',
+					'display-text' => 'Personal attack',
+				),
 			),
 		);
 	} // END default_options
@@ -143,7 +252,7 @@ class bSocial_Comments
 		} // END if
 
 		$arguments = array(
-			'action'        => 'bsocial_comment_status',
+			'action'        => 'bsocial_comments_status',
 			'comment_id'    => absint( $comment->comment_ID ),
 			'bsocial-nonce' => wp_create_nonce( 'bsocial-comment-status' ),
 			'direction'     => NULL,
@@ -356,6 +465,154 @@ class bSocial_Comments
 
 		die;
 	} // END ajax_comment_status
+
+	/**
+	 * hooked to bsocial_comments_manage_links outputs manage UI for a comment
+	 */
+	public function manage_links( $comment )
+	{
+		?>
+		<li class="approve-link"><?php echo wp_kses_post( $this->get_status_link( $comment->comment_ID, 'approve' ) ); ?></li>
+		<li class="feature-link"><?php echo wp_kses_post( $this->featured_comments()->get_feature_link( $comment->comment_ID ) ); ?></li>
+		<li class="edit-link">
+			<a class="comment-edit-link" href="<?php echo esc_url( get_edit_comment_link( $comment->comment_ID ) ); ?>">Edit</a>
+		</li>
+		<li class="spam-link"><?php echo wp_kses_post( $this->get_status_link( $comment->comment_ID, 'spam' ) ); ?></li>
+		<li class="trash-link"><?php echo wp_kses_post( $this->get_status_link( $comment->comment_ID, 'trash' ) ); ?></li>
+		<?php
+	}//end manage_links
+
+	/**
+	 * hooked to bsocial_comments_feedback_links outputs feedback UI for a comment
+	 */
+	public function feedback_links( $comment )
+	{
+		$favorited_count = $this->feedback()->get_comment_fave_count( $comment->comment_ID );
+		$flagged_count = $this->feedback()->get_comment_flag_count( $comment->comment_ID );
+		?>
+		<span class="comment-fave">
+			<a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-fave" title="Fave this comment">
+				<span class="fave-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span>
+			</a>
+		</span>
+		<span class="comment-flag">
+			<a href="<?php echo esc_url( $this->feedback()->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-flag" title="Flag this comment">
+				<?php
+				if ( current_user_can( 'edit_comment', $comment->comment_ID ) )
+				{
+					?>
+					<span class="flag-count" data-count="<?php echo absint( $flagged_count ); ?>"><?php echo absint( $flagged_count ); ?></span>
+					<?php
+				}//end if
+				?>
+			</a>
+		</span>
+		<?php
+	}//end feedback_links
+
+	/**
+	 * hooked to bsocial_comments_feedback_info outputs feedback UI for a comment
+	 */
+	public function feedback_info( $comment )
+	{
+		$message_logged_out = '<p>Sign in to %1$s this comment</p>';
+		$message_logged_in = '<h2>Reason for flagging this comment:</h2>';
+
+		$reasons = $this->options()->reasons;
+
+		$message_fave_logged_out = apply_filters(
+			'bsocial_comments_feedback_fave_logged_out_message',
+			sprintf(
+				$message_logged_out,
+				'fave',
+				wp_login_url( get_permalink() )
+			),
+			$comment
+		);
+
+		$message_flag_logged_out = apply_filters(
+			'bsocial_comments_feedback_flag_logged_out_message',
+			sprintf(
+				$message_logged_out,
+				'flag',
+				wp_login_url( get_permalink() )
+			),
+			$comment
+		);
+
+		$message_flag_logged_in = apply_filters(
+			'bsocial_comments_feedback_flag_logged_in_message',
+			sprintf(
+				$message_logged_in,
+				'flag'
+			),
+			$comment
+		);
+		?>
+		<div class="feedback-box">
+			<section class="fave fave-logged-out">
+				<?php
+				// this will need to be sanitized up stream as we must be able to support HTML in here
+				echo $message_fave_logged_out;
+				?>
+			</section>
+			<section class="flag flag-logged-out">
+				<?php
+				// this will need to be sanitized up stream as we must be able to support HTML in here
+				echo $message_flag_logged_out;
+				?>
+			</section>
+			<section class="flag flag-logged-in">
+				<form class="<?php echo esc_attr( implode( ' ', apply_filters( 'bsocial_comments_feedback_form_classes', array() ) ) ); ?>" action="<?php echo esc_url( bsocial_comments()->feedback()->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>">
+					<?php
+					// this will need to be sanitized up stream as we must be able to support HTML in here
+					echo $message_flag_logged_in;
+					?>
+					<p>
+						<?php
+						foreach ( $reasons as $reason_id => $reason )
+						{
+							$id = "comment-{$comment->comment_ID}-reason-" . sanitize_key( $reason_id );
+							$name = preg_replace( '/_reason_.+$/', '_reason', str_replace( '-', '_', $id ) );
+							?>
+							<label for="<?php echo esc_attr( $id ); ?>">
+							<input
+								type="radio"
+								class="go-radio reason"
+								name="<?php echo esc_attr( $name ); ?>"
+								id="<?php echo esc_attr( $id ); ?>"
+								value="<?php echo esc_attr( $reason['reason'] ); ?>"
+								data-reason-type="<?php echo esc_attr( $reason_id ); ?>"
+							>
+								<span><?php /* using wp_kses_post because we wish to support HTML here */ echo wp_kses_post( $reason['display-text'] ); ?></span>
+							</label>
+							<?php
+						}//end foreach
+
+						$id = "comment-{$comment->comment_ID}-reason-other";
+						$name = preg_replace( '/_reason_.+$/', '_reason', str_replace( '-', '_', $id ) );
+
+						$description_id = "comment-{$comment->comment_ID}-reason-description";
+						$description_name = str_replace( '-', '_', $description_id );
+						?>
+						<label for="<?php echo esc_attr( $id ); ?>">
+							<input type="radio" class="go-radio reason" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $id ); ?>" value="Other" data-reason-type="other">
+							<span>Other</span>
+						</label>
+					</p>
+					<p class="other-describe">
+						<textarea placeholder="Please describe" class="reason-description" name="<?php echo esc_attr( $description_name ); ?>" id="<?php echo esc_attr( $description_id ); ?>"></textarea>
+						<span class="required">Describe your reason for flagging this comment.</span>
+					</p>
+					<p>
+						<button class="button primary comment-flag-confirm" disabled="true">Flag</button>
+						<button class="button link cancel">Cancel</button>
+					</p>
+				</form>
+			</section>
+		</div>
+		<?php
+	}//end feedback_info
 }// END bSocial_Comments
 
 function bsocial_comments()

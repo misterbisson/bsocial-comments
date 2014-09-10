@@ -17,13 +17,13 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	 */
 	public function admin_enqueue_scripts( $hook )
 	{
-		$version_config = apply_filters( 'go_config', array( 'version' => bsocial_comments()->version ), 'go-script-version' );
+		$script_config = apply_filters( 'go_config', array( 'version' => bsocial_comments()->version ), 'go-script-version' );
 
-		wp_register_script( $this->id_base, plugins_url( '/js/bsocial-comments-featured.js', __FILE__ ), array( 'jquery' ), $version_config['version'], TRUE );
-		wp_enqueue_style( $this->id_base, plugins_url( '/css/bsocial-comments-featured.css', __FILE__ ), array(), $version_config['version'] );
+		wp_register_script( $this->id_base . '-admin', plugins_url( '/js/bsocial-comments-featured-admin.js', __FILE__ ), array( 'jquery' ), $script_config['version'], TRUE );
+		wp_enqueue_style( $this->id_base . '-admin', plugins_url( '/css/bsocial-comments-featured-admin.css', __FILE__ ), array(), $script_config['version'] );
 
 		//pass the hook to the javascript for comparison
-		wp_localize_script( $this->id_base, 'bsocial_comments_featured', array( 'hook' => $hook ) );
+		wp_localize_script( $this->id_base . '-admin', 'bsocial_comments_featured_admin', array( 'hook' => $hook ) );
 
 		$valid_bases = array(
 			'comment',
@@ -38,7 +38,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 			return;
 		} // END if
 
-		wp_enqueue_script( $this->id_base );
+		wp_enqueue_script( $this->id_base . '-admin' );
 	} // END admin_enqueue_scripts
 
 	/**

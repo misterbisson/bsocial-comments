@@ -1,0 +1,46 @@
+.comment .feedback-box,
+.comment .feedback-box section {
+	display: none;
+}
+
+.comment .feedback-box p {
+	margin-bottom: 0;
+}
+
+.comment .feedback-box .other-describe,
+.comment .feedback-box .required {
+	display: none;
+}
+
+.comment .feedback-box form[data-selected-reason="other"] .other-describe {
+	display: block;
+}
+
+.comment .feedback-box[data-type="fave-logged-out"] .fave-logged-out,
+.comment .feedback-box[data-type="flag-logged-out"] .flag-logged-out,
+.comment .feedback-box[data-type="flag-logged-in"] .flag-logged-in {
+	display: block;
+}
+
+.comment-fave a .fave-count,
+.comment-fave a:after,
+.comment-flag a .flag-count,
+.comment-flag a:after {
+	font-size: .8125rem;
+}
+
+.comment-fave a:after {
+	content: 'Fave';
+}
+
+.comment-flag a:after {
+	content: 'Flag';
+}
+
+.comment[data-comment-fave="fave"] > .div-comment .comment-fave a:after {
+	content: 'Unfave';
+}
+
+.comment[data-comment-flag="flag"] > .div-comment .comment-flag a:after {
+	content: 'Unflag';
+}

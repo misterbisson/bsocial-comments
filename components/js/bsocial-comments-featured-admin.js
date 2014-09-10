@@ -1,5 +1,5 @@
-if ( 'undefined' === typeof bsocial_comments_featured ) {
-	var bsocial_comments_featured = {
+if ( 'undefined' === typeof bsocial_comments_featured_admin ) {
+	var bsocial_comments_featured_admin = {
 		hook: null
 	};
 }//end if
@@ -8,9 +8,9 @@ if ( 'undefined' === typeof bsocial_comments_featured ) {
 	'use strict';
 
 	// Start things up...
-	bsocial_comments_featured.init = function() {
+	bsocial_comments_featured_admin.init = function() {
 		// Add a featured comment button to quicktags when we're editing a comment
-		if( 'comment.php' == bsocial_comments_featured.hook || 'edit-comments.php' == bsocial_comments_featured.hook ) {
+		if( 'comment.php' === bsocial_comments_featured_admin.hook || 'edit-comments.php' === bsocial_comments_featured_admin.hook ) {
 			//we're on a comment-only page, we can add to all of them
 			QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment');
 		} else {
@@ -18,29 +18,28 @@ if ( 'undefined' === typeof bsocial_comments_featured ) {
 			QTags.addButton( 'bsocial-featured-comment', 'featured comment', '[featured_comment]', '[/featured_comment]', 'f', 'Feature specific portion of a comment', 200, 'replycontent' );
 		}
 
-		bsocial_comments_featured.watch_links();
+		bsocial_comments_featured_admin.watch_links();
 	};
 
 	// Watch for clicks to the Feature/Unfeature links
-	bsocial_comments_featured.watch_links = function() {
+	bsocial_comments_featured_admin.watch_links = function() {
 		$( document ).on( 'click', 'a.feature-comment', function( event ){
 			event.preventDefault();
 
 			// If someone is young and impatient like Jesus they might click on the link again causing duplicate featured comment posts
 			$(this).on( 'click', function() { return false; } );
 
-			if ( 0 != $(this).closest( 'div#bsuite-fcomment.postbox' ).length ) {
-				bsocial_comments_featured.meta_box_link( $(this) );
+			if ( 0 !== $(this).closest( 'div#bsuite-fcomment.postbox' ).length ) {
+				bsocial_comments_featured_admin.meta_box_link( $(this) );
 			} else {
-				bsocial_comments_featured.comments_panel_link( $(this) );
+				bsocial_comments_featured_admin.comments_panel_link( $(this) );
 			}
 		});
 	};
 
 	// Handle clicks to a meta box feature/unfeature link
-	bsocial_comments_featured.meta_box_link = function( feature_link ) {
+	bsocial_comments_featured_admin.meta_box_link = function( feature_link ) {
 		var $comment_div = feature_link.closest( 'div.featured-comment' );
-		var $comment_id  = $comment_div.data( 'comment-id' );
 
 		// Show we're doing something
 		feature_link.text( 'Unfeaturing...' );
@@ -70,7 +69,7 @@ if ( 'undefined' === typeof bsocial_comments_featured ) {
 	};
 
 	// Handle clicks to a comments panel feature/unfeature link
-	bsocial_comments_featured.comments_panel_link = function( feature_link ) {
+	bsocial_comments_featured_admin.comments_panel_link = function( feature_link ) {
 		var $comment_tr   = feature_link.closest( 'tr' );
 
 		// Fade out the the comment to show something's happening
@@ -85,13 +84,13 @@ if ( 'undefined' === typeof bsocial_comments_featured ) {
 
 		// On error we just show the comment again
 		request.error( function() {
-			bsocial_comments_featured.error( $comment_tr );
+			bsocial_comments_featured_admin.error( $comment_tr );
 		});
 
 		// On success we do some stuff
 		request.success( function( data ) {
 			if ( ! 'link' in data ) {
-				bsocial_comments_featured.error( $comment_tr );
+				bsocial_comments_featured_admin.error( $comment_tr );
 				return;
 			}
 
@@ -108,7 +107,7 @@ if ( 'undefined' === typeof bsocial_comments_featured ) {
 			}
 
 			// Fade the comment back in and show success
-			bsocial_comments_featured.success( $comment_tr );
+			bsocial_comments_featured_admin.success( $comment_tr );
 
 			// Mark comment as approved if needed
 			if ( $( $comment_tr ).hasClass( 'unapproved' ) ) {
@@ -119,20 +118,20 @@ if ( 'undefined' === typeof bsocial_comments_featured ) {
 	};
 
 	// Animate comment back in with failure colors
-	bsocial_comments_featured.error = function( comment ) {
+	bsocial_comments_featured_admin.error = function( comment ) {
 		comment.css('background-color', '#ffffe0' );
 		comment.fadeIn( 'slow' );
 		comment.animate( { 'backgroundColor' : '' }, 400 );
 	};
 
 	// Animate comment back in with sucess colors
-	bsocial_comments_featured.success = function( comment ) {
+	bsocial_comments_featured_admin.success = function( comment ) {
 		comment.css('background-color', '#cceebb' );
 		comment.fadeIn( 'slow' );
 		comment.animate( { 'backgroundColor' : '' }, 400 );
 	};
-})(jQuery);
 
-jQuery(function($) {
-	bsocial_comments_featured.init();
-});
+	$(function() {
+		bsocial_comments_featured_admin.init();
+	});
+})(jQuery);

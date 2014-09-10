@@ -26,6 +26,7 @@ class bSocial_Comments_Featured
 		add_filter( 'the_author_posts_link', array( $this, 'filter_the_author_posts_link' ) );
 		add_filter( 'post_type_link', array( $this, 'post_type_link' ), 11, 2 );
 		add_filter( 'bsocial_comments_is_featured', array( $this, 'bsocial_comments_is_featured' ), 10, 2 );
+		add_filter( 'transition_comment_status', array( $this, 'transition_comment_status' ), 10, 3 );
 	}// END __construct
 
 	/**
@@ -279,7 +280,7 @@ class bSocial_Comments_Featured
 				wp_update_comment( $cleaned_comment );
 
 				wp_delete_post( $post_id );
-				delete_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id' );
+				delete_comment_meta( $comment->comment_ID, $this->meta_key . '-post_id' );
 
 				// Clear out the get_featured_comment_posts cache for this post
 				$this->delete_featured_comment_posts_cache( $comment->comment_post_ID );
@@ -318,10 +319,10 @@ class bSocial_Comments_Featured
 				// Post doesn't exist yet so we create one
 				$success = $this->create_post( $comment_id );
 			}//END else
-			
+
 			// Clear out the get_featured_comment_posts cache for this post
 			$this->delete_featured_comment_posts_cache( $comment->comment_post_ID );
-			
+
 			return $success;
 		}// END if
 	}// END feature_comment
@@ -358,8 +359,8 @@ class bSocial_Comments_Featured
 		}
 
 		// save the meta
-		update_post_meta( $post_id, $this->meta_key .'-comment_id', $comment->comment_ID );
-		update_comment_meta( $comment->comment_ID, $this->meta_key .'-post_id', $post_id );
+		update_post_meta( $post_id, $this->meta_key . '-comment_id', $comment->comment_ID );
+		update_comment_meta( $comment->comment_ID, $this->meta_key . '-post_id', $post_id );
 
 		// get all the terms on the parent post
 		foreach ( (array) wp_get_object_terms( $parent->ID, get_object_taxonomies( $parent->post_type ) ) as $term )
@@ -406,11 +407,39 @@ class bSocial_Comments_Featured
 	} // END bsocial_comments_is_featured
 
 	/**
+	 * Watch for status transitions that should result in the comment being unfeatured
+	 *
+	 * @param string $new_status The new comment status
+	 * @param string $old_status The old comment status
+	 * @param object $comment WP comment object
+	 */
+	public function transition_comment_status( $new_status, $old_status, $comment )
+	{
+		if ( ! $this->is_featured( $comment->comment_ID ) )
+		{
+			return;
+		} // END if
+
+		// If the comment's new status is will make it invisible we unfeature it
+		// Because orphaned featured comment posts are sad
+		switch ( $new_status )
+		{
+			case 'unapproved':
+			case 'spam':
+			case 'trash':
+			case 'hold':
+			case 'delete':
+				$this->unfeature_comment( $comment->comment_ID );
+				break;
+		} // END switch
+	} // END transition_comment_status
+
+	/**
 	 * Returns the matching comment_id of the post if it exists
 	 */
 	public function get_post_meta( $post_id )
 	{
-		return get_post_meta( $post_id, $this->meta_key .'-comment_id', TRUE );
+		return get_post_meta( $post_id, $this->meta_key . '-comment_id', TRUE );
 	}// END get_post_meta
 
 	/**
@@ -432,16 +461,24 @@ class bSocial_Comments_Featured
 
 		if ( get_comment( $comment_id ) )
 		{
+			$state = $this->is_featured( $comment_id ) ? 'featured' : 'unfeatured';
+
 			if ( 'feature' == $_GET['direction'] )
 			{
-				$sucess = $this->feature_comment( $comment_id );
+				$success = $this->feature_comment( $comment_id );
+				$state = 'featured';
 			}//END if
 			else
 			{
-				$sucess = $this->unfeature_comment( $comment_id );
+				$success = $this->unfeature_comment( $comment_id );
+				$state = 'unfeatured';
 			}//END else
 
-			$data = array( 'link' => $this->get_feature_link( $comment_id ) );
+			$data = array(
+				'success' => $success,
+				'link' => $this->get_feature_link( $comment_id ),
+				'state' => $state,
+			);
 
 			// We only need to return text if the comment was unfeatured
 			if ( 'unfeature' == $_GET['direction'] )
