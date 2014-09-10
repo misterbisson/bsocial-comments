@@ -242,13 +242,14 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		$form.find( '.reason-description' ).val( '' );
 
 		// let's give immediate feedback so we don't have to wait for the ajax round-trip
+		$comment.find( '.feedback-box:first' ).attr( 'data-type', '' ).slideUp( 'fast' );
 		if ( 'flag' === $comment.attr( 'data-comment-flag' ) ) {
-			$comment.find( '.feedback-box:first' ).attr( 'data-type', '' ).slideUp( 'fast' );
 			this.set_flag_state( $comment.data( 'comment-id' ), 'unflag' );
 		} else {
-			$comment.find( '.feedback-box:first' ).attr( 'data-type', '' ).slideUp( 'fast' );
 			this.set_flag_state( $comment.data( 'comment-id' ), 'flag' );
 		}//end else
+		//re-disable the button see https://github.com/GigaOM/gigaom/issues/5267
+		$form.find( '.comment-flag-confirm' ).prop( { 'disabled': true } );
 
 		$( document ).trigger( 'bsocial-comments-flag-confirmed', [ $comment ] );
 	};
@@ -328,8 +329,8 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		var $flag_button = $el.closest( 'form' ).find( '.comment-flag-confirm' );
 
-		if ( 'radio' == $el.prop( 'type' ) ) {
-			if ( 'other' == $el.data( 'reason-type' ) && 0 >= $el.closest( 'form' ).find( '.reason-description' ).val().length ) {
+		if ( $el.is( ':radio' ) ) {
+			if ( 'other' === $el.data( 'reason-type' ) && 0 >= $el.closest( 'form' ).find( '.reason-description' ).val().length ) {
 				$flag_button.prop( { 'disabled': true } );
 			}else {
 				$flag_button.prop( { 'disabled': false } );
@@ -337,7 +338,8 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 			$el.closest( 'form' ).attr( 'data-selected-reason', $el.data( 'reason-type' ) );
 		} else {
-			if ( 0 < $el.val().length ) {
+			//if they've typed in the reason textarea, let them pass
+			if ( $.trim( $el.val() ).length ) {
 				$flag_button.prop( { 'disabled': false } );
 			} else {
 				$flag_button.prop( { 'disabled': true } );
