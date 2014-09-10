@@ -20,7 +20,7 @@ class bSocial_Comments
 
 		add_action( 'bsocial_comments_manage_links', array( $this, 'manage_links' ) );
 		add_action( 'bsocial_comments_feedback_links', array( $this, 'feedback_links' ) );
-		add_action( 'bsocial_comments_feedback_info', array( $this, 'feedback_info' ) );
+		add_action( 'bsocial_comments_feedback_info', array( $this, 'feedback_info' ), 10, 2 );
 	} // END __construct
 
 	public function init()
@@ -513,7 +513,7 @@ class bSocial_Comments
 	/**
 	 * hooked to bsocial_comments_feedback_info outputs feedback UI for a comment
 	 */
-	public function feedback_info( $comment )
+	public function feedback_info( $comment, $args )
 	{
 		$message_logged_out = '<p>Sign in to %1$s this comment</p>';
 		$message_logged_in = '<h2>Reason for flagging this comment:</h2>';
@@ -548,6 +548,14 @@ class bSocial_Comments
 			),
 			$comment
 		);
+
+		// Make sure IDs are always unique
+		$id_slug = $comment->comment_ID;
+
+		if ( isset( $args['featured-comments'] ) && $args['featured-comments'] )
+		{
+			$id_slug .= '-featured';
+		}//end if
 		?>
 		<div class="feedback-box">
 			<section class="fave fave-logged-out">
@@ -572,7 +580,7 @@ class bSocial_Comments
 						<?php
 						foreach ( $reasons as $reason_id => $reason )
 						{
-							$id = "comment-{$comment->comment_ID}-reason-" . sanitize_key( $reason_id );
+							$id = "comment-{$id_slug}-reason-" . sanitize_key( $reason_id );
 							$name = preg_replace( '/_reason_.+$/', '_reason', str_replace( '-', '_', $id ) );
 							?>
 							<label for="<?php echo esc_attr( $id ); ?>">
@@ -589,10 +597,10 @@ class bSocial_Comments
 							<?php
 						}//end foreach
 
-						$id = "comment-{$comment->comment_ID}-reason-other";
+						$id = "comment-{$id_slug}-reason-other";
 						$name = preg_replace( '/_reason_.+$/', '_reason', str_replace( '-', '_', $id ) );
 
-						$description_id = "comment-{$comment->comment_ID}-reason-description";
+						$description_id = "comment-{$id_slug}-reason-description";
 						$description_name = str_replace( '-', '_', $description_id );
 						?>
 						<label for="<?php echo esc_attr( $id ); ?>">
