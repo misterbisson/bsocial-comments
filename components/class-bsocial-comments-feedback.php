@@ -309,11 +309,6 @@ class bSocial_Comments_Feedback
 
 		$data = $this->get_post_comment_states( $post_id, $user );
 
-		if ( empty( $data ) )
-		{
-			wp_send_json_error();
-		} // END if
-
 		wp_send_json_success( $data );
 	}//end ajax_states_for_user
 
