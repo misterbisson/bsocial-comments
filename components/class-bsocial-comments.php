@@ -302,7 +302,7 @@ class bSocial_Comments
 		}//end if
 
 		// Checking is_admin lets us avoid cross domain JS issues because on VIP the admin panel and the site itself have different domains
-		return add_query_arg( $arguments, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
+		return add_query_arg( $arguments, is_admin() ? admin_url( 'admin-ajax.php' ) : home_url( 'wp-admin/admin-ajax.php' ) );
 	} // END get_status_url
 
 	/**
