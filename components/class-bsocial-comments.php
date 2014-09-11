@@ -77,7 +77,7 @@ class bSocial_Comments
 		wp_localize_script( 'bsocial-comments', 'bsocial_comments', $data );
 		wp_enqueue_script( 'bsocial-comments' );
 
-		if ( current_user_can( 'moderate_comments' ) )
+		if ( current_user_can( 'moderate_comments' ) || ( is_single() && current_user_can( 'edit_post', get_queried_object_id() ) ) )
 		{
 			wp_enqueue_script( 'bsocial-comments-moderation' );
 		}//end if
