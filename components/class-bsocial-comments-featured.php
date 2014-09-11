@@ -474,7 +474,6 @@ class bSocial_Comments_Featured
 
 		if ( ! current_user_can( 'moderate_comments' ) && ! current_user_can( 'edit_comment', $comment_id ) )
 		{
-			print_r('stop!'); exit();
 			return FALSE;
 		}//END if
 
