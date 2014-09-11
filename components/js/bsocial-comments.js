@@ -94,6 +94,11 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	 */
 	bsocial_comments.set_fave_state = function( comment_id, state ) {
 		var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
+
+		if ( ! $comment.length ) {
+			return;
+		}//end if
+
 		var $fave_link = $comment.find( ' > .div-comment .comment-fave a' );
 		var href = $fave_link.attr( 'href' );
 
@@ -114,6 +119,11 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	 */
 	bsocial_comments.set_flag_state = function( comment_id, state ) {
 		var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
+
+		if ( ! $comment.length ) {
+			return;
+		}//end if
+
 		var $flag_link = $comment.children( '.div-comment' ).find( '.comment-flag a' );
 		var href = $flag_link.attr( 'href' );
 
