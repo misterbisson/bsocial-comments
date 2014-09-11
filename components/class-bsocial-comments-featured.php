@@ -472,7 +472,7 @@ class bSocial_Comments_Featured
 	{
 		$comment_id = absint( $_GET['comment_id'] );
 
-		if ( ! current_user_can( 'moderate_comments' ) )
+		if ( ! current_user_can( 'moderate_comments' ) && ! current_user_can( 'edit_comment', $comment_id ) )
 		{
 			return FALSE;
 		}//END if
