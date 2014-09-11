@@ -768,7 +768,7 @@ class bSocial_Comments_Feedback
 				?>
 			</section>
 			<section class="flag flag-logged-in">
-				<form class="<?php echo esc_attr( implode( ' ', apply_filters( 'bsocial_comments_feedback_form_classes', array() ) ) ); ?>" action="<?php echo esc_url( $this->get_comment_feedback_url( $comment->ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>">
+				<form class="<?php echo esc_attr( implode( ' ', apply_filters( 'bsocial_comments_feedback_form_classes', array() ) ) ); ?>" action="<?php echo esc_url( $this->get_comment_feedback_url( $comment->comment_ID, 'flag', FALSE, array( 'direction' => 'flag' ) ) ); ?>">
 					<?php
 					// this will need to be sanitized up stream as we must be able to support HTML in here
 					echo wp_kses_post( $message_flag_logged_in );
