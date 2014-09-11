@@ -278,9 +278,18 @@ class bSocial_Comments_Featured
 				$cleaned_comment = array(
 					'comment_ID'      => $comment->comment_ID,
 					'comment_content' => preg_replace( $this->tag_regex, '', $comment->comment_content ),
-					// if comment_approved isn't provided with 'hold', the comment will be auto-transitioned to approved
-					'comment_approved' => 0 == $comment->comment_approved ? 'hold' : 'approve',
+					'comment_approved' => $comment->comment_approved,
 				);
+
+				// if comment_approved isn't provided with 'hold', the comment will be auto-transitioned to approved
+				if ( '0' === (string) $cleaned_comment['comment_approved'] )
+				{
+					$cleaned_comment['comment_approved'] = 'hold';
+				}//end if
+				elseif ( '1' === (string) $cleaned_comment['comment_approved'] )
+				{
+					$cleaned_comment['comment_approved'] = 'approve';
+				}//end elseif
 
 				// we need to delete the comment meta BEFORE updating the comment because wp_update_comment fires off
 				// the edit_comment action. We hook to edit_comment to check if this comment is featured (determined by
