@@ -57,12 +57,15 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		{
 			return $actions;
 		}
+
+		//if we're on the trash or spam page, we're not needing to feature
 		global $comment_status;
-		if ( 'trash' != $comment_status && 'spam' != $comment_status )
+		if ( 'trash' == $comment_status || 'spam' == $comment_status )
 		{
-			// Get feature/unfeature link for the comment
-			$actions['feature-comment'] = $this->get_feature_link( $comment->comment_ID );
+			return $actions;
 		}
+		// Get feature/unfeature link for the comment
+		$actions['feature-comment'] = $this->get_feature_link( $comment->comment_ID );
 
 		return $actions;
 	} // END comment_row_actions
