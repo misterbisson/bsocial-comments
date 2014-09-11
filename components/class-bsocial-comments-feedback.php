@@ -599,7 +599,7 @@ class bSocial_Comments_Feedback
 			return;
 		}//end if
 
-		return add_query_arg( $args, is_admin() ? admin_url( 'admin-ajax.php' ) : site_url( 'wp-admin/admin-ajax.php' ) );
+		return add_query_arg( $args, is_admin() ? admin_url( 'admin-ajax.php' ) : home_url( 'wp-admin/admin-ajax.php' ) );
 	}//end get_comment_feedback_url
 
 	/**
