@@ -381,7 +381,7 @@ class bSocial_Comments
 		$comment_id = absint( $_GET['comment_id'] );
 		$direction  = $_GET['direction'];
 
-		if ( ! current_user_can( 'moderate_comments' ) )
+		if ( ! current_user_can( 'moderate_comments' ) && ! current_user_can( 'edit_comment', $comment_id ) )
 		{
 			return wp_send_json_error();
 		} // END if
