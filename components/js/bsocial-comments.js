@@ -72,6 +72,11 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		for ( var comment_id in states ) {
 			var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
 
+			// if there is comment data for a comment that doesn't exist on the page, don't bother attempting to set the flag/fave states
+			if ( ! $comment.length ) {
+				continue;
+			}//end if
+
 			if ( 'undefined' !== typeof states[ comment_id ].flagged && states[ comment_id ].flagged ) {
 				this.set_flag_state( comment_id, 'flag' );
 			}//end if
@@ -109,7 +114,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	 */
 	bsocial_comments.set_flag_state = function( comment_id, state ) {
 		var $comment = $( '.comment[data-comment-id="' + comment_id + '"]' );
-		var $flag_link = $comment.find( ' > .div-comment .comment-flag a' );
+		var $flag_link = $comment.children( '.div-comment' ).find( '.comment-flag a' );
 		var href = $flag_link.attr( 'href' );
 
 		$comment.attr( 'data-comment-flag', state );
@@ -244,9 +249,9 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		// let's give immediate feedback so we don't have to wait for the ajax round-trip
 		$comment.find( '.feedback-box:first' ).attr( 'data-type', '' ).slideUp( 'fast' );
 		if ( 'flag' === $comment.attr( 'data-comment-flag' ) ) {
-			this.set_flag_state( $comment.data( 'comment-id' ), 'unflag' );
+			this.set_flag_state( $comment.attr( 'data-comment-id' ), 'unflag' );
 		} else {
-			this.set_flag_state( $comment.data( 'comment-id' ), 'flag' );
+			this.set_flag_state( $comment.attr( 'data-comment-id' ), 'flag' );
 		}//end else
 		//re-disable the button see https://github.com/GigaOM/gigaom/issues/5267
 		$form.find( '.comment-flag-confirm' ).prop( { 'disabled': true } );
