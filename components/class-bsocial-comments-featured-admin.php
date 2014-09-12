@@ -57,14 +57,20 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		{
 			return $actions;
 		}
+		do_action( 'debug_robot', print_r( $comment, TRUE ) );
 
-		//if we're on the trash or spam page, we're not needing to feature
-		if ( 'trash' == $comment->comment_approved || 'spam' == $comment->comment_approved )
+		switch ( $comment->comment_approved )
 		{
-			return $actions;
-		}
-		// Get feature/unfeature link for the comment
-		$actions['feature-comment'] = $this->get_feature_link( $comment->comment_ID );
+			case 1:
+			case 0:
+				// Get feature/unfeature link for the comment only where we want it
+				$actions['feature-comment'] = $this->get_feature_link( $comment->comment_ID );
+				break;
+
+			default:
+				//for trash and spam, $comment->comment_approved returns the text label
+				break;
+		}//end switch
 
 		return $actions;
 	} // END comment_row_actions
