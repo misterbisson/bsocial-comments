@@ -59,8 +59,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		}
 
 		//if we're on the trash or spam page, we're not needing to feature
-		global $comment_status;
-		if ( 'trash' == $comment_status || 'spam' == $comment_status )
+		if ( 'trash' == $comment->comment_approved || 'spam' == $comment->comment_approved )
 		{
 			return $actions;
 		}
