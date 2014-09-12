@@ -57,20 +57,11 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		{
 			return $actions;
 		}
-		do_action( 'debug_robot', print_r( $comment, TRUE ) );
 
-		switch ( $comment->comment_approved )
+		if ( is_numeric( $comment->comment_approved ) )
 		{
-			case 1:
-			case 0:
-				// Get feature/unfeature link for the comment only where we want it
-				$actions['feature-comment'] = $this->get_feature_link( $comment->comment_ID );
-				break;
-
-			default:
-				//for trash and spam, $comment->comment_approved returns the text label
-				break;
-		}//end switch
+			$actions['feature-comment'] = $this->get_feature_link( $comment->comment_ID );
+		}//end if
 
 		return $actions;
 	} // END comment_row_actions
