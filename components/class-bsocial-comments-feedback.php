@@ -19,10 +19,16 @@ class bSocial_Comments_Feedback
 		add_action( 'wp_ajax_nopriv_bsocial_comments_feedback_states_for_user', array( $this, 'ajax_states_for_user' ) );
 		add_action( 'delete_comment', array( $this, 'delete_comment' ) );
 		add_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
-		add_action( 'comment_delete_fave', array( $this, 'comment_delete_fave_flag' ), 10, 2 );
-		add_action( 'comment_delete_flag', array( $this, 'comment_delete_fave_flag' ), 10, 2 );
 		add_action( 'bsocial_comments_feedback_links', array( $this, 'feedback_links' ) );
 		add_action( 'bsocial_comments_feedback_info', array( $this, 'feedback_info' ), 10, 2 );
+
+		// Count handling for fave/flag chnages via non update_comment_feedback methods
+		add_action( 'delete_comment', array( $this, 'pre_handle_feedback_changes' ) );
+		add_action( 'trash_comment', array( $this, 'pre_handle_feedback_changes' ) );
+		add_action( 'untrash_comment', array( $this, 'pre_handle_feedback_changes' ) );
+		add_action( 'deleted_comment', array( $this, 'handle_feedback_changes' ) );
+		add_action( 'trashed_comment', array( $this, 'handle_feedback_changes' ) );
+		add_action( 'untrashed_comment', array( $this, 'handle_feedback_changes' ) );
 
 		// this should be the first filter that returns comment feedback
 		add_filter( 'bsocial_comments_feedback_get_comment_feedback', array( $this, 'get_comment_feedback' ), 1, 4 );
@@ -540,6 +546,41 @@ class bSocial_Comments_Feedback
 	} // END update_feedback_counts
 
 	/**
+	 * Hooks to a variety of actions (trash_comment, untrash_comment, delete_comment) and saves a feedback's parent ID fo ruse in handle_feedback_changes
+	 */
+	public function pre_handle_feedback_changes( $comment_id )
+	{
+		if ( ! $feedback = get_comment( $comment_id ) )
+		{
+			return;
+		} // END if
+
+		if ( 'fave' != $feedback->comment_type && 'flag' != $feedback->comment_type )
+		{
+			return;
+		} // END if
+
+		// Record the feedback's comment_parent for use later
+		$this->current_feedback['feedback_changes'][ $comment_id ] = (object) array( 'comment_type' => $feedback->comment_type, 'comment_parent' => $feedback->comment_parent );
+	} // END pre_handle_feedback_changes
+
+	/**
+	 * Hooks to a variety of actions (trashed_comment, untrashed_comment, deleted_comment) and updates feedback counts appropriately
+	 */
+	public function handle_feedback_changes( $comment_id )
+	{
+		// Check if we've got any info about this id
+		if ( ! isset( $this->current_feedback['feedback_changes'][ $comment_id ] ) )
+		{
+			return;
+		} // END if
+
+		$feedback = $this->current_feedback['feedback_changes'][ $comment_id ];
+
+		$this->update_feedback_counts( $feedback->comment_parent, $feedback->comment_type );
+	} // END handle_feedback_status_changes
+
+	/**
 	 * returns a link for favoriting a comment
 	 */
 	public function get_comment_feedback_url( $comment_id, $type, $user = FALSE, $args = array() )
@@ -660,24 +701,6 @@ class bSocial_Comments_Feedback
 		// Add ourselves back in
 		add_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
 	} // END deleted_comment
-
-	/**
-	 * Hook to comment_delete_fave and comment_delete_flag actions and update counts
-	 *
-	 * @param $comment_id (int) The id of the comment
-	 */
-	public function comment_delete_fave_flag( $unused_comment_id, $comment )
-	{
-		if ( 'fave' == $comment->comment_type )
-		{
-			$this->update_feedback_counts( $comment->comment_parent, 'faves' );
-		} // END if
-
-		if ( 'flag' == $comment->comment_type )
-		{
-			$this->update_feedback_counts( $comment->comment_parent, 'flags' );
-		} // END if
-	} // END comment_delete_fave_flag
 
 	/**
 	 * hooked to bsocial_comments_feedback_links outputs feedback UI for a comment

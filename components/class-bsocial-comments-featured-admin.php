@@ -136,7 +136,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 	 */
 	public function pre_get_comments( $query )
 	{
-		if ( 'featured' != $_GET['comment_status'] )
+		if ( ! isset( $_GET['comment_status'] ) || 'featured' != $_GET['comment_status'] )
 		{
 			return;
 		} // END if
