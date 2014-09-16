@@ -345,6 +345,13 @@ class bSocial_Comments_Register
 			} // END if
 		} // END foreach
 
+		// Because of how WP works all gets status current for everything not default :P
+		// This fixes that
+		if ( '' != $_GET['comment_status'] && 'all' != $_GET['comment_status'] )
+		{
+			$status_links['all'] = str_replace( ' class="current"', '', $status_links['all'] );
+		} // END if
+
 		return $status_links;
 	} // END comment_status_links_add
 
