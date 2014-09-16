@@ -22,7 +22,7 @@ class bSocial_Comments_Feedback
 		add_action( 'bsocial_comments_feedback_links', array( $this, 'feedback_links' ) );
 		add_action( 'bsocial_comments_feedback_info', array( $this, 'feedback_info' ), 10, 2 );
 
-		// Count handling for fave/flag chnages via non update_comment_feedback methods
+		// Count handling for fave/flag changes via non update_comment_feedback methods
 		add_action( 'delete_comment', array( $this, 'pre_handle_feedback_changes' ) );
 		add_action( 'trash_comment', array( $this, 'pre_handle_feedback_changes' ) );
 		add_action( 'untrash_comment', array( $this, 'pre_handle_feedback_changes' ) );
