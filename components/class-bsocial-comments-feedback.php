@@ -492,7 +492,7 @@ class bSocial_Comments_Feedback
 			return NULL;
 		} // END if
 
-		if ( ! $count = get_comment_meta( $comment_id, $this->id_base . '-flags', TRUE ) )
+		if ( ! $count = get_comment_meta( $comment_id, $this->id_base . '-faves', TRUE ) )
 		{
 			$count = $this->update_feedback_counts( $comment_id, 'faves' );
 		} // END if
@@ -524,6 +524,9 @@ class bSocial_Comments_Feedback
 		{
 			return NULL;
 		} // END if
+
+		// Auto pluralize types that aren't already plural to avoid issues
+		$type = ! preg_match( '#s$#', $type ) ? $type . 's' : $type;
 
 		if ( 'faves' != $type && 'flags' != $type )
 		{
@@ -672,7 +675,7 @@ class bSocial_Comments_Feedback
 		// If there was any feedback we want to store it so deleted_comment can delete it AFTER the parent comment has successful gone away
 		if ( $feedback = $wpdb->get_results( $wpdb->prepare( $sql, $comment_id, 'fave', 'flag' ) ) )
 		{
-			$this->current_feedback[ $comment_id ] = $feedback;
+			$this->current_feedback['feedback_children'][ $comment_id ] = $feedback;
 		} // END if
 	} // END delete_comment
 
@@ -683,7 +686,8 @@ class bSocial_Comments_Feedback
 	 */
 	public function deleted_comment( $comment_id )
 	{
-		if ( ! isset( $this->current_feedback[ $comment_id ] ) )
+		// Check if there are any feedback children for this comment and if not we can stop
+		if ( ! isset( $this->current_feedback['feedback_children'][ $comment_id ] ) )
 		{
 			return;
 		} // END if
@@ -691,12 +695,12 @@ class bSocial_Comments_Feedback
 		// Remove oursevles so we don't infinite loop
 		remove_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
 
-		foreach ( $this->current_feedback[ $comment_id ] as $comment )
+		foreach ( $this->current_feedback['feedback_children'][ $comment_id ] as $comment )
 		{
 			wp_delete_comment( $comment->comment_ID, TRUE );
 		} // END foreach
 
-		unset( $this->current_feedback[ $comment_id ] );
+		unset( $this->current_feedback['feedback_children'][ $comment_id ] );
 
 		// Add ourselves back in
 		add_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
