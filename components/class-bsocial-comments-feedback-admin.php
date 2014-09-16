@@ -2,6 +2,11 @@
 
 class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 {
+	private $dependencies = array(
+		'go-ui' => 'https://github.com/GigaOM/go-ui',
+	);
+	private $missing_dependencies = array();
+
 	public function __construct()
 	{
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
@@ -21,7 +26,11 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	{
 		$script_config = apply_filters( 'go_config', array( 'version' => bsocial_comments()->version ), 'go-script-version' );
 
-		wp_enqueue_style( $this->id_base . '-admin', plugins_url( '/css/bsocial-comments-feedback-admin.css', __FILE__ ), array(), $script_config['version'] );
+		$this->check_dependencies();
+
+		go_ui();
+
+		wp_enqueue_style( $this->id_base . '-admin', plugins_url( '/css/bsocial-comments-feedback-admin.css', __FILE__ ), array( 'fontawesome' ), $script_config['version'] );
 		wp_register_script( $this->id_base . '-admin', plugins_url( '/js/bsocial-comments-feedback-admin.js', __FILE__ ), array( 'jquery' ), $script_config['version'], TRUE );
 
 		// Only enqueue script when on a comment edit page where it's needed
@@ -30,6 +39,51 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 			wp_enqueue_script( $this->id_base . '-admin' );
 		} // END if
 	} // END admin_enqueue_scripts
+
+	/**
+	 * check plugin dependencies
+	 */
+	public function check_dependencies()
+	{
+		foreach ( $this->dependencies as $dependency => $url )
+		{
+			if ( function_exists( str_replace( '-', '_', $dependency ) ) )
+			{
+				continue;
+			}//end if
+
+			$this->missing_dependencies[ $dependency ] = $url;
+		}//end foreach
+
+		if ( $this->missing_dependencies )
+		{
+			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+		}//end if
+	}//end check_dependencies
+
+	/**
+	 * hooked to the admin_notices action to inject a message if depenencies are not activated
+	 */
+	public function admin_notices()
+	{
+		?>
+		<div class="error">
+			<p>
+				You must <a href="<?php echo esc_url( admin_url( 'plugins.php' ) ); ?>">activate</a> the following plugins before using <code>bstat</code>'s report:
+			</p>
+			<ul>
+				<?php
+				foreach ( $this->missing_dependencies as $dependency => $url )
+				{
+					?>
+					<li><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $dependency ); ?></a></li>
+					<?php
+				}//end foreach
+				?>
+			</ul>
+		</div>
+		<?php
+	}//end admin_notices
 
 	/**
 	 * Add metaboxes
@@ -171,8 +225,10 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		} // END if
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
-			$count = $this->get_comment_fave_count( $comment_id );
-			echo 0 == $count ? '<span class="zero">' . absint( $count ) . '</span>' : '<span class="faves">+ ' . absint( $count ) . '</span>';
+			$count      = $this->get_comment_flag_count( $comment_id );
+			$count_link = '<a href="' . get_edit_comment_link( $comment_id ) . '" title="Edit comment"><i class="fa fa-thumbs-up"></i> ' . absint( $count ) . '</a>';
+
+			echo 0 == $count ? '<span class="zero">' . $count_link . '</span>' : '<span class="faves">' . $count_link . '</span>';
 		} // END elseif
 	} // END faves_column
 
@@ -194,8 +250,10 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		} // END if
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
-			$count = $this->get_comment_flag_count( $comment_id );
-			echo 0 == $count ? '<span class="zero">' . absint( $count ) . '</span>' : '<span class="flags">- ' . absint( $count ) . '</span>';
+			$count      = $this->get_comment_flag_count( $comment_id );
+			$count_link = '<a href="' . get_edit_comment_link( $comment_id ) . '" title="Edit comment"><i class="fa fa-flag"></i> ' . absint( $count ) . '</a>';
+
+			echo 0 == $count ? '<span class="zero">' . $count_link . '</span>' : '<span class="flags">' . $count_link . '</span>';
 		} // END elseif
 	} // END flags_column
 
@@ -207,7 +265,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	public function get_parent_link( $parent_id )
 	{
 		$url = add_query_arg( array( 'action' => 'editcomment', 'c' => absint( $parent_id ) ), admin_url( 'comment.php' ) );
-		echo '<a href="' . esc_url( $url ) . '" title="Edit parent comment" class="post-com-count"><span class="comment-count">&nbsp;</span></a>';
+		echo '<a href="' . esc_url( $url ) . '" title="Edit parent comment"><i class="fa fa-comment"></i> </a>';
 	} // END get_parent_link
 
 	/**
