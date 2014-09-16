@@ -6,11 +6,12 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	{
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 10, 2 );
+		add_action( 'pre_get_comments', array( $this, 'pre_get_comments' ) );
 
 		add_filter( 'manage_edit-comments_columns', array( $this, 'comments_columns' ) );
 		add_filter( 'manage_comments_custom_column', array( $this, 'manage_comments_custom_column' ), 10, 2 );
 		add_filter( 'manage_edit-comments_sortable_columns', array( $this, 'manage_edit_comments_sortable_columns' ) );
-		add_filter( 'comments_clauses', array( $this, 'comments_clauses' ) );
+		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 10, 2 );
 	} // end __construct
 
 	/**
@@ -75,6 +76,33 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		$go_list_table->prepare_items();
 		$go_list_table->custom_display();
 	} // END flags_meta_box
+
+	/**
+	 * Hook to the pre_get_comments action and adjust the active query to handle our sudo statuses
+	 */
+	public function pre_get_comments( $query )
+	{
+		if (
+			! isset( $_GET['comment_status'] )
+			|| ( 'faved' != $_GET['comment_status'] && 'flagged' != $_GET['comment_status'] )
+		)
+		{
+			return;
+		} // END if
+
+		$type = 'faved' == $_GET['comment_status'] ? 'faves' : 'flags';
+
+		$query->query_vars['meta_query'] = array(
+			array(
+				'key'     => $this->id_base . '-' . $type,
+				'value'   => 0,
+				'compare' => '!=',
+			),
+		);
+
+		$query->meta_query = new WP_Meta_Query();
+		$query->meta_query->parse_query_vars( $query->query_vars );
+	} // END pre_get_comments
 
 	/**
 	 * Hook to manage_edit-comments_columns filter and add columns for flags and faves
@@ -235,4 +263,17 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 
 		return $clauses;
 	} // END comments_clauses
+
+	/**
+	 * Filters comment_status_links to include additional sudo comment statuses for filtering by comments that are flagged or faved
+	 *
+	 * @param $status_links (array) Array of status links for use in the edit-comments admin panel
+	 */
+	public function comment_status_links_add( $status_links )
+	{
+		$status_links['faved']  = bsocial_comments()->register->get_status_link( 'faved', _n_noop( 'Faved', 'Faved' ), $_GET );
+		$status_links['flaged'] = bsocial_comments()->register->get_status_link( 'flagged', _n_noop( 'Flagged', 'Flagged' ), $_GET );
+
+		return $status_links;
+	} // END comment_status_links_add
 }// END bSocial_Comments_Feedback_Admin

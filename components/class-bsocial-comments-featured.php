@@ -90,7 +90,7 @@ class bSocial_Comments_Featured
 			),
 			'register_meta_box_cb' => array( $this, 'register_metaboxes' ),
 			'public' => TRUE,
-			'show_in_menu' => 'edit-comments.php',
+			'show_in_menu' => FALSE,
 			'has_archive' => bsocial_comments()->options()->featured_comments->has_archive,
 			'rewrite' => array(
 				'slug' => bsocial_comments()->options()->featured_comments->rewrite_slug,

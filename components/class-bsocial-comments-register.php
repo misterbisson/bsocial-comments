@@ -22,8 +22,8 @@ class bSocial_Comments_Register
 		// 9 so that we run before most plugin code that way other plugins can add actions without interference
 		add_filter( 'comment_row_actions', array( $this, 'comment_row_actions' ), 9, 2 );
 		add_filter( 'bulk_actions-edit-comments', array( $this, 'bulk_actions' ), 9, 2 );
-		add_filter( 'comment_status_links', array( $this, 'comment_status_links_remove' ), 9, 2 );
-		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 11, 2 );
+		add_filter( 'comment_status_links', array( $this, 'comment_status_links_remove' ), 11, 2 );
+		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 12, 2 );
 		add_filter( 'wp_count_comments', array( $this, 'wp_count_comments' ), 10, 2 );
 		add_filter( 'comments_per_page', array( $this, 'comments_per_page' ) );
 		add_filter( 'comments_clauses', array( $this, 'comments_clauses' ) );
