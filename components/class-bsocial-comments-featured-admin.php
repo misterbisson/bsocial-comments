@@ -11,10 +11,7 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 		add_action( 'pre_get_comments', array( $this, 'pre_get_comments' ) );
 
 		add_filter( 'comment_row_actions', array( $this, 'comment_row_actions' ), 10, 2 );
-		// 12 so that we run after bSocial_Comments_Register has done it's thing
-		// bSocial_Comments_Register runs comment_status_links filteres twice before and after priority 10
-		// This is because it both adds AND removes status links based on custom comment_type params
-		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 12, 2 );
+		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 10, 2 );
 	} // END __construct
 
 	/**
