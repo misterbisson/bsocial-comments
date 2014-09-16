@@ -231,7 +231,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 			$count      = $this->get_comment_flag_count( $comment_id );
 			$count_link = '<a href="' . esc_url( get_edit_comment_link( $comment_id ) ) . '" title="Edit comment"><i class="fa fa-thumbs-up"></i> ' . absint( $count ) . '</a>';
 
-			echo 0 == $count ? '<span class="zero">' . $count_link . '</span>' : '<span class="faves">' . $count_link . '</span>';
+			echo 0 == $count ? '<span class="zero">' . wp_kses_post( $count_link ) . '</span>' : '<span class="faves">' . wp_kses_post( $count_link ) . '</span>';
 		} // END elseif
 	} // END faves_column
 
@@ -256,7 +256,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 			$count      = $this->get_comment_flag_count( $comment_id );
 			$count_link = '<a href="' . esc_url( get_edit_comment_link( $comment_id ) ) . '" title="Edit comment"><i class="fa fa-flag"></i> ' . absint( $count ) . '</a>';
 
-			echo 0 == $count ? '<span class="zero">' . $count_link . '</span>' : '<span class="flags">' . $count_link . '</span>';
+			echo 0 == $count ? '<span class="zero">' . wp_kses_post( $count_link ) . '</span>' : '<span class="flags">' . wp_kses_post( $count_link ) . '</span>';
 		} // END elseif
 	} // END flags_column
 
