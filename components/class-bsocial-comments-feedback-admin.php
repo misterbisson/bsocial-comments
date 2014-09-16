@@ -28,7 +28,10 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 
 		$this->check_dependencies();
 
-		go_ui();
+		if ( function_exists( 'go_ui' ) )
+		{
+			go_ui();
+		} // END if
 
 		wp_enqueue_style( $this->id_base . '-admin', plugins_url( '/css/bsocial-comments-feedback-admin.css', __FILE__ ), array( 'fontawesome' ), $script_config['version'] );
 		wp_register_script( $this->id_base . '-admin', plugins_url( '/js/bsocial-comments-feedback-admin.js', __FILE__ ), array( 'jquery' ), $script_config['version'], TRUE );
@@ -69,7 +72,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		?>
 		<div class="error">
 			<p>
-				You must <a href="<?php echo esc_url( admin_url( 'plugins.php' ) ); ?>">activate</a> the following plugins before using <code>bstat</code>'s report:
+				You must <a href="<?php echo esc_url( admin_url( 'plugins.php' ) ); ?>">activate</a> the following plugins before using <code>bsocial-comments</code>'s to it's fullest potential:
 			</p>
 			<ul>
 				<?php
