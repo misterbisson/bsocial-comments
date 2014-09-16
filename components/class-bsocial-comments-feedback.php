@@ -526,7 +526,7 @@ class bSocial_Comments_Feedback
 		} // END if
 
 		// Auto pluralize types that aren't already plural to avoid issues
-		$type = ! preg_match( '#s$#', $type ) ? $type . 's' : $type;
+		$type = 's' != substr( $type, -1 ) ? $type . 's' : $type;
 
 		if ( 'faves' != $type && 'flags' != $type )
 		{
@@ -549,7 +549,7 @@ class bSocial_Comments_Feedback
 	} // END update_feedback_counts
 
 	/**
-	 * Hooks to a variety of actions (trash_comment, untrash_comment, delete_comment) and saves a feedback's parent ID fo ruse in handle_feedback_changes
+	 * Hooks to a variety of actions (trash_comment, untrash_comment, delete_comment) and saves a feedback's parent ID for use in handle_feedback_changes
 	 */
 	public function pre_handle_feedback_changes( $comment_id )
 	{
