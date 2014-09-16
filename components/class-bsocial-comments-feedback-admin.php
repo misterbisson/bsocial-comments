@@ -229,7 +229,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
 			$count      = $this->get_comment_flag_count( $comment_id );
-			$count_link = '<a href="' . get_edit_comment_link( $comment_id ) . '" title="Edit comment"><i class="fa fa-thumbs-up"></i> ' . absint( $count ) . '</a>';
+			$count_link = '<a href="' . esc_url( get_edit_comment_link( $comment_id ) ) . '" title="Edit comment"><i class="fa fa-thumbs-up"></i> ' . absint( $count ) . '</a>';
 
 			echo 0 == $count ? '<span class="zero">' . $count_link . '</span>' : '<span class="faves">' . $count_link . '</span>';
 		} // END elseif
@@ -254,7 +254,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
 			$count      = $this->get_comment_flag_count( $comment_id );
-			$count_link = '<a href="' . get_edit_comment_link( $comment_id ) . '" title="Edit comment"><i class="fa fa-flag"></i> ' . absint( $count ) . '</a>';
+			$count_link = '<a href="' . esc_url( get_edit_comment_link( $comment_id ) ) . '" title="Edit comment"><i class="fa fa-flag"></i> ' . absint( $count ) . '</a>';
 
 			echo 0 == $count ? '<span class="zero">' . $count_link . '</span>' : '<span class="flags">' . $count_link . '</span>';
 		} // END elseif
