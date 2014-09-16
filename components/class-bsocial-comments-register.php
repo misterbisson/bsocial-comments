@@ -345,8 +345,8 @@ class bSocial_Comments_Register
 			} // END if
 		} // END foreach
 
-		// Because of how WP works all gets status current for everything not default :P
-		// This fixes that
+		// Because of how WP works the all status link gets the 'current' class for every active comment status that isn't a default one
+		// This works around that problem
 		if ( '' != $_GET['comment_status'] && 'all' != $_GET['comment_status'] )
 		{
 			$status_links['all'] = str_replace( ' class="current"', '', $status_links['all'] );
