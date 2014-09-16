@@ -60,8 +60,8 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 
 		switch ( $comment->comment_approved )
 		{
-			case 1:
-			case 0:
+			case '1':
+			case '0':
 			case 'approve':
 			case 'approved':
 			case 'hold':
