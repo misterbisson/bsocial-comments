@@ -14,7 +14,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		add_filter( 'comments_clauses', array( $this, 'comments_clauses' ) );
 		// 12 so that we run after bSocial_Comments_Register has done it's thing
 		// bSocial_Comments_Register runs comment_status_links filteres twice before and after priority 10
-		// This is because it both adds AND removes actions based on custom comment_type params
+		// This is because it both adds AND removes status links based on custom comment_type params
 		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 12, 2 );
 	} // end __construct
 
