@@ -71,8 +71,8 @@ var bsocial_comments_moderation = {
 			$comment.removeClass( 'unapproved' );
 			var $approve_link = $comment.find( '.approve-link a' );
 			$approve_link.html( 'Unapprove' );
-			$approve_link.title( 'Unapprove' );
-			$approve_link.href( $approve_link.href().replace( 'direction=approve', 'direction=unapprove' ) );
+			$approve_link.attr( 'title', 'Unapprove' );
+			$approve_link.attr( 'href', $approve_link.attr( 'href' ).replace( 'direction=approve', 'direction=unapprove' ) );
 		} else if ( 'unfeatured' === data.state ) {
 			$comment.filter( '[id$="-featured"]' ).closest( '.comment' ).remove();
 			$comment.removeClass( 'featured' );
@@ -83,13 +83,13 @@ var bsocial_comments_moderation = {
 			}//end if
 		} else if ( 'unapproved' === data.state ) {
 			$comment.addClass( 'unapproved' );
-			
+
 			// if a featured comment gets unapproved, it is no longer featured
 			$comment.removeClass( 'featured' );
 			var $feature_link = $comment.find( '.feature-link a' );
 			$feature_link.html( 'Feature' );
-			$feature_link.title( 'Feature' );
-			$feature_link.href( $feature_link.href().replace( 'direction=unfeature', 'direction=feature' ) );
+			$feature_link.attr( 'title', 'Feature' );
+			$feature_link.attr( 'href', $feature_link.attr( 'href' ).replace( 'direction=unfeature', 'direction=feature' ) );
 		} else if ( 'approved' === data.state ) {
 			$comment.removeClass( 'unapproved' );
 		}//end else

@@ -52,12 +52,12 @@ if ( 'undefined' === typeof bsocial_comments_featured_admin ) {
 		});
 
 		// On error we set things back
-		request.error( function() {
+		request.fail( function() {
 			feature_link.text( 'Unfeature' );
 		});
 
 		// On success we do some stuff
-		request.success( function( new_link ) {
+		request.done( function( new_link ) {
 			if ( ! new_link ) {
 				feature_link.text( 'Unfeature' );
 				return;
@@ -83,12 +83,12 @@ if ( 'undefined' === typeof bsocial_comments_featured_admin ) {
 		});
 
 		// On error we just show the comment again
-		request.error( function() {
+		request.fail( function() {
 			bsocial_comments_featured_admin.error( $comment_tr );
 		});
 
 		// On success we do some stuff
-		request.success( function( data ) {
+		request.done( function( data ) {
 			if ( ! 'link' in data ) {
 				bsocial_comments_featured_admin.error( $comment_tr );
 				return;

@@ -19,10 +19,16 @@ class bSocial_Comments_Feedback
 		add_action( 'wp_ajax_nopriv_bsocial_comments_feedback_states_for_user', array( $this, 'ajax_states_for_user' ) );
 		add_action( 'delete_comment', array( $this, 'delete_comment' ) );
 		add_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
-		add_action( 'comment_delete_fave', array( $this, 'comment_delete_fave_flag' ), 10, 2 );
-		add_action( 'comment_delete_flag', array( $this, 'comment_delete_fave_flag' ), 10, 2 );
 		add_action( 'bsocial_comments_feedback_links', array( $this, 'feedback_links' ) );
 		add_action( 'bsocial_comments_feedback_info', array( $this, 'feedback_info' ), 10, 2 );
+
+		// Count handling for fave/flag changes via non update_comment_feedback methods
+		add_action( 'delete_comment', array( $this, 'pre_handle_feedback_changes' ) );
+		add_action( 'trash_comment', array( $this, 'pre_handle_feedback_changes' ) );
+		add_action( 'untrash_comment', array( $this, 'pre_handle_feedback_changes' ) );
+		add_action( 'deleted_comment', array( $this, 'handle_feedback_changes' ) );
+		add_action( 'trashed_comment', array( $this, 'handle_feedback_changes' ) );
+		add_action( 'untrashed_comment', array( $this, 'handle_feedback_changes' ) );
 
 		// this should be the first filter that returns comment feedback
 		add_filter( 'bsocial_comments_feedback_get_comment_feedback', array( $this, 'get_comment_feedback' ), 1, 4 );
@@ -486,7 +492,7 @@ class bSocial_Comments_Feedback
 			return NULL;
 		} // END if
 
-		if ( ! $count = get_comment_meta( $comment_id, $this->id_base . '-flags', TRUE ) )
+		if ( ! $count = get_comment_meta( $comment_id, $this->id_base . '-faves', TRUE ) )
 		{
 			$count = $this->update_feedback_counts( $comment_id, 'faves' );
 		} // END if
@@ -519,6 +525,9 @@ class bSocial_Comments_Feedback
 			return NULL;
 		} // END if
 
+		// Auto pluralize types that aren't already plural to avoid issues
+		$type = 's' != substr( $type, -1 ) ? $type . 's' : $type;
+
 		if ( 'faves' != $type && 'flags' != $type )
 		{
 			return NULL;
@@ -538,6 +547,41 @@ class bSocial_Comments_Feedback
 
 		return $count;
 	} // END update_feedback_counts
+
+	/**
+	 * Hooks to a variety of actions (trash_comment, untrash_comment, delete_comment) and saves a feedback's parent ID for use in handle_feedback_changes
+	 */
+	public function pre_handle_feedback_changes( $comment_id )
+	{
+		if ( ! $feedback = get_comment( $comment_id ) )
+		{
+			return;
+		} // END if
+
+		if ( 'fave' != $feedback->comment_type && 'flag' != $feedback->comment_type )
+		{
+			return;
+		} // END if
+
+		// Record the feedback's comment_parent for use later
+		$this->current_feedback['feedback_changes'][ $comment_id ] = (object) array( 'comment_type' => $feedback->comment_type, 'comment_parent' => $feedback->comment_parent );
+	} // END pre_handle_feedback_changes
+
+	/**
+	 * Hooks to a variety of actions (trashed_comment, untrashed_comment, deleted_comment) and updates feedback counts appropriately
+	 */
+	public function handle_feedback_changes( $comment_id )
+	{
+		// Check if we've got any info about this id
+		if ( ! isset( $this->current_feedback['feedback_changes'][ $comment_id ] ) )
+		{
+			return;
+		} // END if
+
+		$feedback = $this->current_feedback['feedback_changes'][ $comment_id ];
+
+		$this->update_feedback_counts( $feedback->comment_parent, $feedback->comment_type );
+	} // END handle_feedback_status_changes
 
 	/**
 	 * returns a link for favoriting a comment
@@ -631,7 +675,7 @@ class bSocial_Comments_Feedback
 		// If there was any feedback we want to store it so deleted_comment can delete it AFTER the parent comment has successful gone away
 		if ( $feedback = $wpdb->get_results( $wpdb->prepare( $sql, $comment_id, 'fave', 'flag' ) ) )
 		{
-			$this->current_feedback[ $comment_id ] = $feedback;
+			$this->current_feedback['feedback_children'][ $comment_id ] = $feedback;
 		} // END if
 	} // END delete_comment
 
@@ -642,7 +686,8 @@ class bSocial_Comments_Feedback
 	 */
 	public function deleted_comment( $comment_id )
 	{
-		if ( ! isset( $this->current_feedback[ $comment_id ] ) )
+		// Check if there are any feedback children for this comment and if not we can stop
+		if ( ! isset( $this->current_feedback['feedback_children'][ $comment_id ] ) )
 		{
 			return;
 		} // END if
@@ -650,34 +695,16 @@ class bSocial_Comments_Feedback
 		// Remove oursevles so we don't infinite loop
 		remove_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
 
-		foreach ( $this->current_feedback[ $comment_id ] as $comment )
+		foreach ( $this->current_feedback['feedback_children'][ $comment_id ] as $comment )
 		{
 			wp_delete_comment( $comment->comment_ID, TRUE );
 		} // END foreach
 
-		unset( $this->current_feedback[ $comment_id ] );
+		unset( $this->current_feedback['feedback_children'][ $comment_id ] );
 
 		// Add ourselves back in
 		add_action( 'deleted_comment', array( $this, 'deleted_comment' ) );
 	} // END deleted_comment
-
-	/**
-	 * Hook to comment_delete_fave and comment_delete_flag actions and update counts
-	 *
-	 * @param $comment_id (int) The id of the comment
-	 */
-	public function comment_delete_fave_flag( $unused_comment_id, $comment )
-	{
-		if ( 'fave' == $comment->comment_type )
-		{
-			$this->update_feedback_counts( $comment->comment_parent, 'faves' );
-		} // END if
-
-		if ( 'flag' == $comment->comment_type )
-		{
-			$this->update_feedback_counts( $comment->comment_parent, 'flags' );
-		} // END if
-	} // END comment_delete_fave_flag
 
 	/**
 	 * hooked to bsocial_comments_feedback_links outputs feedback UI for a comment

@@ -22,8 +22,8 @@ class bSocial_Comments_Register
 		// 9 so that we run before most plugin code that way other plugins can add actions without interference
 		add_filter( 'comment_row_actions', array( $this, 'comment_row_actions' ), 9, 2 );
 		add_filter( 'bulk_actions-edit-comments', array( $this, 'bulk_actions' ), 9, 2 );
-		add_filter( 'comment_status_links', array( $this, 'comment_status_links_remove' ), 9, 2 );
-		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 11, 2 );
+		add_filter( 'comment_status_links', array( $this, 'comment_status_links_remove' ), 11, 2 );
+		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 12, 2 );
 		add_filter( 'wp_count_comments', array( $this, 'wp_count_comments' ), 10, 2 );
 		add_filter( 'comments_per_page', array( $this, 'comments_per_page' ) );
 		add_filter( 'comments_clauses', array( $this, 'comments_clauses' ) );
@@ -344,6 +344,13 @@ class bSocial_Comments_Register
 				$status_links[ $status->name ] = $this->get_status_link( $status->name, $status->label_count, $_GET );
 			} // END if
 		} // END foreach
+
+		// Because of how WP works the all status link gets the 'current' class for every active comment status that isn't a default one
+		// This works around that problem
+		if ( '' != $_GET['comment_status'] && 'all' != $_GET['comment_status'] )
+		{
+			$status_links['all'] = str_replace( ' class="current"', '', $status_links['all'] );
+		} // END if
 
 		return $status_links;
 	} // END comment_status_links_add
