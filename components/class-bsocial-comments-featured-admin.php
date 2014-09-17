@@ -69,7 +69,22 @@ class bSocial_Comments_Featured_Admin extends bSocial_Comments_Featured
 
 			if ( 'unapprove' == $action )
 			{
-				$new_actions['feature-comment'] = $this->get_feature_link( $comment->comment_ID );
+				switch ( $comment->comment_approved )
+				{
+					case '1':
+					case '0':
+					case 'approve':
+					case 'approved':
+					case 'hold':
+					case 'unapprove':
+					case 'unapproved':
+						// Get feature/unfeature link for the comment only where we want it
+						$new_actions['feature-comment'] = $this->get_feature_link( $comment->comment_ID );
+						break;
+					default:
+						//for trash and spam, $comment->comment_approved returns the text label
+						break;
+				}//end switch
 			} // END if
 		} // END foreach
 
