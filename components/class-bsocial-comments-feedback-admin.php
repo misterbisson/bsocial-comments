@@ -228,7 +228,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		} // END if
 		elseif ( '' == $comment->comment_type || 'comment' == $comment->comment_type )
 		{
-			$count      = $this->get_comment_flag_count( $comment_id );
+			$count      = $this->get_comment_fave_count( $comment_id );
 			$count_link = '<a href="' . esc_url( get_edit_comment_link( $comment_id ) ) . '" title="Edit comment"><i class="fa fa-thumbs-up"></i> ' . absint( $count ) . '</a>';
 
 			echo 0 == $count ? '<span class="zero">' . wp_kses_post( $count_link ) . '</span>' : '<span class="faves">' . wp_kses_post( $count_link ) . '</span>';
