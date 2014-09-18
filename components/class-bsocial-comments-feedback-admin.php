@@ -17,6 +17,7 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		add_filter( 'manage_comments_custom_column', array( $this, 'manage_comments_custom_column' ), 10, 2 );
 		add_filter( 'manage_edit-comments_sortable_columns', array( $this, 'manage_edit_comments_sortable_columns' ) );
 		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 10, 2 );
+		add_filter( 'comments_clauses', array( $this, 'comments_clauses' ) );
 	} // end __construct
 
 	/**
