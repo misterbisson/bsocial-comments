@@ -17,7 +17,6 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 		add_filter( 'manage_comments_custom_column', array( $this, 'manage_comments_custom_column' ), 10, 2 );
 		add_filter( 'manage_edit-comments_sortable_columns', array( $this, 'manage_edit_comments_sortable_columns' ) );
 		add_filter( 'comment_status_links', array( $this, 'comment_status_links_add' ), 10, 2 );
-		add_filter( 'comments_clauses', array( $this, 'comments_clauses' ) );
 	} // end __construct
 
 	/**
@@ -136,18 +135,51 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 	} // END flags_meta_box
 
 	/**
-	 * Hook to the pre_get_comments action and adjust the active query to handle our sudo statuses
+	 * Hook to the pre_get_comments action and adjust the active query to handle our sudo statuses and feedback sorting
 	 */
 	public function pre_get_comments( $query )
 	{
-		if (
-			! isset( $_GET['comment_status'] )
-			|| ( 'faved' != $_GET['comment_status'] && 'flagged' != $_GET['comment_status'] )
-		)
+		$current_screen = get_current_screen();
+
+		if ( ! is_admin() || 'edit-comments' != $current_screen->base )
 		{
 			return;
 		} // END if
 
+		$reparse_meta = FALSE;
+
+		if (
+			isset( $_GET['comment_status'] )
+			&& ( 'faved' == $_GET['comment_status'] || 'flagged' == $_GET['comment_status'] )
+		)
+		{
+			$reparse_meta = TRUE;
+			$query = $this->handle_sudo_statuses( $query );
+		} // END if
+
+		if (
+			isset( $_GET['orderby'] )
+			&& ( 'faves' == $_GET['orderby'] || 'flags' == $_GET['orderby'] )
+		)
+		{
+			$reparse_meta = TRUE;
+			$query = $this->handle_feedback_sorting( $query );
+		} // END if
+
+		if ( ! $reparse_meta )
+		{
+			return;
+		} // END if
+
+		$query->meta_query = new WP_Meta_Query();
+		$query->meta_query->parse_query_vars( $query->query_vars );
+	} // END pre_get_comments
+
+	/**
+	 * Add necessary query values for the sudo statuses
+	 */
+	public function handle_sudo_statuses( $query )
+	{
 		$type = 'faved' == $_GET['comment_status'] ? 'faves' : 'flags';
 
 		$query->query_vars['meta_query'] = array(
@@ -158,9 +190,21 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 			),
 		);
 
-		$query->meta_query = new WP_Meta_Query();
-		$query->meta_query->parse_query_vars( $query->query_vars );
-	} // END pre_get_comments
+		return $query;
+	} // END handle_sudo_statuses
+
+	/**
+	 * Add necessary query values for the feedback sorting
+	 */
+	public function handle_feedback_sorting( $query )
+	{
+		$type = 'faves' == $_GET['orderby'] ? 'faves' : 'flags';
+
+		$query->query_vars['meta_key'] = $this->id_base . '-' . $type;
+		$query->query_vars['orderby']  = 'meta_value_num';
+
+		return $query;
+	} // END handle_feedback_sorting
 
 	/**
 	 * Hook to manage_edit-comments_columns filter and add columns for flags and faves
@@ -284,47 +328,6 @@ class bSocial_Comments_Feedback_Admin extends bSocial_Comments_Feedback
 
 		return $sortable_columns;
 	} // END manage_edit_comments_sortable_columns
-
-	/**
-	 * Hook into the comments_clauses filter hook and return adjusted clauses to support fave/flag column sorting
-	 *
-	 * @param $clauses (array) Array of SQL clauses for the comments query
-	 */
-	public function comments_clauses( $clauses )
-	{
-		global $wpdb;
-
-		if ( ! is_admin() )
-		{
-			return $clauses;
-		} // END if
-
-		$current_screen = get_current_screen();
-
-		// Make sure the query is for all statuses
-		if (
-			! isset( $_GET['orderby'] )
-			|| ( isset( $_GET['orderby'] ) && 'faves' != $_GET['orderby'] && 'flags' != $_GET['orderby'] )
-			|| 'edit-comments' != $current_screen->base
-		)
-		{
-			return $clauses;
-		} // END if
-
-		// Make sure we can work with the commentmeta table
-		$clauses['join'] = trim( $clauses['join'] ) . ' JOIN ' . $wpdb->commentmeta .' ON ' . $wpdb->commentmeta . '.comment_id = ' . $wpdb->comments . '.comment_ID';
-
-		$type = 'faves' == $_GET['orderby'] ? 'faves' : 'flags';
-
-		// Get fave/flag meta value so we can sort on it
-		$clauses['where'] = trim( $clauses['where'] ) . $wpdb->prepare( ' AND meta_key = %s', $this->id_base . '-' . $type );
-
-		// Order by the meta_value first then the date second this is a little hacky looking but it works
-		$clauses['orderby'] = 'meta_value ' . $clauses['order'] . ',';
-		$clauses['order']   = 'comment_date_gmt DESC';
-
-		return $clauses;
-	} // END comments_clauses
 
 	/**
 	 * Filters comment_status_links to include additional sudo comment statuses for filtering by comments that are flagged or faved
