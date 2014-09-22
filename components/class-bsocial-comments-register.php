@@ -80,10 +80,9 @@ class bSocial_Comments_Register
 		$args = wp_parse_args( $args, $defaults );
 		$args = (object) $args;
 
-		$comment_type = sanitize_key( $comment_type );
-		$args->name   = $comment_type;
+		$args->name = sanitize_key( $comment_type );;
 
-		if ( strlen( $comment_type ) > 20 )
+		if ( strlen( $args->name ) > 20 )
 		{
 			return new WP_Error( 'comment_type_too_long', 'Comment types cannot exceed 20 characters in length' );
 		} // END if
@@ -134,10 +133,9 @@ class bSocial_Comments_Register
 		$args = wp_parse_args( $args, $defaults );
 		$args = (object) $args;
 
-		$comment_status = sanitize_key( $comment_status );
-		$args->name     = $comment_status;
+		$args->name = sanitize_key( $comment_status );
 
-		if ( strlen( $comment_status ) > 20 )
+		if ( strlen( $args->name ) > 20 )
 		{
 			return new WP_Error( 'comment_status_too_long', 'Comment statuses cannot exceed 20 characters in length' );
 		} // END if
