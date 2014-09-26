@@ -280,7 +280,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		$form.find( 'form' ).attr( 'data-selected-reason', '' );
 		//re-disable the button see https://github.com/GigaOM/gigaom/issues/5267
 		$form.find( '.comment-flag-confirm' ).prop( { 'disabled': true } );
-	}
+	};
 
 	/**
 	 * generates feedback ajax args
