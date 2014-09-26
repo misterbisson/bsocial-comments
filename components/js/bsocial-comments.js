@@ -235,6 +235,11 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 	bsocial_comments.confirm_flag_comment = function( $link ) {
 		var $comment = $link.closest( '.comment' );
 		var $form = $comment.find( '> .feedback-box .flag-logged-in' );
+		if( 'other' !== $form.find( '.reason:checked' ).data( 'reason-type' ) ) {
+			//claer the textarea if we're not submitting "other"
+			$form.find( 'textarea' ).val( '' );
+		}//end if
+
 		var args = this.generate_ajax_args( $comment, $link, 'flag' );
 
 		if ( ! this.authenticated ) {
@@ -356,8 +361,6 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			if ( 'other' === $el.data( 'reason-type' ) && 0 >= $el.closest( 'form' ).find( '.reason-description' ).val().length ) {
 				$flag_button.prop( { 'disabled': true } );
 			}else {
-				$el.closest( 'form' ).find( 'textarea' ).val( '' );
-
 				$flag_button.prop( { 'disabled': false } );
 			}
 
