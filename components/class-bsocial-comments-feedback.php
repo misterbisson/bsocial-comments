@@ -913,7 +913,7 @@ class bSocial_Comments_Feedback
 	public function send_flag_email( $feedback_id, $email )
 	{
 		$feedback = get_comment( $feedback_id );
-		$post     = get_post( $comment->comment_post_ID );
+		$post     = get_post( $feedback->comment_post_ID );
 
 		if ( 'flag' != $feedback->comment_type )
 		{

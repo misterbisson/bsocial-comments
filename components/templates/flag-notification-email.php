@@ -12,4 +12,4 @@ Flagged comment:
 
 
 View flagged comment:
-<?php echo esc_url_raw( get_comment_link( $feedback->comment_parent ) ); ?>
+<?php echo esc_url_raw( get_comment_link( $feedback->comment_parent ) );
