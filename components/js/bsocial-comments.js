@@ -356,6 +356,8 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 			if ( 'other' === $el.data( 'reason-type' ) && 0 >= $el.closest( 'form' ).find( '.reason-description' ).val().length ) {
 				$flag_button.prop( { 'disabled': true } );
 			}else {
+				$el.closest( 'form' ).find( 'textarea' ).val( '' );
+
 				$flag_button.prop( { 'disabled': false } );
 			}
 
