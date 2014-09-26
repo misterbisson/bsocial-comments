@@ -263,15 +263,19 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		} else {
 			this.set_flag_state( $comment.attr( 'data-comment-id' ), 'flag' );
 		}//end else
+		bsocial_comments.form_reset( $form );
+
+		$( document ).trigger( 'bsocial-comments-flag-confirmed', [ $comment ] );
+	};
+
+	bsocial_comments.form_reset = function( $form ) {
 		//reset the form ( deselect radio and clear textarea )
 		$form.find( 'form' )[0].reset();
 		//have to hide the text area - and that is based on the data-selected-reason atribute
 		$form.find( 'form' ).attr( 'data-selected-reason', '' );
 		//re-disable the button see https://github.com/GigaOM/gigaom/issues/5267
 		$form.find( '.comment-flag-confirm' ).prop( { 'disabled': true } );
-
-		$( document ).trigger( 'bsocial-comments-flag-confirmed', [ $comment ] );
-	};
+	}
 
 	/**
 	 * generates feedback ajax args
@@ -388,6 +392,9 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		e.preventDefault();
 
 		var $el = $( this );
+		var $form = $( this ).closest( '.feedback-box .flag-logged-in' );
+
+		bsocial_comments.form_reset( $form );
 
 		$el.closest( '.comment' ).removeClass( 'faving flagging' );
 		$el.closest( '.feedback-box' ).slideUp( 'fast' );
