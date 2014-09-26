@@ -236,7 +236,7 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 		var $comment = $link.closest( '.comment' );
 		var $form = $comment.find( '> .feedback-box .flag-logged-in' );
 		if( 'other' !== $form.find( '.reason:checked' ).data( 'reason-type' ) ) {
-			//claer the textarea if we're not submitting "other"
+			//clear the textarea if we're not submitting "other"
 			$form.find( 'textarea' ).val( '' );
 		}//end if
 
