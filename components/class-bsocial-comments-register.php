@@ -53,8 +53,6 @@ class bSocial_Comments_Register
 	 */
 	public function comment_type( $comment_type, $args )
 	{
-		$comment_type = sanitize_key( $comment_type );
-
 		$defaults = array(
 			'labels'           => array(),
 			'description'      => '',
@@ -82,9 +80,9 @@ class bSocial_Comments_Register
 		$args = wp_parse_args( $args, $defaults );
 		$args = (object) $args;
 
-		$args->name = $comment_type;
+		$args->name = sanitize_key( $comment_type );;
 
-		if ( strlen( $comment_type ) > 20 )
+		if ( strlen( $args->name ) > 20 )
 		{
 			return new WP_Error( 'comment_type_too_long', 'Comment types cannot exceed 20 characters in length' );
 		} // END if
@@ -122,7 +120,7 @@ class bSocial_Comments_Register
 	 * @param $comment_status (string) The name of the comment type
 	 * @param $args (array) args you want to use to register this comment status
 	 */
-	public function comment_status( $status, $args = array() )
+	public function comment_status( $comment_status, $args = array() )
 	{
 		$defaults = array(
 			'label'             => FALSE,
@@ -135,10 +133,9 @@ class bSocial_Comments_Register
 		$args = wp_parse_args( $args, $defaults );
 		$args = (object) $args;
 
-		$post_status = sanitize_key( $status );
-		$args->name = $post_status;
+		$args->name = sanitize_key( $comment_status );
 
-		if ( strlen( $comment_type ) > 20 )
+		if ( strlen( $args->name ) > 20 )
 		{
 			return new WP_Error( 'comment_status_too_long', 'Comment statuses cannot exceed 20 characters in length' );
 		} // END if
