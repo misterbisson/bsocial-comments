@@ -474,11 +474,16 @@ class bSocial_Comments_Featured
 
 		if ( ! current_user_can( 'edit_comment', $comment_id ) )
 		{
+			$current_user = wp_get_current_user();
+			$slog_data    = array( 'comment_id' => $comment_id, 'user_id' => $current_user->ID, 'display_name' => $current_user->display_name );
+			do_action( 'go_slog', 'bsocial-comments-feature-edit', 'Current user can not edit comment.', $slog_data );
 			return FALSE;
 		}//END if
 
 		if ( ! check_ajax_referer( 'bsocial-featuredcomment-save', 'bsocial-nonce', FALSE ) )
 		{
+			$slog_data = array( 'nonce' => $_GET['bsocial-nonce'], 'expected-nonce' => wp_create_nonce( 'bsocial-featuredcomment-save' ) );
+			do_action( 'go_slog', 'bsocial-comments-feature-nonce', 'Nonce check failed.', $slog_data );
 			return FALSE;
 		}// END if
 

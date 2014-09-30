@@ -123,11 +123,15 @@ class bSocial_Comments_Feedback
 
 		if ( ! check_ajax_referer( 'bsocial-comment-feedback', 'bsocial-nonce', FALSE ) )
 		{
+			$slog_data = array( 'nonce' => $_GET['bsocial-nonce'], 'expected-nonce' => wp_create_nonce( 'bsocial-comment-feedback' ) );
+			do_action( 'go_slog', 'bsocial-comments-feedback-nonce', 'Nonce check failed.', $slog_data );
 			wp_send_json_error();
 		} // END if
 
 		if ( ! $comment = get_comment( $comment_id ) )
 		{
+			$slog_data = array( 'comment_id' => $comment_id );
+			do_action( 'go_slog', 'bsocial-comments-feedback-comment', 'Comment does not exist.', $slog_data );
 			wp_send_json_error();
 		} // END if
 
@@ -147,16 +151,22 @@ class bSocial_Comments_Feedback
 
 		if ( ! in_array( $direction, $valid_directions ) )
 		{
+			$slog_data = array( 'direction' => $direction );
+			do_action( 'go_slog', 'bsocial-comments-feedback-direction', 'Invalid direction.', $slog_data );
 			wp_send_json_error();
 		} // END if
 
 		if ( ! $_GET['post_id'] )
 		{
+			$slog_data = array( 'comment_id' => $comment_id );
+			do_action( 'go_slog', 'bsocial-comments-feedback-post-id', 'No post_id given.', $slog_data );
 			wp_send_json_error();
 		} // END if
 
 		if ( ! $post = get_post( absint( $_GET['post_id'] ) ) )
 		{
+			$slog_data = array( 'comment_id' => $comment_id, 'post_id' => $_GET['post_id'] );
+			do_action( 'go_slog', 'bsocial-comments-feedback-post', 'Post could not be found.', $slog_data );
 			wp_send_json_error();
 		} // END if
 

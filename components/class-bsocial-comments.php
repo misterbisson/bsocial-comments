@@ -388,11 +388,16 @@ class bSocial_Comments
 
 		if ( ! current_user_can( 'edit_comment', $comment_id ) )
 		{
+			$current_user = wp_get_current_user();
+			$slog_data    = array( 'comment_id' => $comment_id, 'user_id' => $current_user->ID, 'display_name' => $current_user->display_name );
+			do_action( 'go_slog', 'bsocial-comments-status-edit', 'Current user can not edit comment.', $slog_data );
 			return wp_send_json_error();
 		} // END if
 
 		if ( ! check_ajax_referer( 'bsocial-comment-status', 'bsocial-nonce' ) )
 		{
+			$slog_data = array( 'nonce' => $_GET['bsocial-nonce'], 'expected-nonce' => wp_create_nonce( 'bsocial-comment-status' ) );
+			do_action( 'go_slog', 'bsocial-comments-status-nonce', 'Nonce check failed.', $slog_data );
 			return wp_send_json_error();
 		} // END if
 
@@ -407,11 +412,15 @@ class bSocial_Comments
 
 		if ( ! in_array( $direction, $allowed_directions ) )
 		{
+			$slog_data = array( 'direction' => $direction );
+			do_action( 'go_slog', 'bsocial-comments-status-direction', 'Invalid direction.', $slog_data );
 			return wp_send_json_error();
 		} // END if
 
 		if ( ! ( $comment = get_comment( $comment_id ) ) )
 		{
+			$slog_data = array( 'comment_id' => $comment_id );
+			do_action( 'go_slog', 'bsocial-comments-status-comment', 'Comment does not exist.', $slog_data );
 			return wp_send_json_error();
 		}//end if
 
