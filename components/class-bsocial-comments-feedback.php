@@ -220,6 +220,7 @@ class bSocial_Comments_Feedback
 		$type = $directions_to_types[ $direction ];
 
 		$user_id = ! empty( $args['user']['user_id'] ) ? absint( $args['user']['user_id'] ) : NULL;
+		$user_id = ! empty( $args['user_id'] ) && is_numeric( $args['user_id'] ) ? absint( $args['user_id'] ) : NULL;
 
 		if ( $user_id && $user = get_user_by( 'id', $user_id ) )
 		{
@@ -596,7 +597,7 @@ class bSocial_Comments_Feedback
 	/**
 	 * returns a link for favoriting a comment
 	 */
-	public function get_comment_feedback_url( $comment_id, $type, $user = FALSE, $args = array() )
+	public function get_comment_feedback_url( $comment_id, $type, $user_id = FALSE, $args = array() )
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
 		{
@@ -613,17 +614,17 @@ class bSocial_Comments_Feedback
 
 		// Filter should allow scripts to get the user id from some other method when one wasn't specified
 		// Like maybe a site where there's an alternate method of authentication for comments? Perhaps?
-		$user  = $user ? $user : apply_filters( 'bsocial_comments_feedback_url_user', get_current_user_id() );
+		$user_id = $user_id && is_numeric( $user_id ) ? $user_id : apply_filters( 'bsocial_comments_feedback_url_user', get_current_user_id() );
 
 		// Pass the user to the ajax endpoint as well
-		$args['user'] = urlencode( $user );
+		$args['user_id'] = urlencode( $user_id );
 
 		// Pass post_id the post this comment is for
 		$args['post_id'] = $comment->comment_post_ID;
 
 		if ( empty( $args['direction'] ) )
 		{
-			$state = $this->get_comment_state( $comment_id, $type, $user );
+			$state = $this->get_comment_state( $comment_id, $type, $user_id );
 			if ( 'fave' == $type )
 			{
 				if ( 'faved' == $state )
@@ -911,6 +912,12 @@ class bSocial_Comments_Feedback
 			// We passed the checks lets send this thing
 			$this->send_flag_email( $feedback_id, $author->user_email );
 		} // END foreach
+
+		// Send an email to the moderator email address as well if appropriate
+		if ( get_option( 'moderation_notify' ) )
+		{
+			$this->send_flag_email( $feedback_id, get_option( 'admin_email' ) );
+		} // END if
 	} // END send_email_notifications
 
 	/**
