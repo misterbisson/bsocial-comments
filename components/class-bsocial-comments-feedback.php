@@ -916,7 +916,7 @@ class bSocial_Comments_Feedback
 		// Send an email to the moderator email address as well if appropriate
 		if ( get_option( 'moderation_notify' ) )
 		{
-			$this->send_flag_email( $feedback_id, get_option('admin_email') );
+			$this->send_flag_email( $feedback_id, get_option( 'admin_email' ) );
 		} // END if
 	} // END send_email_notifications
 
