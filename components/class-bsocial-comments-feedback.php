@@ -197,13 +197,11 @@ class bSocial_Comments_Feedback
 	{
 		if ( ! $comment = get_comment( $comment_id ) )
 		{
-			print_r('1'); exit();
 			return FALSE;
 		} // END if
 
 		if ( ! $post = get_post( $post_id ) )
 		{
-			print_r('stop'); exit();
 			return FALSE;
 		} // END if
 
