@@ -75,7 +75,7 @@ class bSocial_Comments
 
 		$data = array(
 			'nonce' => wp_create_nonce( 'bsocial-comment-feedback' ),
-			'endpoint' => admin_url( 'admin-ajax.php' ),
+			'endpoint' => is_admin() ? admin_url( 'admin-ajax.php' ) : home_url( 'wp-admin/admin-ajax.php' ),
 			'logged_in_as' => get_current_user_id(),
 		);
 
