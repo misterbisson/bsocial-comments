@@ -726,12 +726,12 @@ class bSocial_Comments_Feedback
 		$flagged_count = $this->get_comment_flag_count( $comment->comment_ID );
 		?>
 		<span class="comment-fave">
-			<a href="<?php echo esc_url( $this->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" class="goicon icon-fave" title="Fave this comment">
+			<a href="<?php echo esc_url( $this->get_comment_feedback_url( $comment->comment_ID, 'fave' ) ); ?>" id="comment-<?php echo absint( $comment->comment_ID ); ?>-fave" class="goicon icon-fave" title="Fave this comment">
 				<span class="fave-count" data-count="<?php echo absint( $favorited_count ); ?>"><?php echo absint( $favorited_count ); ?></span>
 			</a>
 		</span>
 		<span class="comment-flag">
-			<a href="<?php echo esc_url( $this->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" class="goicon icon-flag" title="Flag this comment">
+			<a href="<?php echo esc_url( $this->get_comment_feedback_url( $comment->comment_ID, 'flag' ) ); ?>" id="comment-<?php echo absint( $comment->comment_ID ); ?>-flag" class="goicon icon-flag" title="Flag this comment">
 				<?php
 				if ( current_user_can( 'edit_comment', $comment->comment_ID ) )
 				{

@@ -107,9 +107,11 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		if ( 'fave' === state ) {
 			$fave_link.attr( 'title', 'Unfave this comment' );
+			$fave_link.attr( 'id', $fave_link.attr( 'id' ).replace( '-fave', '-unfave' ) );
 			$fave_link.attr( 'href', href.replace( 'direction=fave', 'direction=unfave' ) );
 		} else {
 			$fave_link.attr( 'title', 'Fave this comment' );
+			$fave_link.attr( 'id', $fave_link.attr( 'id' ).replace( '-unfave', '-fave' ) );
 			$fave_link.attr( 'href', href.replace( 'direction=unfave', 'direction=fave' ) );
 		}//end else
 	};
@@ -132,9 +134,11 @@ if ( 'undefined' === typeof bsocial_comments.event ) {
 
 		if ( 'flag' === state ) {
 			$flag_link.attr( 'title', 'Unflag this comment' );
+			$flag_link.attr( 'id', $flag_link.attr( 'id' ).replace( '-flag', '-unflag' ) );
 			$flag_link.attr( 'href', href.replace( 'direction=flag', 'direction=unflag' ) );
 		} else {
 			$flag_link.attr( 'title', 'Flag this comment' );
+			$flag_link.attr( 'id', $flag_link.attr( 'id' ).replace( '-unflag', '-flag' ) );
 			$flag_link.attr( 'href', href.replace( 'direction=unflag', 'direction=flag' ) );
 		}//end else
 	};
