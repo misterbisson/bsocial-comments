@@ -751,7 +751,7 @@ class bSocial_Comments_Feedback
 	public function feedback_info( $comment, $args )
 	{
 		$message_logged_out = '<p>Sign in to %1$s this comment</p>';
-		$message_logged_in = '<h2>Reason for flagging this comment:</h2>';
+		$message_logged_in = '<header>Reason for flagging this comment:</header>';
 
 		$reasons = bsocial_comments()->options()->reasons;
 
