@@ -34,7 +34,7 @@ This plugin is on Github: https://github.com/misterbisson/bsocial-comments
 
 ### = Build status =
 
-- Master: <a href="https://travis-ci.org/misterbisson/bsocial-comments"><img src="https://travis-ci.org/misterbisson/bsocial-comments.svg?branch=master" alt="build status" /></a>
+[Master build status at Travis-CI](https://travis-ci.org/misterbisson/bsocial-comments): [![Build Status](https://travis-ci.org/misterbisson/bsocial-comments.svg?branch=master)](https://travis-ci.org/misterbisson/bsocial-comments)
 
 ## == Installation ==
 
