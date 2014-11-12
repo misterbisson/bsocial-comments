@@ -2,7 +2,7 @@ span.bsocial-featured-comment {
 	font-weight: bold;
 }
 
-div#bsuite-fcomment.postbox .featured-comment:not(:last-child) {
+div#bsuite-fcomment.postbox div.featured-comment:not(:last-child) {
 	border-bottom: 1px solid #eeeeee;
 	margin-bottom: 10px;
 	padding-bottom: 10px;
