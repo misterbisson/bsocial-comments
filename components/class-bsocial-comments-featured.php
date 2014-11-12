@@ -108,7 +108,7 @@ class bSocial_Comments_Featured
 	public function pre_get_posts( $query )
 	{
 		if (
-			   bsocial_comments()->options()->featured_comments->add_to_waterfall
+			bsocial_comments()->options()->featured_comments->add_to_waterfall
 			&& ! is_admin()
 			&& $query->is_main_query()
 		)
@@ -340,11 +340,16 @@ class bSocial_Comments_Featured
 			else
 			{
 				// Post doesn't exist yet so we create one
-				$success = $this->create_post( $comment_id );
+				$post_id = $success = $this->create_post( $comment_id );
 			}//END else
 
 			// Clear out the get_featured_comment_posts cache for this post
 			$this->delete_featured_comment_posts_cache( $comment->comment_post_ID );
+
+			if ( $success )
+			{
+				do_action( 'bsocial_comments_featured_comment_save', $comment, $post_id );
+			}//end if
 
 			return $success;
 		}// END if
@@ -373,6 +378,8 @@ class bSocial_Comments_Featured
 			'post_type' => $this->post_type_name,
 		);
 
+		$post = apply_filters( 'bsocial_comments_featured_comment_create_post_args', $post, $parent );
+
 		$post_id = wp_insert_post( $post );
 
 		// simple sanity check
@@ -396,6 +403,8 @@ class bSocial_Comments_Featured
 		{
 			wp_set_object_terms( $post_id, $terms, $tax, FALSE );
 		}//END foreach
+
+		do_action( 'bsocial_comments_featured_comment_created', $post_id );
 
 		return $post_id;
 	}// END create_post
