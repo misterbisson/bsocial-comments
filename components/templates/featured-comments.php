@@ -7,6 +7,7 @@ foreach ( $this->featured_comments as $comment_post )
 		 - <a href="<?php echo get_edit_comment_link( $comment_post->comment->comment_ID ); ?>" title="Edit">Edit</a>
 		 | <a href="<?php echo get_comment_link( $comment_post->comment->comment_ID ); ?>" title="View">View</a>
 		 | <?php echo $this->get_feature_link( $comment_post->comment->comment_ID ); ?>
+		<?php do_action( 'bsocial_comments_post_featured_comment', $comment_post ); ?>
 	</div>
 	<?php
 } // END foreach
