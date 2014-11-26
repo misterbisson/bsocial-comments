@@ -597,6 +597,8 @@ class bSocial_Comments_Featured
 			'order'       => 'ASC',
 		);
 
+		$args = apply_filters( 'bsocial_comments_get_featured_comment_posts_args', $args, $post_id );
+
 		// Check the cache to see if we've already done this recently
 		if ( ! $comment_posts = wp_cache_get( $post_id, $this->id_base )  )
 		{
