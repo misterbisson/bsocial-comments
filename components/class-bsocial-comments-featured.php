@@ -81,8 +81,8 @@ class bSocial_Comments_Featured
 
 		$post_type_config = array(
 			'labels' => array(
-				'name' => 'Featured Comments',
-				'singular_name' => 'Featured Comment',
+				'name' => 'Featured comments',
+				'singular_name' => 'Featured comment',
 			),
 			'supports' => array(
 				'title',
