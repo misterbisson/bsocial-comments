@@ -111,6 +111,7 @@ class bSocial_Comments_Featured
 			bsocial_comments()->options()->featured_comments->add_to_waterfall
 			&& ! is_admin()
 			&& $query->is_main_query()
+			&& empty( $query->query_vars['pagename'] )
 		)
 		{
 			$post_types = (array) $query->query_vars['post_type'];
