@@ -61,7 +61,14 @@ var bsocial_comments_moderation = {
 		var $li = $el.closest( 'li' );
 		var $els = $comment.find( '.' + $li.attr( 'class' ) ).find( 'a' );
 
-		$els.replaceWith( data.link );
+		//beware locations where the admin domain is different from the front end domain
+		var urlpattern = new RegExp( '^https?://([^/]+)' );
+		var parsedlink = data.link.match( urlpattern );
+		var data_domain = parsedlink[1];
+		var data_link = data.link.replace( data_domain, window.location.host );
+
+		$els.replaceWith( data_link );
+
 		var opposite_type = $el.data( 'type' );
 
 		if ( 'featured' === data.state ) {
